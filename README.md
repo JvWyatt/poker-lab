@@ -74,13 +74,14 @@ Tailwind se carga desde CDN, por lo que hace falta conexión a internet.
   los originales. Cada color tiene un valor fijo — gris 1, rojo 5, verde 25,
   azul 100, negro 500, amarillo 1000 — y el importe se descompone de forma
   greedy, así que 2 fichas azules significan siempre 200. El tooltip de cada
-  montón muestra el desglose. Todas las fichas miden lo mismo (32×36 px en
-  escritorio, 24×27 px en móvil) y los montones crecen apilando más fichas.
+  montón muestra el desglose. Todas las fichas miden lo mismo (24×27 px en
+  escritorio, 18×20 px en móvil, un 25 % más pequeñas que antes) y los montones
+  crecen apilando más fichas.
   Cada montón tiene como máximo 5 fichas; si sobran, se forma otro montón al
   lado (hasta **3 montones por jugador y 3 en el bote**). Si aún no caben, se
   muestra una tarjeta con el importe. El all-in se marca con una tarjeta
   triangular: esa tarjeta y la del bote grande son del mismo tamaño
-  (51×39 px en escritorio, 42×33 px en móvil, compensando el `scale(0.88)`
+  (38×29 px en escritorio, 31×25 px en móvil, compensando el `scale(0.88)`
   de los paneles móviles para que se vean idénticas).
   Las fichas de apuesta están **dentro del panel de cada jugador**, pegadas a
   su nombre, para que siempre se sepa de quién son y no tapen texto; el botón

@@ -141,9 +141,9 @@
 
     /* Visible chip piles using the provided 5x2 sprite sheet (teal background removed) */
     .chip-stacks {
-      --chip-u: 32px;
-      --chip-v: 36px;
-      --chip-step: 8px;
+      --chip-u: 24px;
+      --chip-v: 27px;
+      --chip-step: 6px;
       display: flex;
       align-items: flex-end;
       gap: 2px;
@@ -152,15 +152,15 @@
     .chip-pile {
       position: relative;
       display: block;
-      width: var(--chip-u, 32px);
+      width: var(--chip-u, 24px);
       pointer-events: none;
       filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.75));
     }
     .chip-sprite {
       --col: 0;
       --row: 0;
-      --u: var(--chip-u, 32px);
-      --v: var(--chip-v, 36px);
+      --u: var(--chip-u, 24px);
+      --v: var(--chip-v, 27px);
       position: absolute;
       left: 0;
       bottom: 0;
@@ -185,7 +185,7 @@
     .chip-sprite--brown  { --col: 4; --row: 1; }
 
     .chip-amount {
-      font-size: 10px;
+      font-size: 8px;
       font-weight: 800;
       font-family: 'JetBrains Mono', monospace;
       color: #fcd34d;
@@ -198,10 +198,10 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      width: 51px;
-      height: 39px;
+      width: 38px;
+      height: 29px;
       min-width: 0;
-      padding: 2px 3px;
+      padding: 1px 2px;
       border-radius: 7px;
       border: 1px solid rgba(253, 230, 138, 0.75);
       background: linear-gradient(#f59e0b, #b45309);
@@ -211,15 +211,15 @@
       line-height: 1.05;
       pointer-events: none;
     }
-    .chip-card-value { font-size: 13px; font-weight: 900; }
-    .chip-card-unit  { font-size: 7px; font-weight: 800; letter-spacing: 0.08em; }
+    .chip-card-value { font-size: 10px; font-weight: 900; }
+    .chip-card-unit  { font-size: 5px; font-weight: 800; letter-spacing: 0.08em; }
 
     /* All-in: triangular card with the shoved amount */
     .chip-card--allin {
-      width: 51px;
-      height: 39px;
+      width: 38px;
+      height: 29px;
       min-width: 0;
-      padding: 0 0 4px;
+      padding: 0 0 3px;
       border: 0;
       border-radius: 0;
       justify-content: flex-end;
@@ -229,21 +229,21 @@
 
     /* Responsive: fichas más pequeñas para no invadir texto en móvil */
     @media (max-width: 640px) {
-      .chip-stacks { --chip-u: 24px; --chip-v: 27px; --chip-step: 6px; gap: 1px; }
-      .chip-amount { font-size: 9px; }
-      .chip-card, .chip-card--allin { width: 42px; height: 33px; }
-      .chip-card { padding: 1px 2px; }
-      .chip-card--allin { padding-bottom: 3px; }
-      .chip-card-value { font-size: 10px; }
-      .chip-card-unit { font-size: 6px; }
+      .chip-stacks { --chip-u: 18px; --chip-v: 20px; --chip-step: 4.5px; gap: 1px; }
+      .chip-amount { font-size: 7px; }
+      .chip-card, .chip-card--allin { width: 31px; height: 25px; }
+      .chip-card { padding: 1px 1px; }
+      .chip-card--allin { padding-bottom: 2px; }
+      .chip-card-value { font-size: 8px; }
+      .chip-card-unit { font-size: 5px; }
       /* Compact panels keep chips clear of text on narrow screens.
-         Counter-scale cards so all-in and big-pot cards render at the same 42×33. */
+         Counter-scale cards so all-in and big-pot cards render at the same 31×25. */
       #table-seats-layer > div > div { transform: scale(0.88); }
       #table-seats-layer .hero-panel { width: 152px; min-width: 152px; }
       #table-seats-layer .chip-card,
       #table-seats-layer .chip-card--allin {
-        width: calc(42px / 0.88);
-        height: calc(33px / 0.88);
+        width: calc(31px / 0.88);
+        height: calc(25px / 0.88);
       }
       .profile-tag, .last-action { display: none; }
     }
