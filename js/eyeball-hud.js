@@ -21,7 +21,7 @@ const eyeballHUD = {
     if (btn) {
       btn.textContent = this.visible ? '🙈' : '👁️';
       btn.setAttribute('aria-expanded', String(this.visible));
-      btn.className = `pointer-events-auto w-11 h-11 rounded-full flex items-center justify-center text-lg shadow-xl border backdrop-blur-md transition hover:scale-105 ${
+      btn.className = `pointer-events-auto w-11 h-11 shrink-0 rounded-full flex items-center justify-center text-lg shadow-xl border backdrop-blur-md transition hover:scale-105 ${
         this.visible
           ? 'bg-slate-950/90 border-emerald-400/60 text-emerald-300'
           : 'bg-slate-950/85 border-slate-600/70 text-slate-200'
@@ -61,35 +61,17 @@ const eyeballHUD = {
     const r1 = Math.max(c1 >> 2, c2 >> 2);
     const r2 = Math.min(c1 >> 2, c2 >> 2);
     const suited = (c1 & 3) === (c2 & 3);
-    const pos = this.normalizePosition(game.getSeatPositionLabel(0));
-    const facingRaise = game.currentBet > game.bb;
+    const ctx = game.getPreflopGTOContext();
+    const pos = this.normalizePosition(ctx.pos);
 
-    let freqs;
-    if (facingRaise) {
-      // Umbrales de 3-Bet / Call del mismo rango GTO cuando enfrentamos subida.
-      const cfg = (typeof GTO_RANGES !== 'undefined' && GTO_RANGES[pos])
-        ? GTO_RANGES[pos]
-        : { threeBetThreshold: 0.95, callThreshold: 0.75 };
-      const strength = PokerEngine.preflopHandPercentile(c1, c2);
-      let raiseFreq = 0;
-      let callFreq = 0;
-      if (strength >= cfg.threeBetThreshold) raiseFreq = 100;
-      else if (strength >= cfg.threeBetThreshold - 0.04) {
-        raiseFreq = 50;
-        callFreq = 50;
-      } else if (strength >= cfg.callThreshold) callFreq = 100;
-      else if (strength >= cfg.callThreshold - 0.05) callFreq = 50;
-      freqs = { raiseFreq, callFreq, foldFreq: Math.max(0, 100 - raiseFreq - callFreq) };
-    } else {
-      // RFI / defensa de BB: matriz GTO existente, sin tocar la vista GTO.
-      freqs = { raiseFreq: 0, callFreq: 0, foldFreq: 100 };
-      if (typeof gtoView !== 'undefined') {
-        const previousPos = gtoView.pos;
-        gtoView.pos = pos;
-        freqs = gtoView.getHandFreqs(r1, r2, suited);
-        gtoView.pos = previousPos;
-      }
-    }
+    // Misma matriz y mismo contexto que usan la vista GTO y el calificador EV.
+    const freqs = GTOEngine.getHandFreqs(pos, r1, r2, suited, {
+      situation: ctx.situation,
+      facingRaise: ctx.facingRaise,
+      mdf: ctx.mdf,
+      openSizeBb: ctx.openSizeBb,
+      stackBb: ctx.stackBb
+    });
 
     // Regla estricta: sólo acciones con frecuencia > 0%.
     const items = [
@@ -137,19 +119,19 @@ const eyeballHUD = {
   },
 
   paint(container, items) {
-    // Despliegue estrictamente vertical: una columna de ancho, las filas necesarias hacia arriba.
-    const gridClass = 'grid grid-cols-1 gap-[3px]';
+    // Tarjetas horizontales dentro de la barra de acciones: nunca sobre el tapete.
+    const cardsClass = 'flex items-center gap-1.5 h-full';
     if (items.length === 0) {
-      container.className = gridClass;
+      container.className = cardsClass;
       container.innerHTML = '';
       return;
     }
-    container.className = gridClass;
+    container.className = cardsClass;
     container.innerHTML = items.map((item, i) => `
-      <div class="hud-card aspect-square rounded-lg border bg-slate-950/85 backdrop-blur-md px-0 py-0.5 flex flex-col items-center justify-center ${item.tone}"
+      <div class="hud-card h-9 min-w-[58px] px-1.5 rounded-lg border bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center ${item.tone}"
            style="animation-delay: ${i * 45}ms">
         <span class="text-[7px] font-bold uppercase tracking-wide text-slate-400 whitespace-nowrap">${item.key}</span>
-        <span class="text-[8px] font-extrabold font-mono leading-none tracking-tight whitespace-nowrap">${item.value}</span>
+        <span class="text-[9px] font-extrabold font-mono leading-none tracking-tight whitespace-nowrap">${item.value}</span>
       </div>
     `).join('');
   }

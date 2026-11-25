@@ -160,8 +160,9 @@
           <h2 class="text-xl font-bold text-white">Academia: de 0 a pro, paso a paso</h2>
           <p class="text-xs sm:text-sm text-slate-400">Idea en palabras simples, ejemplo con números, por qué pasa y un desafío. Sin tecnicismos innecesarios.</p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
           <button onclick="academia.filterLevel('all')" data-level="all" class="acad-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white">Todos</button>
+          <button onclick="academia.filterLevel('Iniciación')" data-level="Iniciación" class="acad-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300">Iniciación</button>
           <button onclick="academia.filterLevel('Básico')" data-level="Básico" class="acad-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300">Básico</button>
           <button onclick="academia.filterLevel('Intermedio')" data-level="Intermedio" class="acad-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300">Intermedio</button>
           <button onclick="academia.filterLevel('Avanzado')" data-level="Avanzado" class="acad-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300">Avanzado</button>
@@ -444,20 +445,12 @@
 
             <!-- Grade Pop-Up: top-center of the table, auto-dismiss after 3.5s -->
             <div id="grade-popup-layer" class="absolute top-2 left-1/2 -translate-x-1/2 z-40 pointer-events-none flex justify-center"></div>
-
-            <!-- Floating Eyeball HUD: bottom-right, expands upwards -->
-            <div id="eyeball-hud" class="absolute bottom-2 right-2 z-30 flex flex-col-reverse items-end gap-2 pointer-events-none">
-              <button id="btn-eyeball" onclick="eyeballHUD.toggle()" aria-label="Mostrar ayuda táctica" aria-expanded="false" class="pointer-events-auto w-11 h-11 rounded-full flex items-center justify-center text-lg shadow-xl border backdrop-blur-md transition hover:scale-105 bg-slate-950/85 border-slate-600/70 text-slate-200">👁️</button>
-              <div id="eyeball-panel" class="hidden pointer-events-auto w-[56px] rounded-xl border border-slate-700/60 bg-slate-950/85 backdrop-blur-md p-1 shadow-2xl">
-                <div id="eyeball-cards" class="grid grid-cols-1 gap-1.5"></div>
-              </div>
-            </div>
           </div>
 
           <!-- Action Controls Bar -->
           <div id="game-controls-panel" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <div class="flex items-center gap-2">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+              <div class="flex flex-wrap items-center gap-2">
                 <button id="btn-raise" onclick="game.humanAction('raise')" disabled class="px-4 sm:px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:pointer-events-none text-white font-bold text-xs sm:text-sm transition">
                   Apostar / Subir
                 </button>
@@ -469,14 +462,22 @@
                 </button>
               </div>
 
-              <!-- Quick Bet Sizing Buttons -->
-              <div id="bet-sizing-presets" class="flex flex-wrap items-center gap-1.5">
-                <button onclick="game.setBetFraction(0.33)" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-mono text-slate-300 border border-slate-700">1/3 Pot</button>
-                <button onclick="game.setBetFraction(0.5)" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-mono text-slate-300 border border-slate-700">1/2 Pot</button>
-                <button onclick="game.setBetFraction(0.75)" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-mono text-slate-300 border border-slate-700">3/4 Pot</button>
-                <button onclick="game.setBetFraction(1.0)" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-mono text-slate-300 border border-slate-700">Pot</button>
-                <button onclick="game.setBetFraction(999)" class="px-2.5 py-1.5 rounded-lg bg-amber-950/70 hover:bg-amber-900/70 text-[11px] font-mono text-amber-300 border border-amber-700/50">All-In</button>
+              <!-- Eyeball HUD: comparte la fila de acciones, nunca invade el tapete -->
+              <div id="eyeball-hud" class="flex items-center gap-2 pointer-events-auto shrink-0">
+                <button id="btn-eyeball" onclick="eyeballHUD.toggle()" aria-label="Mostrar ayuda táctica" aria-expanded="false" class="pointer-events-auto w-11 h-11 shrink-0 rounded-full flex items-center justify-center text-lg shadow-xl border backdrop-blur-md transition hover:scale-105 bg-slate-950/85 border-slate-600/70 text-slate-200">👁️</button>
+                <div id="eyeball-panel" class="hidden pointer-events-auto h-11 items-center rounded-xl border border-slate-700/60 bg-slate-950/85 backdrop-blur-md p-1 shadow-2xl">
+                  <div id="eyeball-cards" class="flex items-center gap-1.5 h-full"></div>
+                </div>
               </div>
+            </div>
+
+            <!-- Quick Bet Sizing Buttons -->
+            <div id="bet-sizing-presets" class="flex flex-wrap items-center gap-1.5">
+              <button onclick="game.setBetFraction(0.33)" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-mono text-slate-300 border border-slate-700">1/3 Pot</button>
+              <button onclick="game.setBetFraction(0.5)" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-mono text-slate-300 border border-slate-700">1/2 Pot</button>
+              <button onclick="game.setBetFraction(0.75)" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-mono text-slate-300 border border-slate-700">3/4 Pot</button>
+              <button onclick="game.setBetFraction(1.0)" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-mono text-slate-300 border border-slate-700">Pot</button>
+              <button onclick="game.setBetFraction(999)" class="px-2.5 py-1.5 rounded-lg bg-amber-950/70 hover:bg-amber-900/70 text-[11px] font-mono text-amber-300 border border-amber-700/50">All-In</button>
             </div>
 
             <!-- Raise Slider -->
@@ -569,19 +570,40 @@
     <section id="view-gto" class="view-section hidden space-y-6">
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <h2 class="text-xl font-bold text-white">Matriz GTO de Rangos y Frecuencias (100BB 6-Max)</h2>
-          <p class="text-xs sm:text-sm text-slate-400">Explora las frecuencias óptimas de apertura (RFI), defensa y 3-Bet por posición. Haz clic en cualquier mano.</p>
+          <h2 class="text-xl font-bold text-white">Matriz GTO estilo Preflop Vision (6-Max)</h2>
+          <p class="text-xs sm:text-sm text-slate-400">Frecuencias mixtas por posición, secuencia, tamaño de apertura y stack. Aproximación determinista inspirada en las tablas de Zeros; no son sus tablas propietarias. Haz clic en cualquier mano.</p>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="flex flex-col gap-2">
           <!-- Position Selector -->
-          <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+          <div class="flex flex-wrap bg-slate-950 p-1 rounded-xl border border-slate-800">
             <button onclick="gtoView.setPos('UTG')" data-pos="UTG" class="gto-pos-btn px-2.5 py-1 rounded-lg text-xs font-bold">UTG</button>
             <button onclick="gtoView.setPos('MP')" data-pos="MP" class="gto-pos-btn px-2.5 py-1 rounded-lg text-xs font-bold">MP</button>
             <button onclick="gtoView.setPos('CO')" data-pos="CO" class="gto-pos-btn px-2.5 py-1 rounded-lg text-xs font-bold">CO</button>
             <button onclick="gtoView.setPos('BTN')" data-pos="BTN" class="gto-pos-btn px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white">BTN</button>
             <button onclick="gtoView.setPos('SB')" data-pos="SB" class="gto-pos-btn px-2.5 py-1 rounded-lg text-xs font-bold">SB</button>
-            <button onclick="gtoView.setPos('BB')" data-pos="BB" class="gto-pos-btn px-2.5 py-1 rounded-lg text-xs font-bold">BB (vs BTN)</button>
+            <button onclick="gtoView.setPos('BB')" data-pos="BB" class="gto-pos-btn px-2.5 py-1 rounded-lg text-xs font-bold">BB</button>
+          </div>
+
+          <!-- Filtros estilo Preflop Vision: secuencia, tamaño y stack -->
+          <div class="flex flex-wrap items-center gap-2 text-[11px]">
+            <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+              <button onclick="gtoView.setSituation('rfi')" data-situation="rfi" class="gto-sit-btn px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-600 text-white">RFI</button>
+              <button onclick="gtoView.setSituation('vs_open')" data-situation="vs_open" class="gto-sit-btn px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-300">Vs open</button>
+              <button onclick="gtoView.setSituation('vs_3bet')" data-situation="vs_3bet" class="gto-sit-btn px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-300">Vs 3-Bet</button>
+              <button onclick="gtoView.setSituation('blind_defense')" data-situation="blind_defense" class="gto-sit-btn px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-300">BB def.</button>
+            </div>
+            <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+              <button onclick="gtoView.setOpenSize(2)" data-size="2" class="gto-open-btn px-2 py-1 rounded-lg text-xs font-mono text-slate-300">2BB</button>
+              <button onclick="gtoView.setOpenSize(2.5)" data-size="2.5" class="gto-open-btn px-2 py-1 rounded-lg text-xs font-mono bg-emerald-600 text-white">2.5BB</button>
+              <button onclick="gtoView.setOpenSize(3)" data-size="3" class="gto-open-btn px-2 py-1 rounded-lg text-xs font-mono text-slate-300">3BB</button>
+            </div>
+            <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+              <button onclick="gtoView.setStack(25)" data-stack="25" class="gto-stack-btn px-2 py-1 rounded-lg text-xs font-mono text-slate-300">25BB</button>
+              <button onclick="gtoView.setStack(50)" data-stack="50" class="gto-stack-btn px-2 py-1 rounded-lg text-xs font-mono text-slate-300">50BB</button>
+              <button onclick="gtoView.setStack(100)" data-stack="100" class="gto-stack-btn px-2 py-1 rounded-lg text-xs font-mono bg-emerald-600 text-white">100BB</button>
+              <button onclick="gtoView.setStack(150)" data-stack="150" class="gto-stack-btn px-2 py-1 rounded-lg text-xs font-mono text-slate-300">150BB</button>
+            </div>
           </div>
         </div>
       </div>

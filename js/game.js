@@ -494,6 +494,38 @@ const game = {
   },
 
   /**
+   * Contexto preflop compartido con el ojito y la matriz: posición, secuencia,
+   * tamaño de apertura, stack efectivo y MDF real de la decisión.
+   */
+  getPreflopGTOContext() {
+    const hero = this.players[0];
+    const pos = this.getSeatPositionLabel(0);
+    const toCall = Math.max(0, this.currentBet - hero.bet);
+    const potBeforeBet = Math.max(1, this.pot - toCall);
+    const mdf = potBeforeBet / (potBeforeBet + toCall);
+    const openSizeBb = Math.max(2, this.currentBet / Math.max(1, this.bb));
+    const stackBb = Math.max(8, Math.round(hero.stack / Math.max(1, this.bb)));
+    const inBlind = pos === 'BB' || pos === 'SB';
+
+    let situation = 'rfi';
+    if (toCall > 0) {
+      if (this.currentBet > this.bb * 4.5) situation = 'vs_3bet';
+      else if (pos === 'BB') situation = 'blind_defense';
+      else situation = 'vs_open';
+    }
+
+    return {
+      pos,
+      situation,
+      facingRaise: toCall > 0,
+      inBlind,
+      mdf,
+      openSizeBb,
+      stackBb
+    };
+  },
+
+  /**
    * MOTOR MATEMÁTICO DE EVALUACIÓN REAL DE EV POR ACCIÓN (MONTE CARLO + FOLD EQUITY)
    */
   computeRealEVMatrix() {
@@ -558,6 +590,33 @@ const game = {
     if (evRaiseBB > -900) {
       options.push({ action: 'raise', label: toCall === 0 ? `Bet (~${raiseSize})` : `Raise (~${hero.bet + raiseSize})`, ev: evRaiseBB });
     }
+
+    // Unificación GTO: el mismo mix del ojito y de la matriz matiza el EV
+    // preflop para que matriz, HUD y calificación nunca se contradigan.
+    let gto = null;
+    if (this.street === 'preflop' && typeof GTOEngine !== 'undefined') {
+      const c1 = hero.cards[0];
+      const c2 = hero.cards[1];
+      const highR = Math.max(c1 >> 2, c2 >> 2);
+      const lowR = Math.min(c1 >> 2, c2 >> 2);
+      const suited = (c1 & 3) === (c2 & 3);
+      const ctx = this.getPreflopGTOContext();
+      gto = GTOEngine.getHandFreqs(ctx.pos, highR, lowR, suited, {
+        situation: ctx.situation,
+        facingRaise: ctx.facingRaise,
+        mdf: ctx.mdf,
+        openSizeBb: ctx.openSizeBb,
+        stackBb: ctx.stackBb
+      });
+      options.forEach(option => {
+        const freq = option.action === 'raise' ? gto.raiseFreq
+          : option.action === 'call' ? gto.callFreq
+            : gto.foldFreq;
+        option.gtoFreq = freq;
+        option.ev += (freq / 100) * 0.55;
+      });
+    }
+
     options.sort((a, b) => b.ev - a.ev);
     const bestOption = options[0];
 
@@ -574,6 +633,7 @@ const game = {
       spr,
       foldEquityPct: foldEquity * 100,
       rivalsSummary: activeOpponents.map(o => o.profile ? o.profile.style : 'Rival').join(', '),
+      gto,
       options,
       bestOption
     };
@@ -772,6 +832,13 @@ const game = {
       explanation += `Tu equity real es ${analysis.equityPct.toFixed(1)}%${analysis.outs > 0 ? ` (${analysis.outs} outs)` : ''} frente a Pot Odds del ${analysis.potOddsPct.toFixed(1)}% (Fold Equity rival est. ${analysis.foldEquityPct.toFixed(0)}%). La línea superior era ${bestOpt.label} (${bestOpt.ev >= 0 ? '+' : ''}${bestOpt.ev.toFixed(2)} BB), superando a tu jugada por +${effectiveLoss.toFixed(2)} BB a largo plazo.`;
     }
 
+    if (analysis.gto) {
+      const sitLabel = (typeof GTO_SITUATION_LABEL !== 'undefined' && GTO_SITUATION_LABEL[analysis.gto.situation])
+        ? GTO_SITUATION_LABEL[analysis.gto.situation]
+        : analysis.gto.situation;
+      explanation += ` La matriz GTO compartida con el ojito mezcla esta mano ${analysis.gto.raiseFreq}% RAISE / ${analysis.gto.callFreq}% CALL / ${analysis.gto.foldFreq}% FOLD desde ${analysis.pos} en ${sitLabel} (${analysis.gto.stackBb}BB, apertura ${analysis.gto.openSizeBb}BB).`;
+    }
+
     // Guardar en estadísticas globales
     if (grade.isGood) {
       appState.stats.goodDecisions += 1;
@@ -822,6 +889,127 @@ const game = {
     return gradeKind;
   },
 
+  /** Textura del board: color/escalera completadas, pareja y humedad. */
+  getBoardTexture() {
+    const board = this.board;
+    const empty = {
+      flushCompleted: false, straightCompleted: false, flushDraw: false,
+      connected: false, paired: false, scary: false, wetness: 0
+    };
+    if (board.length < 3) return empty;
+
+    const ranks = board.map(c => c >> 2);
+    const suits = [0, 0, 0, 0];
+    board.forEach(c => { suits[c & 3]++; });
+    const uniqueDesc = [...new Set(ranks)].sort((a, b) => b - a);
+    const uniqueAsc = [...uniqueDesc].reverse();
+
+    const flushCompleted = Math.max(...suits) >= 5;
+    const flushDraw = Math.max(...suits) >= 4;
+    const straightCompleted = board.length >= 5 && PokerEngine.findStraightHigh(uniqueDesc) !== -1;
+    const paired = new Set(ranks).size < ranks.length;
+    let connectedCount = 0;
+    for (let i = 1; i < uniqueAsc.length; i++) {
+      if (uniqueAsc[i] - uniqueAsc[i - 1] <= 1) connectedCount++;
+    }
+
+    return {
+      flushCompleted,
+      straightCompleted,
+      flushDraw,
+      connected: connectedCount >= 2,
+      paired,
+      scary: flushCompleted || straightCompleted || (paired && board.length >= 4),
+      wetness: (flushDraw ? 1 : 0) + (connectedCount >= 2 ? 1 : 0) + (paired ? 1 : 0)
+    };
+  },
+
+  /** Fuerza de la mano hecha del bot, no sólo su equity bruta. */
+  analyzeBotHand(bot) {
+    const cards = [...bot.cards, ...this.board];
+    const made = PokerEngine.evaluateHand(cards);
+    const draws = PokerEngine.analyzeDrawsAndOuts(bot.cards, this.board);
+    const boardTexture = this.getBoardTexture();
+
+    const counts = new Array(13).fill(0);
+    cards.forEach(c => { counts[c >> 2]++; });
+    const pairs = [];
+    for (let r = 12; r >= 0; r--) if (counts[r] >= 2) pairs.push(r);
+
+    const boardRanks = this.board.map(c => c >> 2);
+    const boardUnique = [...new Set(boardRanks)].sort((a, b) => b - a);
+    const topRank = boardUnique[0] ?? -1;
+    const topPair = pairs.includes(topRank);
+    const weakPair = pairs.length > 0 && !topPair;
+
+    let tier;
+    if (made.category >= 6 || made.category >= 8) tier = 4;              // Full, póker, SF
+    else if (made.category === 5) tier = boardTexture.flushCompleted ? 3 : 4;
+    else if (made.category === 4) tier = (boardTexture.straightCompleted || boardTexture.flushCompleted) ? 3 : 4;
+    else if (made.category === 3 || made.category === 2) tier = 3;       // Trío / doble pareja
+    else if (made.category === 1) tier = (topPair && !boardTexture.scary) ? 2 : 1;
+    else tier = draws.outs >= 8 ? 1 : 0;                                // Aire o proyecto débil
+
+    // En river los proyectos fallidos ya no mejoran: se castigan con fuerza.
+    if (this.street === 'river' && made.category <= 1) tier = Math.min(tier, 1);
+    if (boardTexture.flushCompleted && made.category < 5) tier = Math.min(tier, 1);
+    if (boardTexture.straightCompleted && made.category < 4) tier = Math.min(tier, 1);
+
+    return {
+      tier,
+      category: made.category,
+      madeName: made.name,
+      outs: draws.outs,
+      topPair,
+      weakPair,
+      boardTexture
+    };
+  },
+
+  /** Fold equity real rival: sizing + compromiso + perfil + textura. */
+  computeBotFoldProbability(bot, handInfo) {
+    const prof = bot.profile || {};
+    const toCall = Math.max(0, this.currentBet - bot.bet);
+    const potBeforeBet = Math.max(1, this.pot - toCall);
+    const betToPotRatio = toCall / potBeforeBet;
+    const stackCommitment = (bot.bet + toCall) / Math.max(1, bot.bet + bot.stack + toCall);
+    const facingAllIn = this.currentBet >= bot.bet + bot.stack;
+    const pressure = Math.min(1, Math.max(0, (betToPotRatio - 0.25) / 0.75)) * 0.30
+      + (facingAllIn ? 0.10 : 0)
+      + stackCommitment * 0.06;
+    const mdf = potBeforeBet / (potBeforeBet + toCall);
+    const baseFold = typeof prof.foldToBet === 'number' ? prof.foldToBet : 0.42;
+    const defense = handInfo.tier / 4;
+
+    let foldProb;
+    let profileCap = 0.95;
+    if (prof.id === 'station') {
+      // Calling Station: paga mucho, pero con aire y all-in hay un límite.
+      foldProb = baseFold * 0.45 + pressure * 0.25 - defense * 0.20;
+      profileCap = 0.35;
+    } else if (prof.id === 'maniac') {
+      foldProb = baseFold * 0.55 + pressure * 0.35 - defense * 0.25;
+      profileCap = 0.45;
+    } else if (prof.id === 'gto' || prof.id === 'tag' || prof.id === 'shark') {
+      // Núcleo equilibrado: defiende según MDF y castiga el sizing del Héroe.
+      foldProb = (1 - mdf) * 0.85 + pressure - defense * 0.35;
+    } else if (prof.id === 'nit' || prof.id === 'weaktight') {
+      foldProb = baseFold + pressure * 0.8 + (handInfo.tier <= 0 ? 0.12 : 0) - defense * 0.25;
+    } else {
+      foldProb = baseFold + pressure * 0.55 - defense * 0.20;
+    }
+
+    if (handInfo.tier <= 1 && handInfo.boardTexture.scary) foldProb += 0.12;
+    if (this.street === 'river' && handInfo.tier <= 0) foldProb += 0.10;
+    if (handInfo.tier >= 3) foldProb *= 0.35;
+    else if (handInfo.tier === 2) foldProb *= 0.70;
+
+    // El techo del perfil se aplica AL FINAL: la textura no puede convertir
+    // a un Calling Station en un Nit ni romper el límite del Maníaco.
+    foldProb = Math.min(profileCap, 0.95, Math.max(0.03, foldProb));
+    return { foldProb, betToPotRatio, stackCommitment, mdf };
+  },
+
   executeBotTurn(bot) {
     if (!this.handInProgress) return;
     const prof = bot.profile;
@@ -839,7 +1027,7 @@ const game = {
     }
 
     const potOdds = toCall > 0 ? toCall / (this.pot + toCall) : 0;
-    const effectiveStrength = strength + prof.callLoose;
+    let effectiveStrength = strength + prof.callLoose;
 
     let chosen = 'fold';
     let targetBet = 0;
@@ -856,10 +1044,27 @@ const game = {
         chosen = 'call';
       }
     } else {
-      if (this.street === 'preflop' && this.currentBet === this.bb && strength < (1 - prof.vpip) && rng > 0.12) {
-        chosen = 'fold';
-      } else if (effectiveStrength >= potOdds + 0.06 || (rng < prof.bluffFreq * 0.45 && this.street !== 'preflop')) {
-        if ((strength > (1 - prof.pfr * 0.9) || rng < prof.bluffFreq * 0.5) && bot.stack > toCall * 2 && rng < prof.agg) {
+      const postflop = this.board.length >= 3;
+      let forcedFold = false;
+      let pressureInfo = null;
+      let handInfo = null;
+      let foldRoll = 1;
+
+      if (this.street === 'preflop' && this.currentBet === this.bb
+          && strength < (1 - prof.vpip) && rng > 0.12) {
+        forcedFold = true;
+      } else if (postflop) {
+        handInfo = this.analyzeBotHand(bot);
+        effectiveStrength = Math.max(effectiveStrength, (handInfo.tier / 4) * 0.85);
+        pressureInfo = this.computeBotFoldProbability(bot, handInfo);
+        foldRoll = Math.random();
+        forcedFold = foldRoll < pressureInfo.foldProb;
+      }
+
+      if (!forcedFold && (effectiveStrength >= potOdds + 0.06
+          || (rng < prof.bluffFreq * 0.45 && this.street !== 'preflop'))) {
+        if ((strength > (1 - prof.pfr * 0.9) || rng < prof.bluffFreq * 0.5)
+            && bot.stack > toCall * 2 && rng < prof.agg) {
           chosen = 'raise';
           const raiseAmt = Math.max(this.minRaise, Math.round(this.currentBet * 2.5 + this.pot * 0.35));
           targetBet = Math.min(bot.bet + bot.stack, raiseAmt);
@@ -869,6 +1074,20 @@ const game = {
       } else {
         chosen = 'fold';
       }
+
+      this.lastBotDecision = {
+        bot: bot.name,
+        profile: prof.style || prof.id,
+        street: this.street,
+        handTier: handInfo ? handInfo.tier : null,
+        madeName: handInfo ? handInfo.madeName : null,
+        boardTexture: handInfo ? handInfo.boardTexture : null,
+        betToPotRatio: pressureInfo ? pressureInfo.betToPotRatio : null,
+        stackCommitment: pressureInfo ? pressureInfo.stackCommitment : null,
+        foldProb: pressureInfo ? pressureInfo.foldProb : null,
+        foldRoll,
+        chosen
+      };
     }
 
     if (chosen === 'fold') {

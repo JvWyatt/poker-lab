@@ -14,10 +14,10 @@ js/
   sound.js                 Motor de sonidos sintetizados (Web Audio API)
   poker-engine.js          Baraja, evaluador de manos, outs y Monte Carlo
   ui.js                    Render de cartas, toasts, badges y navegación
-  academia.js              Ruta 0 → pro: idea clara, ejemplo, por qué y desafío
+  academia.js              12 micro-clases interactivas sobre mini-mesa determinista
   lab.js                   Laboratorio (equity, outs, EV)
   game.js                  Mesa, bots, reloj, calificación EV y feedback
-  gto.js                   Matriz de rangos GTO
+  gto.js                   Frecuencias mixtas GTO estilo Preflop Vision + matriz 13x13
   arena.js                 Pantalla completa (Fullscreen API + fallback CSS)
   grade-popup.js           Pop-up de calificación monocromático (3.5 s)
   eyeball-hud.js           HUD flotante «ojito» street-aware
@@ -56,17 +56,33 @@ Tailwind se carga desde CDN, por lo que hace falta conexión a internet.
   partidas. Expanden el tapete, el HUD, los pop-ups y la botonera; la barra
   superior de la arena muestra ciegas, audio y un único botón **✕** para salir.
   Usa la Fullscreen API nativa con fallback CSS (`is-arena`); `Esc` también sale.
-- **HUD «ojito» 👁️ / 🙈:** botón flotante abajo a la derecha de la mesa que
-  despliega una única columna vertical de tarjetitas hacia arriba
-  (`grid-cols-1`, glassmorphism), sin expansión horizontal. Los cuadritos de
-  datos son un 50 % más pequeños (~44 px, antes ~94 px); el botón se mantiene igual.
-  - Preflop: mano, posición (UTG/MP/CO/BTN/SB/BB) y contexto (RFI o facing
-    raise), con frecuencias GTO de RAISE/CALL/FOLD. Sólo se muestran las
-    acciones con porcentaje `> 0%`.
+- **HUD «ojito» 👁️ / 🙈:** integrado en la **barra inferior de acciones**, a la
+  misma altura que `Apostar/Subir`, `Pasar/Pagar` y `Retirarse`. El botón no
+  flota sobre el tapete: abre tarjetitas horizontales (`h-9`, `min-w-[58px]`)
+  dentro de `#game-controls-panel`, con glassmorphism y alineación exacta.
+  - Preflop: frecuencias RAISE/CALL/FOLD de `GTOEngine`, con posición,
+    secuencia (RFI / vs apertura / vs 3-Bet / defensa BB), tamaño de apertura,
+    stack y MDF reales de la mano. Sólo se muestran acciones con `% > 0`.
   - Postflop: sin GTO preflop; muestra EQUITY, POT ODDS, OUTS (sólo Flop/Turn)
     y EV MAX en BB, calculados en el turno del Héroe.
   - Sólo cuadritos de datos: sin textos explicativos; el detalle sigue en el
     Coach cuando se scrollea hasta la calificación de la jugada.
+- **GTO de frecuencias mixtas (estilo Preflop Vision):** `GTOEngine` es la
+  única fuente de verdad de la matriz 13×13, el ojito y `gradeHeroMove`.
+  Solo `AA-TT`, `AK`, `AQs` y la basura absoluta son puros (100 %); el resto
+  de manos (AJo, ATo, KQo, KJs, QJs, JTs, 98s, 22-66, A5s-A2s...) devuelve
+  mezclas graduales por posición. La vista GTO añade filtros de secuencia
+  (RFI / vs open / vs 3-Bet / defensa BB), tamaño (2 / 2.5 / 3 BB) y stack
+  (25 / 50 / 100 / 150 BB), con defensa ajustada por MDF.
+  Es una aproximación determinista inspirada en la filosofía de las tablas
+  de ZerosPoker; **no** son las tablas propietarias de su solver ni requieren
+  suscripción. El EV preflop se matiza con la misma frecuencia para que el HUD
+  y la calificación nunca se contradigan.
+- **Fold equity de bots en Turn/River:** decisión con presión por tamaño
+  (`betToPotRatio`), compromiso de stack, textura del board (color/escalera
+  completadas) y tier de mano hecha. Nit/Weak-Tight foldean fácil; GTO/TAG
+  defienden según MDF; Calling Station y Maníaco tienen topes (0.35 / 0.45).
+  `game.lastBotDecision` expone el cálculo para depuración.
 - **Fichas visibles:** montoncitos de fichas para la apuesta de cada jugador y
   para el bote, tanto en vista normal como en Fullscreen Arena. Usan los assets
   de `assets/Chips/` (hoja `ChipsA_Outline`, 5×2 stacks de 64×72 px); se
@@ -102,21 +118,26 @@ Tailwind se carga desde CDN, por lo que hace falta conexión a internet.
   Desaparece a los 3.5 s. La explicación EV detallada y la comparativa por
   acción siguen únicamente en el panel del Coach.
 
-## Academia (ruta 0 → pro)
+## Academia (12 micro-clases en mesa, de 0 a pro)
 
-Seis pasos ordenados de Básico a Avanzado. Cada lección usa siempre la misma
-estructura, pensada para entenderse sin conocimientos previos:
+Cada clase carga una **mini-mesa determinista**: cartas fijas, board, bote,
+fichas y la acción previa del rival. No hay aleatoriedad: el escenario es
+idéntico siempre para que se pueda replicar y mantener.
 
-1. **💡 En palabras simples:** una frase con la idea central.
-2. **🔢 Ejemplo práctico:** números concretos, paso a paso (bote 100, apuesta
-   50, 8 outs, SPR 2...).
-3. **🧠 ¿Por qué pasa?:** la causa de esa regla y la cuenta que la respalda,
-   sin saltos ni jerga innecesaria.
-4. **🎯 En la mesa:** una frase de aplicación inmediata.
-5. **Desafío:** una pregunta con tres respuestas; cada respuesta incorrecta
-   explica el error y la correcta explica por qué es la decisión óptima.
+- **Iniciación:** jerarquía de manos comparando A♠A♦ vs K♠K♦; posiciones y
+  ciegas (BTN/SB/BB/UTG); acciones básicas (Check/Call/Bet/Raise/Fold).
+- **Básico:** manos iniciales por posición (K9o en UTG vs BTN); Pot Odds con
+  bote 100 y apuesta 50 sobre proyecto de color; outs y regla del 4 y del 2
+  con cartas marcadas en el tapete.
+- **Intermedio:** ventaja de posición desde BTN; SPR y compromiso con Top Pair;
+  semi-faroles con color + escalera.
+- **Avanzado:** C-Bet según textura (`K72r` vs `876ss`); farol en River con
+  bloqueador; ajustes contra Calling Station y Nit.
 
-La lista muestra el paso (`Paso 1/6` ... `Paso 6/6`) y el progreso guardado.
-Al acertar aparece un botón **Siguiente paso →** que encadena con la siguiente
-lección; al completar la última se muestra `🏆 ¡Ruta completa! De 0 a pro.`
-Los filtros **Todos / Básico / Intermedio / Avanzado** siguen disponibles.
+Flujo de cada clase: guía de 2–3 líneas → decisión con botones reales de póker
+(`Fold`, `Check/Call`, `Bet/Raise` o elegir la mano ganadora) → feedback
+inmediato sobre el tapete con el cálculo exacto → desbloqueo de la siguiente.
+El progreso se guarda en `appState.academia.completedIds` y la lista muestra
+el paso (`Clase 1/12` ... `Clase 12/12`). Filtros: **Todos / Iniciación /
+Básico / Intermedio / Avanzado**. Al completar la última se muestra
+`🏆 ¡Ruta completa! De 0 a pro.`
