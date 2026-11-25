@@ -1,0 +1,190 @@
+    body {
+      background-color: #080c14;
+      color: #f1f5f9;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0c121e; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+    /* Playing Card Styling */
+    .playing-card {
+      background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%);
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+      user-select: none;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .playing-card:hover {
+      transform: translateY(-2px);
+    }
+    .playing-card-back {
+      background: repeating-linear-gradient(
+        45deg,
+        #1e293b,
+        #1e293b 5px,
+        #0f172a 5px,
+        #0f172a 10px
+      );
+      border: 2px solid #475569;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
+    }
+
+    /* Poker Felt Table */
+    .poker-felt {
+      background: radial-gradient(ellipse at center, #065f46 0%, #064e3b 58%, #022c22 100%);
+      box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.8), 0 20px 50px rgba(0, 0, 0, 0.7);
+      border: 12px solid #1e293b;
+      outline: 2px solid #334155;
+    }
+
+    /* Range Slider Styling */
+    input[type="range"] {
+      accent-color: #10b981;
+    }
+
+    @keyframes pulseFast {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.45; }
+    }
+    .animate-pulse-fast {
+      animation: pulseFast 0.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    /* Feedback visual al pulsar los botones de acción (buena / normal / mala) */
+    @keyframes actionFlashGood {
+      0%   { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.85); transform: scale(1); }
+      35%  { transform: scale(1.04); }
+      100% { box-shadow: 0 0 0 14px rgba(16, 185, 129, 0); transform: scale(1); }
+    }
+    @keyframes actionFlashNormal {
+      0%   { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.8); transform: scale(1); }
+      35%  { transform: scale(1.03); }
+      100% { box-shadow: 0 0 0 14px rgba(245, 158, 11, 0); transform: scale(1); }
+    }
+    @keyframes actionFlashBad {
+      0%   { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.85); transform: scale(1); }
+      20%  { transform: translateX(-3px); }
+      40%  { transform: translateX(3px); }
+      100% { box-shadow: 0 0 0 14px rgba(244, 63, 94, 0); transform: translateX(0); }
+    }
+    .action-flash-good   { animation: actionFlashGood 0.55s ease-out; }
+    .action-flash-normal { animation: actionFlashNormal 0.55s ease-out; }
+    .action-flash-bad    { animation: actionFlashBad 0.55s ease-out; }
+
+    /* ======================================================================
+       FULLSCREEN ARENA — tapete, HUD, pop-ups y botonera a pantalla completa
+    ====================================================================== */
+    #game-arena.is-arena,
+    #game-arena:fullscreen {
+      position: fixed;
+      inset: 0;
+      z-index: 70;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      width: 100%;
+      height: 100%;
+      max-width: none;
+      max-height: none;
+      margin: 0;
+      padding: 0.5rem;
+      overflow: hidden;
+      background: #050810;
+      border-radius: 0;
+    }
+    #game-arena.is-arena .arena-topbar { display: flex; }
+    #game-arena.is-arena .arena-table-wrap {
+      flex: 1 1 auto;
+      min-height: 0;
+      height: auto !important;
+      width: 100%;
+    }
+    #game-arena.is-arena .poker-felt {
+      width: min(96%, 1500px);
+      height: 88%;
+      border-radius: 8% / 12%;
+      border-width: 8px;
+    }
+    #game-arena.is-arena #game-controls-panel {
+      flex: 0 0 auto;
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(12px);
+      border-color: rgba(148, 163, 184, 0.25);
+    }
+
+    /* Grade pop-up (chess/video-game style, monochrome label + percentage) */
+    @keyframes gradePopIn {
+      0%   { opacity: 0; transform: translateY(-14px) scale(0.88); }
+      65%  { opacity: 1; transform: translateY(2px) scale(1.04); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes gradePopOut {
+      from { opacity: 1; transform: translateY(0) scale(1); }
+      to   { opacity: 0; transform: translateY(-10px) scale(0.96); }
+    }
+    .grade-pop { animation: gradePopIn 0.3s cubic-bezier(0.2, 0.9, 0.25, 1.2) both; }
+    .grade-pop.is-leaving { animation: gradePopOut 0.3s ease-in forwards; }
+    .grade-pop-label,
+    .grade-pop-pct { color: inherit; }
+
+    /* Eyeball HUD cards unfold upwards */
+    @keyframes hudCardIn {
+      from { opacity: 0; transform: translateY(8px) scale(0.95); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .hud-card { animation: hudCardIn 0.22s ease-out both; }
+
+    /* Visible chip piles using the provided 5x2 sprite sheet (teal background removed) */
+    .chip-pile {
+      position: relative;
+      display: block;
+      width: 32px;
+      pointer-events: none;
+      filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.75));
+    }
+    .chip-sprite {
+      --col: 0;
+      --row: 0;
+      --u: 32px;
+      --v: 36px;
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      display: block;
+      width: var(--u);
+      height: var(--v);
+      background-image: url('../assets/Chips/chips-outline-transparent.png');
+      background-repeat: no-repeat;
+      background-size: calc(var(--u) * 5) calc(var(--v) * 2);
+      background-position: calc(var(--col) * var(--u) * -1) calc(var(--row) * var(--v) * -1);
+    }
+    /* Sprite sheet cells: row 0 = gris/rojo/verde/azul/negro, row 1 = amarillo/naranja/morado/rosa/marrón */
+    .chip-sprite--gray   { --col: 0; --row: 0; }
+    .chip-sprite--red    { --col: 1; --row: 0; }
+    .chip-sprite--green  { --col: 2; --row: 0; }
+    .chip-sprite--blue   { --col: 3; --row: 0; }
+    .chip-sprite--black  { --col: 4; --row: 0; }
+    .chip-sprite--yellow { --col: 0; --row: 1; }
+    .chip-sprite--orange { --col: 1; --row: 1; }
+    .chip-sprite--purple { --col: 2; --row: 1; }
+    .chip-sprite--pink   { --col: 3; --row: 1; }
+    .chip-sprite--brown  { --col: 4; --row: 1; }
+
+    .chip-amount {
+      font-size: 10px;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      color: #fcd34d;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .grade-pop,
+      .grade-pop.is-leaving,
+      .hud-card { animation: none; }
+    }
