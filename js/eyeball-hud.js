@@ -138,17 +138,18 @@ const eyeballHUD = {
 
   paint(container, items) {
     // Despliegue estrictamente vertical: una columna de ancho, las filas necesarias hacia arriba.
+    const gridClass = 'grid grid-cols-1 gap-[3px]';
     if (items.length === 0) {
-      container.className = 'grid grid-cols-1 gap-1.5';
+      container.className = gridClass;
       container.innerHTML = '';
       return;
     }
-    container.className = 'grid grid-cols-1 gap-1.5';
+    container.className = gridClass;
     container.innerHTML = items.map((item, i) => `
-      <div class="hud-card aspect-square rounded-xl border bg-slate-950/85 backdrop-blur-md px-1 py-1 flex flex-col items-center justify-center ${item.tone}"
+      <div class="hud-card aspect-square rounded-lg border bg-slate-950/85 backdrop-blur-md px-0 py-0.5 flex flex-col items-center justify-center ${item.tone}"
            style="animation-delay: ${i * 45}ms">
-        <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">${item.key}</span>
-        <span class="text-[13px] sm:text-sm font-extrabold font-mono leading-tight whitespace-nowrap">${item.value}</span>
+        <span class="text-[7px] font-bold uppercase tracking-wide text-slate-400 whitespace-nowrap">${item.key}</span>
+        <span class="text-[8px] font-extrabold font-mono leading-none tracking-tight whitespace-nowrap">${item.value}</span>
       </div>
     `).join('');
   }

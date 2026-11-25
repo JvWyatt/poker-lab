@@ -58,7 +58,8 @@ Tailwind se carga desde CDN, por lo que hace falta conexión a internet.
   Usa la Fullscreen API nativa con fallback CSS (`is-arena`); `Esc` también sale.
 - **HUD «ojito» 👁️ / 🙈:** botón flotante abajo a la derecha de la mesa que
   despliega una única columna vertical de tarjetitas hacia arriba
-  (`grid-cols-1`, glassmorphism), sin expansión horizontal.
+  (`grid-cols-1`, glassmorphism), sin expansión horizontal. Los cuadritos de
+  datos son un 50 % más pequeños (~44 px, antes ~94 px); el botón se mantiene igual.
   - Preflop: mano, posición (UTG/MP/CO/BTN/SB/BB) y contexto (RFI o facing
     raise), con frecuencias GTO de RAISE/CALL/FOLD. Sólo se muestran las
     acciones con porcentaje `> 0%`.
