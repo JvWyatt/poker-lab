@@ -27,8 +27,10 @@ const CHIP_DENOMINATIONS = [
   { value: 5,    color: 'red',    name: 'rojo' },
   { value: 1,    color: 'gray',   name: 'gris' }
 ];
-const CHIP_STACK_STEP = 8;  // px visibles de cada ficha al apilar
-const CHIP_STACK_MAX = 10;  // tope de fichas dibujadas por montón
+const CHIP_STACK_STEP = 8;       // px visibles de cada ficha al apilar
+const CHIP_STACK_MAX = 5;        // máximo de fichas por montón
+const CHIP_STACKS_PLAYER = 3;    // montones permitidos en la apuesta de cada jugador
+const CHIP_STACKS_POT = 5;       // montones permitidos en el bote
 
 /**
  * Coordenadas exactas en sentido horario alrededor de la mesa ovalada
@@ -997,30 +999,45 @@ const game = {
   },
 
   // Descomposición real: el color de cada ficha dice su valor (2 azules = 200).
-  chipPileHTML(amount) {
+  // Máximo 5 fichas por montón y varios montones en fila; si no caben, una tarjeta
+  // con el importe. El all-in se marca con una tarjeta triangular.
+  chipPileHTML(amount, maxStacks = CHIP_STACKS_PLAYER, allIn = false, showAmount = true) {
     const total = Math.max(0, Math.floor(amount || 0));
-    if (total === 0) return '';
+    if (total === 0 && !allIn) return '';
+
+    const card = (triangle) => `
+      <div class="chip-card ${triangle ? 'chip-card--allin' : ''}" title="${triangle ? 'All-in' : 'Importe'} de ${total} fichas">
+        ${triangle ? '<span class="chip-card-unit">ALL-IN</span>' : ''}
+        <span class="chip-card-value">${total}</span>
+        ${triangle ? '' : '<span class="chip-card-unit">FICHAS</span>'}
+      </div>`;
+
+    if (allIn) return card(true);
 
     let remaining = total;
     const chips = [];
-    const parts = [];
-
     for (const denom of CHIP_DENOMINATIONS) {
-      const count = Math.min(Math.floor(remaining / denom.value), CHIP_STACK_MAX - chips.length);
+      const count = Math.floor(remaining / denom.value);
       if (count === 0) continue;
       remaining -= count * denom.value;
       for (let i = 0; i < count; i++) chips.push(denom);
-      parts.push(`${count}×${denom.value} (${denom.name})`);
     }
-    if (remaining > 0) parts.push(`+ ${remaining} más`);
-    if (chips.length === 0) return '';
 
-    const height = 36 + (chips.length - 1) * CHIP_STACK_STEP;
-    const sprites = chips.map((d, i) =>
-      `<span class="chip-sprite chip-sprite--${d.color}" style="bottom:${i * CHIP_STACK_STEP}px"></span>`
-    ).join('');
+    if (chips.length === 0 || chips.length > maxStacks * CHIP_STACK_MAX) return card(false);
 
-    return `<span class="chip-pile" style="height:${height}px" title="${total} = ${parts.join(' + ')}">${sprites}</span>`;
+    const stacks = [];
+    for (let i = 0; i < chips.length; i += CHIP_STACK_MAX) {
+      const group = chips.slice(i, i + CHIP_STACK_MAX);
+      const height = 36 + (group.length - 1) * CHIP_STACK_STEP;
+      const sprites = group.map((d, j) =>
+        `<span class="chip-sprite chip-sprite--${d.color}" style="bottom:${j * CHIP_STACK_STEP}px"></span>`
+      ).join('');
+      const breakdown = group.map(d => d.value).join(' + ');
+      stacks.push(`<span class="chip-pile" style="height:${height}px" title="${group.length} fichas: ${breakdown}">${sprites}</span>`);
+    }
+
+    const label = showAmount ? `<span class="chip-amount">${total}</span>` : '';
+    return `<div class="chip-stacks">${stacks.join('')}</div>${label}`;
   },
 
   renderTable() {
@@ -1028,7 +1045,7 @@ const game = {
     document.getElementById('game-street-badge').textContent = this.street.toUpperCase();
 
     const potChips = document.getElementById('pot-chip-stack');
-    if (potChips) potChips.innerHTML = this.chipPileHTML(this.pot);
+    if (potChips) potChips.innerHTML = this.chipPileHTML(this.pot, CHIP_STACKS_POT, false, false);
 
     // Community Board
     const boardBox = document.getElementById('game-board-cards');
@@ -1058,13 +1075,12 @@ const game = {
       const posLabel = this.getSeatPositionLabel(p.seat);
 
       // Interior Chip & Dealer Button Layer
-      if (isDealer || p.bet > 0) {
+      if (isDealer || p.bet > 0 || p.allIn) {
         betsHTML += `
           <div style="${coords.chip}" class="absolute -translate-x-1/2 -translate-y-1/2 flex items-center gap-1">
             ${isDealer ? '<span class="w-5 h-5 rounded-full bg-amber-400 text-slate-950 font-extrabold text-[10px] flex items-center justify-center shadow-md border border-amber-200">D</span>' : ''}
-            ${p.bet > 0 ? `<div class="flex flex-col items-center gap-0.5">
-              ${this.chipPileHTML(p.bet)}
-              <span class="chip-amount">${p.bet}</span>
+            ${p.bet > 0 || p.allIn ? `<div class="flex flex-col items-center gap-0.5">
+              ${this.chipPileHTML(p.bet, CHIP_STACKS_PLAYER, p.allIn)}
             </div>` : ''}
           </div>
         `;

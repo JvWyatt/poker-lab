@@ -140,6 +140,12 @@
     .hud-card { animation: hudCardIn 0.22s ease-out both; }
 
     /* Visible chip piles using the provided 5x2 sprite sheet (teal background removed) */
+    .chip-stacks {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      pointer-events: none;
+    }
     .chip-pile {
       position: relative;
       display: block;
@@ -181,6 +187,39 @@
       font-family: 'JetBrains Mono', monospace;
       color: #fcd34d;
       text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+    }
+
+    /* Fallback when the amount no longer fits in the allowed chip stacks */
+    .chip-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-width: 56px;
+      padding: 3px 7px;
+      border-radius: 7px;
+      border: 1px solid rgba(253, 230, 138, 0.75);
+      background: linear-gradient(#f59e0b, #b45309);
+      color: #0f172a;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.7);
+      font-family: 'JetBrains Mono', monospace;
+      line-height: 1.05;
+      pointer-events: none;
+    }
+    .chip-card-value { font-size: 13px; font-weight: 900; }
+    .chip-card-unit  { font-size: 7px; font-weight: 800; letter-spacing: 0.08em; }
+
+    /* All-in: triangular card with the shoved amount */
+    .chip-card--allin {
+      width: 68px;
+      height: 52px;
+      min-width: 0;
+      padding: 0 0 7px;
+      border: 0;
+      border-radius: 0;
+      justify-content: flex-end;
+      clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+      background: linear-gradient(#fbbf24, #b45309);
     }
 
     @media (prefers-reduced-motion: reduce) {

@@ -76,6 +76,10 @@ Tailwind se carga desde CDN, por lo que hace falta conexión a internet.
   greedy, así que 2 fichas azules significan siempre 200. El tooltip de cada
   montón muestra el desglose. Todas las fichas miden lo mismo (32×36 px),
   incluidas las del bote: los montones crecen apilando más fichas.
+  Cada montón tiene como máximo 5 fichas; si sobran, se forma otro montón al
+  lado (hasta 3 en cada jugador y 5 en el bote). Si aún no caben, se muestra una
+  tarjeta con el importe en fichas. El all-in se representa con una tarjeta
+  triangular con el importe.
 - **Ciclo de mano:** al decidirse el ganador se resalta su asiento y se reparte
   una nueva mano automáticamente tras 10 s. El botón **🃏 Nueva Mano** debajo
   del ganador permite saltarse la espera (también dentro de la arena).
