@@ -1,25 +1,20 @@
 /* ============================================================================
-   5. MÓDULO: ACADEMIA 2.0 — PROTOTIPO DE RUTA POR PANTALLAS
-   Mapa (12 clases / 5 módulos) → vista de clase a pantalla completa →
-   5 pasos fijos por clase. Tres formatos:
-     exhibit = mostrar con revelación guiada, sin preguntas
-     duel    = enfrentar 5 cartas contra 5 cartas
-     case    = caso fijo con decisión real y 5 ejemplos
+   5. MÓDULO: ACADEMIA — RUTA POR PANTALLAS
+   Mapa (12 clases / 5 niveles) → vista de clase a pantalla completa →
+   5 pasos fijos por clase. Los formatos internos (exhibit, duel, case)
+   sólo organizan el contenido; no se exponen como etiquetas.
    Ruta completa: las 12 clases tienen 5 pasos fijos y son jugables.
 ============================================================================ */
 const SUIT_SYMBOL = { s: '♠', h: '♥', d: '♦', c: '♣' };
 const RED_SUITS = new Set(['h', 'd']);
 
 const MODULES = [
-  { id: 0, name: 'Cero absoluto', subtitle: 'Sin saber nada', tone: 'sky' },
-  { id: 1, name: 'Mecánica de la mesa', subtitle: 'Ciegas, orden y acciones', tone: 'emerald' },
+  { id: 0, name: 'Fundamentos', subtitle: 'Jerarquía y showdown', tone: 'sky' },
+  { id: 1, name: 'Mesa', subtitle: 'Ciegas, orden y acciones', tone: 'emerald' },
   { id: 2, name: 'Números', subtitle: 'Probabilidades y equity', tone: 'amber' },
   { id: 3, name: 'Táctica', subtitle: 'Posición, boards y tamaños', tone: 'orange' },
-  { id: 4, name: 'Estrategia', subtitle: 'Faroles, GTO y explotación', tone: 'purple' }
+  { id: 4, name: 'Estrategia', subtitle: 'Cierre, GTO y explotación', tone: 'purple' }
 ];
-
-const FORMAT_LABEL = { exhibit: 'Mostrar', duel: 'Duelo', case: '5 casos' };
-const FORMAT_ICON = { exhibit: '👀', duel: '⚔️', case: '🎯' };
 
 const E = (title, table, lines, revealCount, showdown = null) => ({ kind: 'exhibit', title, table, lines, revealCount, showdown });
 const D = (title, board, hands, winner, why) => ({ kind: 'duel', title, board, hands, winner, why });
@@ -51,55 +46,8 @@ const BASE_BOARD = ['Ks', 'Qd', '7s', '2c', '9h'];
 --------------------------------------------------------------------------- */
 const LESSONS_DATA = [
   {
-    id: 'fundamentos', number: 1, module: 0, format: 'exhibit',
-    title: '2 cartas + 5 comunitarias',
-    subtitle: 'Cómo se forma una mano de 5',
-    steps: [
-      E('Tus 2 cartas privadas',
-        { street: 'PREFLOP', board: [], pot: 3, hero: ['As', '7d'], villain: null, villainHidden: true, heroPos: 'BTN', villainPos: 'BB', villainAction: 'Ciegas 1 / 2', note: 'Sólo tú ves A♠ 7♦' },
-        [
-          'En Texas Hold’em cada jugador recibe 2 cartas privadas: son tuyas, nadie más las ve.',
-          'Con A♠ 7♦ ya tienes una carta alta y un posible proyecto, pero todavía no puedes ganar.',
-          'Faltan las cartas comunitarias, que se pondrán boca arriba sobre la mesa.'
-        ], 0),
-      E('El Flop: 3 cartas comunitarias',
-        { street: 'FLOP', board: BASE_BOARD, pot: 40, hero: ['As', '7d'], villain: ['Kh', 'Qc'], villainProfile: 'TAG', villainAction: 'Pasa (Check)', note: 'Ahora hay 5 cartas visibles' },
-        [
-          'Tras la primera ronda de apuestas se revelan 3 cartas comunitarias: K♠ Q♦ 7♠.',
-          'Éstas son de todos: el rival puede usarlas igual que tú.',
-          'Con tus 2 cartas y 3 comunitarias ya puedes elegir 5 cartas, pero aún faltan 2.'
-        ], 3),
-      E('El Turn: 4ª comunitaria',
-        { street: 'TURN', board: BASE_BOARD, pot: 80, hero: ['As', '7d'], villain: ['Kh', 'Qc'], villainProfile: 'TAG', villainAction: 'Pasa (Check)', note: '4 cartas sobre la mesa' },
-        [
-          'La cuarta carta comunitaria es el Turn: 2♣.',
-          'La mesa crece y también cambia la fuerza de tu mano: ahora tienes un par de 7s.',
-          'Después de esta ronda vendrá una última carta.'
-        ], 4),
-      E('El River: 5ª y última comunitaria',
-        { street: 'RIVER', board: BASE_BOARD, pot: 140, hero: ['As', '7d'], villain: ['Kh', 'Qc'], villainProfile: 'TAG', villainAction: 'Pasa (Check)', note: 'Ya no quedan cartas por venir' },
-        [
-          'La quinta carta comunitaria es el River: 9♥. Ya no viene ninguna carta más.',
-          'Cada jugador tiene 7 cartas disponibles, pero debe formar la mejor mano posible de 5.',
-          'Esa es la regla central: 2 propias + 5 comunitarias → mejor combinación de 5.'
-        ], 5),
-      E('Así se decide el ganador',
-        { street: 'SHOWDOWN', board: BASE_BOARD, pot: 140, hero: ['As', '7d'], villain: ['Kh', 'Qc'], note: 'Compara las mejores 5 cartas' },
-        [
-          'En el showdown se comparan las mejores 5 cartas de cada jugador.',
-          'El evaluador elige automáticamente la mejor combinación de 5 entre las 7 disponibles.',
-          'Gana el tipo de mano más alto; si hay empate, se comparan los kickers.'
-        ], 5, {
-          board: BASE_BOARD,
-          hands: [{ label: 'TÚ', cards: ['As', '7d'] }, { label: 'RIVAL', cards: ['Kh', 'Qc'] }],
-          winner: 'B',
-          why: 'Tú tienes una pareja de 7s. El rival tiene doble pareja: Reyes y Reinas, con 9 de kicker. El doble pareja supera siempre a una sola pareja. Esta comparación directa es el tema de la clase 3.'
-        })
-    ]
-  },
-  {
-    id: 'ranking', number: 2, module: 0, format: 'exhibit',
-    title: 'Ranking de manos', subtitle: 'De carta alta a escalera real',
+    id: 'ranking', number: 1, module: 0, format: 'exhibit',
+    title: 'Jerarquía de manos', subtitle: 'Orden de fuerza, de carta alta a escalera real',
     steps: [
       E('Carta alta contra pareja',
         { street: 'SHOWDOWN', board: ['Ks', '6d', '9c', '2h', '4s'], pot: 100, hero: ['As', '5c'], villain: ['7s', '7h'], note: 'Carta alta A vs par de 7s' },
@@ -164,29 +112,29 @@ const LESSONS_DATA = [
     ]
   },
   {
-    id: 'duelos', number: 3, module: 0, format: 'duel',
-    title: 'Duelos de 5 cartas', subtitle: 'Cuál gana y por qué',
+    id: 'duelos', number: 2, module: 0, format: 'duel',
+    title: 'Comparación de manos', subtitle: 'Cómo decidir un showdown',
     steps: [
-      D('Duelo 1 · Par de Ases contra par de Reyes', ['Qc', 'Jd', '7s', '2c', '9h'],
+      D('Par de Ases contra par de Reyes', ['Qc', 'Jd', '7s', '2c', '9h'],
         [{ label: 'MANO A', cards: ['As', 'Ad'] }, { label: 'MANO B', cards: ['Ks', 'Kd'] }], 'A',
         'Ambas son una pareja. Gana la del par más alto: Ases por encima de Reyes. Los kickers no se miran cuando el par ya es distinto.'),
-      D('Duelo 2 · El segundo par decide', ['Ac', 'Ad', '7h', '2c', '9s'],
+      D('El segundo par decide entre dos dobles parejas', ['Ac', 'Ad', '7h', '2c', '9s'],
         [{ label: 'MANO A', cards: ['Qs', 'Qd'] }, { label: 'MANO B', cards: ['Ks', 'Kd'] }], 'B',
         'Las dos forman doble pareja con los Ases del board. Se decide por el segundo par: Reyes superan Reinas.'),
-      D('Duelo 3 · Trío contra doble pareja', ['Ac', 'Ad', '7s', '2c', '9h'],
+      D('Trío contra doble pareja', ['Ac', 'Ad', '7s', '2c', '9h'],
         [{ label: 'MANO A', cards: ['As', '5d'] }, { label: 'MANO B', cards: ['Ks', 'Kd'] }], 'A',
         'El board trae A♣ A♦. La Mano A completa trío de Ases; la Mano B completa doble pareja de Ases y Reyes. Tres cartas iguales valen más que dos pares: gana el trío.'),
-      D('Duelo 4 · Escalera contra trío', ['5c', '6d', '7h', '2c', '9s'],
+      D('Escalera contra trío', ['5c', '6d', '7h', '2c', '9s'],
         [{ label: 'MANO A', cards: ['7s', '7d'] }, { label: 'MANO B', cards: ['8s', '4d'] }], 'B',
         '5-6-7-8-9 es escalera y una escalera supera siempre al trío, aunque el trío sean Sietes.'),
-      D('Duelo 5 · Color contra escalera', ['9s', '8s', '2c', '7s', 'Kd'],
+      D('Color contra escalera', ['9s', '8s', '2c', '7s', 'Kd'],
         [{ label: 'MANO A', cards: ['As', '3s'] }, { label: 'MANO B', cards: ['Tc', 'Jd'] }], 'A',
         'A♠ 3♠ con 9♠ 8♠ 7♠ forma color. El color está un escalón por encima de la escalera 7-8-9-T-J.')
     ]
   },
   {
-    id: 'posiciones', number: 4, module: 1, format: 'exhibit',
-    title: 'Posiciones, ciegas y rondas', subtitle: 'Quién habla y cuándo',
+    id: 'posiciones', number: 3, module: 1, format: 'exhibit',
+    title: 'Estructura de la mesa', subtitle: 'Ciegas, orden de acción y rondas',
     steps: [
       E('El botón y las ciegas',
         { street: 'PREFLOP', board: [], pot: 3, hero: ['As', '7d'], villain: ['Kh', 'Qc'], villainHidden: true, heroPos: 'BTN', villainPos: 'BB', villainAction: 'Ciegas 1 / 2', note: 'Botón en BTN · ciegas 1 y 2' },
@@ -231,8 +179,8 @@ const LESSONS_DATA = [
     ]
   },
   {
-    id: 'acciones', number: 5, module: 1, format: 'case',
-    title: 'Acciones básicas', subtitle: 'Check, Call, Bet, Raise, Fold',
+    id: 'acciones', number: 4, module: 1, format: 'case',
+    title: 'Acciones en una mano', subtitle: 'Pasar, pagar, apostar, subir y retirarse',
     steps: [
       K('Top pair en board seco: ¿apostar o pasar?', flopTable({ board: ['Ks', '7d', '2c'], pot: 60, bet: 0, hero: ['Kh', 'Qd'], villain: ['9h', '8h'], villainProfile: 'TAG', villainAction: 'Pasa (Check)', note: 'Par de Reyes, buen kicker, board seco' }), [
         O('bet', 'Apostar / Subir por valor', true, 'Correcto. Apostar cobra valor de manos peores y de proyectos como el color del rival. Pasar dejaría de ganar fichas con tu mejor mano.'),
@@ -262,8 +210,8 @@ const LESSONS_DATA = [
     ]
   },
   {
-    id: 'pot_odds', number: 6, module: 2, format: 'case',
-    title: 'Pot Odds', subtitle: 'Cuándo pagar según el precio',
+    id: 'pot_odds', number: 5, module: 2, format: 'case',
+    title: 'Pot odds y precio de decisión', subtitle: 'Cuándo pagar según el bote',
     steps: [
       K('Bote 100, apuesta 50 y 9 outs de color', flopTable({ board: ['9h', '8h', '2c'], pot: 100, bet: 50, hero: ['Ah', '5h'], villain: ['Kd', 'Qd'], villainProfile: 'TAG', villainAction: 'Apuesta 50', outCards: HEART_OUTS, note: '9 outs · necesitas 25%, tienes ~35%' }), [
         O('call', 'Pagar 50', true, 'Correcto. 50 / (100 + 50 + 50) = 25%. Tu color liga ~35%, así que el call gana fichas a largo plazo.'),
@@ -293,8 +241,8 @@ const LESSONS_DATA = [
     ]
   },
   {
-    id: 'outs', number: 7, module: 2, format: 'case',
-    title: 'Outs y regla del 4 y del 2', subtitle: 'Estima tu equity en segundos',
+    id: 'outs', number: 6, module: 2, format: 'case',
+    title: 'Outs y equity estimada', subtitle: 'Reglas del 4 y del 2',
     steps: [
       K('Color en flop, apuesta pequeña', flopTable({ board: ['9h', '8h', '2c'], pot: 100, bet: 25, hero: ['Ah', '5h'], villain: ['Kd', 'Qd'], villainAction: 'Apuesta 25', outCards: HEART_OUTS, note: '9 outs × 4 ≈ 36% · necesitas 16,7%' }), [
         O('call', 'Pasar / Pagar', true, 'Correcto. En flop, 9 outs × 4 ≈ 36%. Pagas 25 para 150 (16,7%): hay mucha margen.'),
@@ -324,8 +272,8 @@ const LESSONS_DATA = [
     ]
   },
   {
-    id: 'posicion', number: 8, module: 3, format: 'case',
-    title: 'Ventaja de posición', subtitle: 'IP vs OOP',
+    id: 'posicion', number: 7, module: 3, format: 'case',
+    title: 'Ventaja posicional', subtitle: 'Jugar dentro y fuera de posición',
     steps: [
       K('BTN con top pair, rival pasa', flopTable({ board: ['Ks', '7d', '2c'], pot: 80, bet: 0, hero: ['Kd', 'Qd'], villain: ['9h', '8h'], heroPos: 'BTN', villainPos: 'BB', villainAction: 'Pasa (Check)', note: 'IP · par de Reyes · bote 80' }), [
         O('bet', 'Apostar / Subir', true, 'Correcto. En posición puedes apostar por valor y, si el rival sube, ver su acción antes de decidir. El BTN controla la ronda.'),
@@ -355,8 +303,8 @@ const LESSONS_DATA = [
     ]
   },
   {
-    id: 'cbet', number: 9, module: 3, format: 'case',
-    title: 'C-Bet según textura', subtitle: 'Boards secos y mojados',
+    id: 'cbet', number: 8, module: 3, format: 'case',
+    title: 'Apuesta de continuación', subtitle: 'Cuándo seguir apostando tras el flop',
     steps: [
       K('Board seco y alto: A-7-2', flopTable({ board: ['As', '7d', '2c'], pot: 100, bet: 0, hero: ['Ah', 'Kd'], villain: ['9h', '8h'], villainAction: 'Pasa (Check)', note: 'Fuiste el agresor preflop · top pair' }), [
         O('bet', 'Apostar / Subir pequeño', true, 'Correcto. En A-7-2 sin draws claros, tu rango de preflop tiene mucha ventaja. Una C-Bet pequeña cobra valor y gana al instante.'),
@@ -386,8 +334,8 @@ const LESSONS_DATA = [
     ]
   },
   {
-    id: 'spr', number: 10, module: 3, format: 'case',
-    title: 'SPR y compromiso', subtitle: 'Cuánto vale una pareja',
+    id: 'spr', number: 9, module: 3, format: 'case',
+    title: 'SPR y compromiso de pila', subtitle: 'Cuánto vale una mano según la pila',
     steps: [
       K('SPR 0,5: ya estás comprometido', riverTable({ board: ['Ks', '7d', '2c', '4h', '9s'], pot: 200, bet: 40, hero: ['Kh', 'Qd'], villain: ['Qh', 'Jd'], villainAction: 'Apuesta 40', note: 'SPR 0,5 · top pair · pagas 40 para 280' }), [
         O('call', 'Pasar / Pagar', true, 'Correcto. Con SPR 0,5 tu pila es corta respecto al bote: 40 / 280 ≈ 14%. Tu top pair gana muy a menudo y foldear sería terrible.'),
@@ -417,8 +365,8 @@ const LESSONS_DATA = [
     ]
   },
   {
-    id: 'semibluff', number: 11, module: 4, format: 'case',
-    title: 'Semi-farol y bloqueadores', subtitle: 'Dos formas de ganar',
+    id: 'semibluff', number: 10, module: 4, format: 'case',
+    title: 'Semi-farol con bloqueadores', subtitle: 'Equity real, folds y bloqueos',
     steps: [
       K('Color projectado: dos formas de ganar', flopTable({ board: ['9h', '8h', '2c'], pot: 100, bet: 0, hero: ['Ah', '5h'], villain: ['7s', '6s'], villainAction: 'Pasa (Check)', outCards: HEART_OUTS, note: '9 outs + fold equity · bote 100' }), [
         O('bet', 'Apostar / Subir', true, 'Correcto. Es un semi-farol: puedes ganar ahora si el rival foldea, o completar tu color en el turn. Con 9 outs tienes equity real aunque te llamen.'),
@@ -448,8 +396,8 @@ const LESSONS_DATA = [
     ]
   },
   {
-    id: 'gto', number: 12, module: 4, format: 'case',
-    title: 'GTO y explotación', subtitle: 'Frecuencias y perfiles',
+    id: 'gto', number: 11, module: 4, format: 'case',
+    title: 'Equilibrio GTO y explotación', subtitle: 'Frecuencias, rangos y perfiles',
     steps: [
       K('Frecuencia mixta aproximada en BTN', flopTable({ board: ['Ks', '7d', '2c'], pot: 100, bet: 30, hero: ['Ah', 'Jh'], villain: ['Qd', '9d'], heroPos: 'BTN', villainPos: 'BB', villainProfile: 'TAG', villainAction: 'Apuesta 30', note: 'Aproximación GTO · sobrecartas + cola de color' }), [
         O('call', 'Pasar / Pagar', true, 'Correcto según nuestra aproximación GTO determinista: con dos sobrecartas y cola de color, pagar entra en la frecuencia mixta. 30 para 160 es 18,75%.'),
@@ -477,7 +425,54 @@ const LESSONS_DATA = [
         O('fold', 'Retirarte', false, 'No hay apuesta en contra y tienes una oportunidad clara de farol.')
       ])
     ]
-  }
+  },
+  {
+    id: 'fundamentos', number: 12, module: 4, format: 'exhibit',
+    title: 'Cómo se juega una mano',
+    subtitle: '2 privadas + 5 comunitarias = mejor mano de 5',
+    steps: [
+      E('Tus 2 cartas privadas',
+        { street: 'PREFLOP', board: [], pot: 3, hero: ['As', '7d'], villain: null, villainHidden: true, heroPos: 'BTN', villainPos: 'BB', villainAction: 'Ciegas 1 / 2', note: 'Sólo tú ves A♠ 7♦' },
+        [
+          'En Texas Hold’em cada jugador recibe 2 cartas privadas: son tuyas, nadie más las ve.',
+          'Con A♠ 7♦ ya tienes una carta alta y un posible proyecto, pero todavía no puedes ganar.',
+          'Faltan las cartas comunitarias, que se pondrán boca arriba sobre la mesa.'
+        ], 0),
+      E('El Flop: 3 cartas comunitarias',
+        { street: 'FLOP', board: BASE_BOARD, pot: 40, hero: ['As', '7d'], villain: ['Kh', 'Qc'], villainProfile: 'TAG', villainAction: 'Pasa (Check)', note: 'Ahora hay 5 cartas visibles' },
+        [
+          'Tras la primera ronda de apuestas se revelan 3 cartas comunitarias: K♠ Q♦ 7♠.',
+          'Éstas son de todos: el rival puede usarlas igual que tú.',
+          'Con tus 2 cartas y 3 comunitarias ya puedes elegir 5 cartas, pero aún faltan 2.'
+        ], 3),
+      E('El Turn: 4ª comunitaria',
+        { street: 'TURN', board: BASE_BOARD, pot: 80, hero: ['As', '7d'], villain: ['Kh', 'Qc'], villainProfile: 'TAG', villainAction: 'Pasa (Check)', note: '4 cartas sobre la mesa' },
+        [
+          'La cuarta carta comunitaria es el Turn: 2♣.',
+          'La mesa crece y también cambia la fuerza de tu mano: ahora tienes un par de 7s.',
+          'Después de esta ronda vendrá una última carta.'
+        ], 4),
+      E('El River: 5ª y última comunitaria',
+        { street: 'RIVER', board: BASE_BOARD, pot: 140, hero: ['As', '7d'], villain: ['Kh', 'Qc'], villainProfile: 'TAG', villainAction: 'Pasa (Check)', note: 'Ya no quedan cartas por venir' },
+        [
+          'La quinta carta comunitaria es el River: 9♥. Ya no viene ninguna carta más.',
+          'Cada jugador tiene 7 cartas disponibles, pero debe formar la mejor mano posible de 5.',
+          'Esa es la regla central: 2 propias + 5 comunitarias → mejor combinación de 5.'
+        ], 5),
+      E('Así se decide el ganador',
+        { street: 'SHOWDOWN', board: BASE_BOARD, pot: 140, hero: ['As', '7d'], villain: ['Kh', 'Qc'], note: 'Compara las mejores 5 cartas' },
+        [
+          'En el showdown se comparan las mejores 5 cartas de cada jugador.',
+          'El evaluador elige automáticamente la mejor combinación de 5 entre las 7 disponibles.',
+          'Gana el tipo de mano más alto; si hay empate, se comparan los kickers.'
+        ], 5, {
+          board: BASE_BOARD,
+          hands: [{ label: 'TÚ', cards: ['As', '7d'] }, { label: 'RIVAL', cards: ['Kh', 'Qc'] }],
+          winner: 'B',
+          why: 'Tú tienes una pareja de 7s. El rival tiene doble pareja: Reyes y Reinas, con 9 de kicker. El doble pareja supera siempre a una sola pareja. Esta comparación directa es el tema de la clase 2.'
+        })
+    ]
+  },
 ];
 
 /* ---------------------------------------------------------------------------
@@ -502,6 +497,25 @@ const academia = {
         this.closeLesson();
       }
     });
+
+    // Tras girar el móvil (o mostrar/ocultar la barra del navegador) se
+    // re-sincroniza el modo clase; antes podía quedar un body bloqueado sin
+    // scroll ni botón «← Ruta» alcanzable hasta cambiar de pestaña.
+    const syncLessonViewport = () => {
+      const view = document.getElementById('view-academia');
+      const inLesson = !!view && !view.classList.contains('hidden')
+        && appState.academia.v2.view === 'lesson';
+      document.body.classList.toggle('is-acad-lesson', inLesson);
+      if (!inLesson) return;
+      const body = document.querySelector('.acad-shell-body');
+      if (body) body.scrollTop = Math.min(body.scrollTop, body.scrollHeight);
+    };
+    window.addEventListener('resize', syncLessonViewport, { passive: true });
+    window.addEventListener('orientationchange', () => {
+      syncLessonViewport();
+      setTimeout(syncLessonViewport, 150);
+    }, { passive: true });
+    window.visualViewport?.addEventListener('resize', syncLessonViewport, { passive: true });
   },
 
   persist() {
@@ -583,9 +597,9 @@ const academia = {
     const playable = LESSONS_DATA.filter(l => this.isPlayable(l)).length;
     map.innerHTML = `
       <div class="mb-5 flex flex-wrap items-center gap-2 text-[11px] font-mono text-slate-400">
-        <span class="px-2.5 py-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 text-emerald-300">Prototipo · ${playable} clases jugables</span>
-        <span class="px-2.5 py-1 rounded-full border border-slate-700 bg-slate-900">12 clases · 5 módulos</span>
-        <span class="px-2.5 py-1 rounded-full border border-slate-700 bg-slate-900">5 pasos por clase · sin scroll infinito</span>
+        <span class="px-2.5 py-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 text-emerald-300">Ruta completa · ${playable} clases</span>
+        <span class="px-2.5 py-1 rounded-full border border-slate-700 bg-slate-900">12 clases · 5 niveles</span>
+        <span class="px-2.5 py-1 rounded-full border border-slate-700 bg-slate-900">5 pasos por clase · avance guiado</span>
       </div>
       ${MODULES.map(mod => {
         const lessons = LESSONS_DATA.filter(l => l.module === mod.id);
@@ -608,9 +622,8 @@ const academia = {
                 const click = ready ? `onclick="academia.openLesson('${l.id}')"` : '';
                 return `
                   <button ${click} ${ready ? '' : 'disabled'} class="acad-lesson-card ${ready ? '' : 'is-locked'}">
-                    <div class="flex items-center justify-between gap-2 mb-2">
-                      <span class="acad-lesson-num">${String(l.number).padStart(2, '0')}</span>
-                      <span class="acad-format-pill">${FORMAT_ICON[l.format]} ${FORMAT_LABEL[l.format]}</span>
+                    <div class="mb-2">
+                      <span class="acad-lesson-num">CLASE ${String(l.number).padStart(2, '0')}</span>
                     </div>
                     <h4 class="text-left text-sm font-bold text-white leading-snug">${l.title}</h4>
                     <p class="text-left text-[11px] text-slate-400 mt-1 leading-snug">${l.subtitle}</p>
@@ -650,7 +663,7 @@ const academia = {
 
   resume() {
     const lesson = LESSONS_DATA.find(l => l.id === appState.academia.v2.activeLessonId);
-    this.openLesson(lesson && this.isPlayable(lesson) ? lesson.id : 'fundamentos');
+    this.openLesson(lesson && this.isPlayable(lesson) ? lesson.id : 'ranking');
   },
 
   goStep(index) {
@@ -756,7 +769,7 @@ const academia = {
       <div class="acad-shell-head">
         <button onclick="academia.closeLesson()" class="acad-back">← Ruta</button>
         <div class="min-w-0 flex-1 text-center">
-          <div class="text-[10px] font-mono uppercase tracking-widest text-emerald-400">Módulo 0${mod.id} · ${mod.name}</div>
+          <div class="text-[10px] font-mono uppercase tracking-widest text-emerald-400">Nivel 0${mod.id} · ${mod.name}</div>
           <div class="text-sm sm:text-base font-extrabold text-white truncate">Clase ${lesson.number} · ${lesson.title}</div>
         </div>
         <div class="flex flex-col items-end gap-1">
@@ -794,7 +807,6 @@ const academia = {
         <div class="acad-shell-body">${body}</div>
         <div class="acad-shell-foot">
           <button onclick="academia.prev()" ${index === 0 ? 'disabled' : ''} class="acad-prev">← Anterior</button>
-          <span class="text-[10px] font-mono text-slate-500 hidden sm:inline">${FORMAT_ICON[lesson.format]} ${FORMAT_LABEL[lesson.format]}</span>
           ${footNext}
         </div>
       </div>

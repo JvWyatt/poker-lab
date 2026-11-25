@@ -14,7 +14,7 @@ js/
   sound.js                 Motor de sonidos sintetizados (Web Audio API)
   poker-engine.js          Baraja, evaluador de manos, outs y Monte Carlo
   ui.js                    Render de cartas, toasts, badges y navegación
-  academia.js              ruta de 12 clases en 5 módulos; clase a pantalla completa
+  academia.js              ruta de 12 clases en 5 niveles; clase a pantalla completa
   lab.js                   Laboratorio (equity, outs, EV)
   game.js                  Mesa, bots, reloj, calificación EV y feedback
   gto.js                   Frecuencias mixtas GTO estilo Preflop Vision + matriz 13x13
@@ -56,17 +56,21 @@ Tailwind se carga desde CDN, por lo que hace falta conexión a internet.
   partidas. Expanden el tapete, el HUD, los pop-ups y la botonera; la barra
   superior de la arena muestra ciegas, audio y un único botón **✕** para salir.
   Usa la Fullscreen API nativa con fallback CSS (`is-arena`); `Esc` también sale.
-- **HUD «ojito» 👁️ / 🙈:** integrado en la **barra inferior de acciones**, a la
-  misma altura que `Apostar/Subir`, `Pasar/Pagar` y `Retirarse`. El botón no
-  flota sobre el tapete: abre tarjetitas horizontales (`h-9`, `min-w-[58px]`)
-  dentro de `#game-controls-panel`, con glassmorphism y alineación exacta.
+- **HUD «ojito» 👁️ / 🙈:** la barra inferior tiene dos zonas: a la izquierda
+  `Apostar/Subir → Pasar/Pagar → Retirarse`; a la derecha el ojito. Al abrirlo,
+  las tarjetitas siguen en una sola fila horizontal de altura fija, sin
+  engordar el hub ni invadir el tapete.
   - Preflop: frecuencias RAISE/CALL/FOLD de `GTOEngine`, con posición,
     secuencia (RFI / vs apertura / vs 3-Bet / defensa BB), tamaño de apertura,
     stack y MDF reales de la mano. Sólo se muestran acciones con `% > 0`.
   - Postflop: sin GTO preflop; muestra EQUITY, POT ODDS, OUTS (sólo Flop/Turn)
     y EV MAX en BB, calculados en el turno del Héroe.
-  - Sólo cuadritos de datos: sin textos explicativos; el detalle sigue en el
-    Coach cuando se scrollea hasta la calificación de la jugada.
+  - **Sugerencia bajo los botones:** cuando el ojito está activo, muestra la
+    mejor acción y sus porcentajes. En preflop usa las frecuencias GTO; en
+    flop/turn/river usa un porcentaje **estimado** derivado del EV de cada
+    opción disponible, incluida `Subir` cuando existe y es la mejor línea.
+  - La sugerencia se oculta con el ojito, fuera del turno del Héroe o si no hay
+    mano en curso. El detalle EV completo sigue en el Coach.
 - **GTO de frecuencias mixtas (estilo Preflop Vision):** `GTOEngine` es la
   única fuente de verdad de la matriz 13×13, el ojito y `gradeHeroMove`.
   Solo `AA-TT`, `AK`, `AQs` y la basura absoluta son puros (100 %); el resto
@@ -118,30 +122,41 @@ Tailwind se carga desde CDN, por lo que hace falta conexión a internet.
   Desaparece a los 3.5 s. La explicación EV detallada y la comparativa por
   acción siguen únicamente en el panel del Coach.
 
-## Academia (ruta de 12 clases en 5 módulos, de 0 a pro)
+## Academia (ruta de 12 clases en 5 niveles)
 
-El mapa agrupa las clases por módulo. Al elegir una clase, **el mapa se
+El mapa agrupa las clases por nivel. Al elegir una clase, **el mapa se
 sustituye por la vista de esa clase**: cabecera con `← Ruta`, progreso `1..5`,
-una mesa a pantalla completa y navegación fija abajo. No hay scroll infinito ni
-contenido abriéndose al final de la lista; `Esc` o `← Ruta` vuelven al mapa.
+una mesa a pantalla completa y navegación fija abajo. El avance sigue siendo
+paso a paso, pero el contenido permite **scroll corto** para que `Siguiente`
+nunca quede tapado por la barra del navegador o el móvil. `Esc` o `← Ruta`
+vuelven al mapa, también después de girar el teléfono.
 
-Tres formatos, elegidos según lo que se enseña:
+Las clases usan tres formatos internos (no se muestran como etiquetas):
 
-- **Mostrar** (clases 1, 2 y 4): 5 pantallas con revelación guiada, sin
-  preguntas. El board aparece flop → turn → river con `Entendido →`.
-- **Duelo** (clase 3): 5 enfrentamientos fijos de 5 cartas contra 5. El board
-  está visible, se elige ganador y se revelan las mejores 5 cartas de cada mano
-  con el nombre del evaluador y la comparación.
-- **Casos fijos** (clases 5 a 12): 5 situaciones preconfiguradas por clase,
+- **Revelación guiada** (clases 1, 3 y 12): 5 pantallas sin preguntas. El board
+  aparece flop → turn → river con `Entendido →`.
+- **Comparación de manos** (clase 2): 5 enfrentamientos fijos de 5 cartas
+  contra 5. Se elige ganador y se revelan las mejores 5 cartas de cada mano con
+  el nombre del evaluador.
+- **Casos fijos** (clases 4 a 11): 5 situaciones preconfiguradas por clase,
   nunca aleatorias, con bote, apuesta, outs marcados y acción del rival. Se
   decide con los botones habituales (`Apostar/Subir`, `Pasar/Pagar`,
   `Retirarse`) y el feedback explica el porqué. Sólo avanza la respuesta
   correcta; la incorrecta permite reintentar sin castigo.
 
-Módulos: `0 Cero absoluto` (regla de 2 + 5 = 5, ranking, duelos),
-`1 Mecánica de la mesa` (posiciones, ciegas, rondas, acciones),
-`2 Números` (pot odds, outs y equity), `3 Táctica` (posición, C-Bet, SPR) y
-`4 Estrategia` (semi-farol, GTO y explotación).
+Niveles y orden:
+
+- **Fundamentos**: `01 Jerarquía de manos`, `02 Comparación de manos`.
+- **Mesa**: `03 Estructura de la mesa`, `04 Acciones en una mano`.
+- **Números**: `05 Pot odds y precio de decisión`, `06 Outs y equity estimada`.
+- **Táctica**: `07 Ventaja posicional`, `08 Apuesta de continuación`,
+  `09 SPR y compromiso de pila`.
+- **Estrategia**: `10 Semi-farol con bloqueadores`,
+  `11 Equilibrio GTO y explotación`, `12 Cómo se juega una mano`
+  (cierre con la regla 2 privadas + 5 comunitarias).
+
+Los IDs internos de las clases no cambiaron, así que el progreso guardado se
+conserva aunque el orden visible sea nuevo.
 
 **Estado del rediseño:** las 12 clases están completas y son jugables: 60
 pasos fijos en total (5 por clase), con cartas y situaciones deterministas para

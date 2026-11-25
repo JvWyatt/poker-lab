@@ -76,6 +76,28 @@
     .action-flash-normal { animation: actionFlashNormal 0.55s ease-out; }
     .action-flash-bad    { animation: actionFlashBad 0.55s ease-out; }
 
+    /* HUD inferior: 2 columnas fijas y ojito estrictamente horizontal. */
+    #game-controls-panel { min-width: 0; }
+    #eyeball-hud { min-width: 0; max-width: min(58vw, 28rem); }
+    #eyeball-panel {
+      max-width: min(52vw, 24rem);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    #eyeball-panel::-webkit-scrollbar { display: none; }
+    #eyeball-panel .hud-card {
+      flex: 0 0 auto;
+      min-width: 46px;
+      height: 34px;
+      padding: 0 4px;
+    }
+    #action-suggestion {
+      min-width: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    #action-suggestion::-webkit-scrollbar { display: none; }
+
     /* ======================================================================
        FULLSCREEN ARENA — tapete, HUD, pop-ups y botonera a pantalla completa
     ====================================================================== */
@@ -338,14 +360,10 @@
       box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
     }
     .acad-lesson-card.is-locked { opacity: 0.45; cursor: not-allowed; }
-    .acad-lesson-num { font: 800 12px 'JetBrains Mono', monospace; color: #64748b; }
-    .acad-format-pill {
-      font: 700 10px 'JetBrains Mono', monospace;
-      padding: 2px 8px;
-      border-radius: 999px;
-      color: #a7f3d0;
-      background: rgba(16, 185, 129, 0.12);
-      border: 1px solid rgba(16, 185, 129, 0.3);
+    .acad-lesson-num {
+      font: 800 10px 'JetBrains Mono', monospace;
+      letter-spacing: 0.08em;
+      color: #64748b;
     }
     .acad-map-dot {
       width: 14px; height: 5px; border-radius: 99px;
@@ -353,15 +371,19 @@
     }
     .acad-map-dot.is-done { background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.7); }
 
-    /* En clase, el contenido ocupa el viewport: sin scroll de página. */
-    body.is-acad-lesson { height: 100dvh; overflow: hidden; }
+    /* En clase, la página no hace scroll; el contenido sí, con margen seguro. */
+    body.is-acad-lesson {
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+    }
     body.is-acad-lesson > main {
       flex: 1 1 auto;
       min-width: 0;
       min-height: 0;
       display: flex;
       padding-top: 0.5rem;
-      padding-bottom: 0.5rem;
+      padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
     }
     body.is-acad-lesson #view-academia { flex: 1 1 auto; min-width: 0; min-height: 0; display: flex; }
     body.is-acad-lesson #academia-workspace { flex: 1 1 auto; min-width: 0; min-height: 0; }
@@ -421,8 +443,13 @@
       flex-direction: column;
       gap: 0.7rem;
       padding: 0.85rem 1rem;
-      overflow: hidden;
+      padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
     }
+    .acad-shell-body > * { flex-shrink: 0; }
     .acad-shell-foot {
       flex: 0 0 auto;
       min-width: 0;
@@ -431,6 +458,7 @@
       justify-content: space-between;
       gap: 0.75rem;
       padding: 0.65rem 1rem;
+      padding-bottom: calc(0.65rem + env(safe-area-inset-bottom, 0px));
       border-top: 1px solid rgba(148, 163, 184, 0.15);
       background: rgba(2, 6, 23, 0.45);
     }
@@ -530,7 +558,7 @@
     .acad-duel-cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; }
     .acad-duel-vs { text-align: center; font: 900 12px 'JetBrains Mono', monospace; color: #fbbf24; }
     .acad-why { flex: 0 0 auto; text-align: center; font-size: 11px; line-height: 1.4; color: #cbd5e1; border-radius: 10px; border: 1px solid rgba(251, 191, 36, 0.3); background: rgba(120, 53, 15, 0.2); padding: 0.5rem 0.7rem; }
-    /* Showdown incrustado en «Mostrar»: versión compacta para que quepa sin scroll. */
+    /* Showdown incrustado en revelación guiada: versión compacta. */
     .acad-shell-body:has(.acad-lines--compact) { gap: 0.4rem; }
     .acad-duel--embed { gap: 0.35rem; }
     .acad-duel--embed .acad-duel-board { gap: 0.15rem; padding: 0.25rem 0.4rem; }
@@ -545,8 +573,12 @@
     @media (max-width: 640px) {
       .acad-shell { height: 100%; min-height: 0; border-radius: 16px; }
       .acad-shell-head { padding: 0.5rem 0.6rem; gap: 0.4rem; }
-      .acad-shell-body { padding: 0.6rem; gap: 0.5rem; }
-      .acad-shell-foot { padding: 0.5rem 0.6rem; }
+      .acad-shell-body {
+        padding: 0.6rem;
+        padding-bottom: calc(0.9rem + env(safe-area-inset-bottom, 0px));
+        gap: 0.5rem;
+      }
+      .acad-shell-foot { padding: 0.5rem 0.6rem calc(0.5rem + env(safe-area-inset-bottom, 0px)); }
       .acad-step-dot { width: 22px; height: 22px; font-size: 9px; }
       .acad-card { width: 26px; height: 36px; }
       .acad-card-rank { font-size: 11px; }
