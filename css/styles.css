@@ -239,7 +239,7 @@
       /* Compact panels keep chips clear of text on narrow screens.
          Counter-scale cards so all-in and big-pot cards render at the same 42×33. */
       #table-seats-layer > div > div { transform: scale(0.88); }
-      #table-seats-layer .hero-panel { width: 168px; min-width: 168px; }
+      #table-seats-layer .hero-panel { width: 152px; min-width: 152px; }
       #table-seats-layer .chip-card,
       #table-seats-layer .chip-card--allin {
         width: calc(42px / 0.88);

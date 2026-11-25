@@ -238,6 +238,10 @@ const game = {
     if (this.nextHandInterval) clearInterval(this.nextHandInterval);
     this.nextHandSeconds = 10;
 
+    // La mano terminó: limpia métricas obsoletas del HUD para que no tapen el
+    // texto del ganador ni muestren datos de un turno que ya no existe.
+    if (typeof eyeballHUD !== 'undefined') eyeballHUD.render();
+
     const banner = document.getElementById('game-status-banner');
     const nextBtn = document.getElementById('btn-next-hand');
     if (nextBtn) nextBtn.classList.remove('hidden');
@@ -1068,6 +1072,17 @@ const game = {
     boardBox.innerHTML = boardHTML;
 
     const layout = SEAT_LAYOUTS[this.tableSize] || SEAT_LAYOUTS[6];
+    // En 375px los paneles de la fila superior y de la columna derecha se
+    // pisan: se escalonan para que cada asiento conserve su propio espacio.
+    const compactNine = this.tableSize === 9 && window.matchMedia('(max-width: 640px)').matches;
+    const compactSeats = {
+      4: 'left: 49%; top: 20%;',
+      5: 'left: 79%; top: 20%;',
+      6: 'left: 85%; top: 39%;',
+      7: 'left: 88%; top: 58%;',
+      8: 'left: 85%; top: 84%;'
+    };
+    const compactCards = window.matchMedia('(max-width: 640px)').matches ? 'xs' : 'sm';
     const seatsLayer = document.getElementById('table-seats-layer');
     const betsLayer = document.getElementById('table-bets-layer');
 
@@ -1076,10 +1091,15 @@ const game = {
 
     this.players.forEach(p => {
       const coords = layout[p.seat];
+      const seatStyle = compactNine && compactSeats[p.seat] ? compactSeats[p.seat] : coords.seat;
       const isTurn = this.handInProgress && this.turnIdx === p.seat;
       const isDealer = this.dealerIdx === p.seat;
       const isWinner = !this.handInProgress && this.winnerIdx === p.seat;
-      const winnerTag = isWinner ? '<span class="text-[10px] font-bold text-amber-300 whitespace-nowrap">🏆 GANADOR</span>' : '';
+      // La insignia va fuera del flujo: así no engorda el panel y NO puede
+      // recortar ni desplazar el texto de la mano ganadora.
+      const winnerTag = isWinner
+        ? '<span class="absolute -top-1 right-1 rounded-full bg-amber-400/95 text-slate-950 text-[9px] font-extrabold px-1.5 py-0.5 shadow whitespace-nowrap">🏆 GANADOR</span>'
+        : '';
       const posLabel = this.getSeatPositionLabel(p.seat);
 
       // El botón de dealer va hacia el centro del tapete; las fichas viven dentro
@@ -1102,11 +1122,11 @@ const game = {
         const showTimer = this.handInProgress && this.turnIdx === 0;
 
         seatsHTML += `
-          <div style="${coords.seat}" class="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
-            <div class="bg-slate-950/95 border-2 ${isWinner ? 'border-amber-400 ring-4 ring-amber-500/30' : isTurn ? 'border-emerald-400 ring-4 ring-emerald-500/25' : 'border-slate-700'} rounded-2xl px-3.5 py-2.5 shadow-2xl min-w-[200px] sm:min-w-[265px] hero-panel">
+          <div style="${seatStyle}" class="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
+            <div class="bg-slate-950/95 border-2 ${isWinner ? 'border-amber-400 ring-4 ring-amber-500/30' : isTurn ? 'border-emerald-400 ring-4 ring-emerald-500/25' : 'border-slate-700'} relative rounded-2xl px-3.5 py-2.5 shadow-2xl min-w-[200px] sm:min-w-[265px] max-w-[265px] hero-panel">
               <div class="flex items-center gap-3">
                 <div class="flex gap-1">
-                  ${p.cards.length === 2 ? renderCardHTML(p.cards[0], 'sm') + renderCardHTML(p.cards[1], 'sm') : ''}
+                  ${p.cards.length === 2 ? renderCardHTML(p.cards[0], compactCards) + renderCardHTML(p.cards[1], compactCards) : ''}
                 </div>
                 <div class="text-left flex-1 min-w-0">
                   <div class="flex items-center gap-1.5">
@@ -1115,7 +1135,7 @@ const game = {
                     <span class="text-xs sm:text-sm font-extrabold text-white truncate">${p.name}</span>
                   </div>
                   <div class="text-sm font-mono font-extrabold text-emerald-400">${p.stack}</div>
-                  <div class="text-[10px] font-mono text-slate-300 truncate">${heroEval}</div>
+                  <div class="text-[10px] font-mono text-slate-300 leading-tight break-words">${heroEval}</div>
                 </div>
               </div>
               ${betHTML}
@@ -1144,13 +1164,13 @@ const game = {
         const showProfileTag = appState.config.showProfiles && p.profile;
 
         seatsHTML += `
-          <div style="${coords.seat}" class="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
-            <div class="bg-slate-950/95 border ${isWinner ? 'border-amber-400 ring-2 ring-amber-400/60' : isTurn ? 'border-amber-400 ring-2 ring-amber-400/50' : 'border-slate-700/90'} ${p.folded ? 'opacity-45' : ''} rounded-xl p-2 w-[114px] sm:w-[132px] text-center shadow-xl transition rival-panel">
+          <div style="${seatStyle}" class="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
+            <div class="bg-slate-950/95 border ${isWinner ? 'border-amber-400 ring-2 ring-amber-400/60' : isTurn ? 'border-amber-400 ring-2 ring-amber-400/50' : 'border-slate-700/90'} ${p.folded ? 'opacity-45' : ''} relative rounded-xl p-2 w-[114px] sm:w-[132px] text-center shadow-xl transition rival-panel">
               <div class="flex items-center justify-between text-[9px] font-mono mb-0.5">
                 <span class="px-1.5 py-0.2 rounded bg-slate-800 text-slate-200 font-bold">${posLabel}</span>
                 ${p.lastAction ? `<span class="last-action text-amber-300 font-bold truncate max-w-[65px]">${p.lastAction}</span>` : '<span class="last-action text-slate-500">--</span>'}
               </div>
-              <div class="text-[11px] font-bold text-white truncate">${p.name} ${winnerTag}</div>
+              <div class="text-[11px] font-bold text-white leading-tight line-clamp-1" title="${p.name}">${p.name} ${winnerTag}</div>
               ${showProfileTag ? `<div class="profile-tag mt-0.5"><span class="inline-block text-[9px] font-mono px-1.5 py-0.2 rounded border ${p.profile.badge}">${p.profile.style}</span></div>` : ''}
               <div class="text-[11px] font-mono text-emerald-400 font-bold mt-0.5">${p.stack}</div>
               <div class="flex justify-center mt-1">${cardsHTML}</div>
@@ -1171,12 +1191,17 @@ const game = {
   // ni se pisen entre sí. Las coordenadas base se leen una sola vez del HTML
   // recién generado y los desplazamientos se acumulan aparte: así un resize o
   // un nuevo render no desplaza los paneles cada vez más hacia un borde.
+  // El solape se resuelve apilando en vertical: mover en horizontal un panel
+  // pegado a un borde sólo lo devuelve el clamp y el algoritmo oscila.
   clampSeatsToWrap() {
     const wrap = document.getElementById('arena-table-wrap');
     const layer = document.getElementById('table-seats-layer');
     if (!wrap || !layer) return;
 
     const bounds = wrap.getBoundingClientRect();
+    const margin = 3;
+    const gap = 4;
+    const near = 120;
     const items = [...layer.children]
       .map(child => ({
         child,
@@ -1192,14 +1217,15 @@ const game = {
       item.child.style.left = `calc(${item.baseLeft}% + ${item.dx}px)`;
       item.child.style.top = `calc(${item.baseTop}% + ${item.dy}px)`;
     };
+    const rectOf = (item) => item.panel.getBoundingClientRect();
     const clampOne = (item) => {
-      const r = item.panel.getBoundingClientRect();
+      const r = rectOf(item);
       let dx = 0;
       let dy = 0;
-      if (r.left < bounds.left + 3) dx = bounds.left + 3 - r.left;
-      else if (r.right > bounds.right - 3) dx = bounds.right - 3 - r.right;
-      if (r.top < bounds.top + 3) dy = bounds.top + 3 - r.top;
-      else if (r.bottom > bounds.bottom - 3) dy = bounds.bottom - 3 - r.bottom;
+      if (r.left < bounds.left + margin) dx = bounds.left + margin - r.left;
+      else if (r.right > bounds.right - margin) dx = bounds.right - margin - r.right;
+      if (r.top < bounds.top + margin) dy = bounds.top + margin - r.top;
+      else if (r.bottom > bounds.bottom - margin) dy = bounds.bottom - margin - r.bottom;
       if (dx || dy) {
         item.dx += dx;
         item.dy += dy;
@@ -1210,40 +1236,74 @@ const game = {
     items.forEach(clampOne);
 
     for (let pass = 0; pass < 6; pass++) {
-      let moved = false;
+      // Empareja paneles que se pisan (o que quedan muy cerca) en la misma
+      // columna y agrupa los pares conectados para compactarlos como un bloque.
+      const pairs = [];
       for (let i = 0; i < items.length; i++) {
         for (let j = i + 1; j < items.length; j++) {
-          const a = items[i].panel.getBoundingClientRect();
-          const b = items[j].panel.getBoundingClientRect();
+          const a = rectOf(items[i]);
+          const b = rectOf(items[j]);
           const overlapX = Math.min(a.right, b.right) - Math.max(a.left, b.left);
-          const overlapY = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
-          if (overlapX <= 0 || overlapY <= 0) continue;
-
-          const vertical = overlapY <= overlapX;
-          const aCenter = vertical ? (a.top + a.bottom) : (a.left + a.right);
-          const bCenter = vertical ? (b.top + b.bottom) : (b.left + b.right);
-          const sign = aCenter <= bCenter ? 1 : -1;
-          const distance = (vertical ? overlapY : overlapX) + 3;
-
-          // Mueve el panel que tenga más hueco libre en esa dirección: si uno
-          // está pegado al borde, el clamp lo devolvería y el solape seguiría.
-          const room = (rect, dir) => vertical
-            ? (dir > 0 ? bounds.bottom - 3 - rect.bottom : rect.top - bounds.top - 3)
-            : (dir > 0 ? bounds.right - 3 - rect.right : rect.left - bounds.left - 3);
-          const roomA = room(a, -sign);
-          const roomB = room(b, sign);
-          const target = roomB >= roomA ? items[j] : items[i];
-          const dir = roomB >= roomA ? sign : -sign;
-          if (vertical) target.dy += dir * distance;
-          else target.dx += dir * distance;
-
-          apply(target);
-          clampOne(target);
-          moved = true;
+          const verticalGap = Math.max(a.top, b.top) - Math.min(a.bottom, b.bottom);
+          if (overlapX > 0 && verticalGap < near) pairs.push([items[i], items[j]]);
         }
       }
-      if (!moved) break;
+      if (!pairs.length) break;
+
+      const groups = [];
+      pairs.forEach(([a, b]) => {
+        const ga = groups.find(g => g.includes(a));
+        const gb = groups.find(g => g.includes(b));
+        if (ga && gb && ga !== gb) {
+          ga.push(...gb);
+          groups.splice(groups.indexOf(gb), 1);
+        } else if (ga) {
+          ga.push(b);
+        } else if (gb) {
+          gb.push(a);
+        } else {
+          groups.push([a, b]);
+        }
+      });
+
+      let changed = false;
+      groups.forEach(group => {
+        const ordered = [...new Set(group)].sort((u, v) => rectOf(u).top - rectOf(v).top);
+        if (ordered.length < 2) return;
+
+        const totalHeight = ordered.reduce((sum, item) => sum + rectOf(item).height, 0);
+        const usedGap = Math.max(0, Math.min(gap,
+          (bounds.height - 2 * margin - totalHeight) / (ordered.length - 1)));
+
+        // Pasada hacia abajo: conserva el orden vertical original.
+        let prevBottom = bounds.top + margin;
+        ordered.forEach(item => {
+          const r = rectOf(item);
+          if (r.top < prevBottom) {
+            item.dy += prevBottom - r.top;
+            apply(item);
+            changed = true;
+          }
+          prevBottom = rectOf(item).bottom + usedGap;
+        });
+
+        // Pasada hacia arriba: compacta desde el final si el bloque no cabe.
+        let nextTop = bounds.bottom - margin;
+        [...ordered].reverse().forEach(item => {
+          const r = rectOf(item);
+          const maxBottom = Math.min(r.bottom, nextTop - usedGap);
+          if (maxBottom < r.bottom) {
+            item.dy += maxBottom - r.bottom;
+            apply(item);
+            changed = true;
+          }
+          nextTop = rectOf(item).top;
+        });
+      });
+      if (!changed) break;
     }
+
+    items.forEach(clampOne);
   },
 
   log(msg) {

@@ -90,6 +90,10 @@ Tailwind se carga desde CDN, por lo que hace falta conexión a internet.
 - **Ciclo de mano:** al decidirse el ganador se resalta su asiento y se reparte
   una nueva mano automáticamente tras 10 s. El botón **🃏 Nueva Mano** debajo
   del ganador permite saltarse la espera (también dentro de la arena).
+  El nombre de la mano ganadora se ajusta en varias líneas en el banner y en
+  el panel del héroe (sin `truncate`), la insignia 🏆 GANADOR flota fuera del
+  flujo del texto, y las métricas obsoletas del HUD se limpian al terminar la
+  mano para que nunca tapen el resultado.
 - **Pop-up de calificación:** etiqueta corta monocromática y unificada en la
   parte superior central (`!! BRILLANTE`, `! EXCELENTE`, `✓ ÓPTIMA`,
   `?! IMPRECISA`, `? ERROR`, `?? PÉSIMA`) con el porcentaje de acierto.
