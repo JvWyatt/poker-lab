@@ -14,7 +14,7 @@ js/
   sound.js                 Motor de sonidos sintetizados (Web Audio API)
   poker-engine.js          Baraja, evaluador de manos, outs y Monte Carlo
   ui.js                    Render de cartas, toasts, badges y navegación
-  academia.js              12 micro-clases interactivas sobre mini-mesa determinista
+  academia.js              ruta de 12 clases en 5 módulos; clase a pantalla completa
   lab.js                   Laboratorio (equity, outs, EV)
   game.js                  Mesa, bots, reloj, calificación EV y feedback
   gto.js                   Frecuencias mixtas GTO estilo Preflop Vision + matriz 13x13
@@ -118,35 +118,35 @@ Tailwind se carga desde CDN, por lo que hace falta conexión a internet.
   Desaparece a los 3.5 s. La explicación EV detallada y la comparativa por
   acción siguen únicamente en el panel del Coach.
 
-## Academia (12 clases × 5 casos preconfigurados, de 0 a pro)
+## Academia (ruta de 12 clases en 5 módulos, de 0 a pro)
 
-Cada clase trae **5 situaciones preconfiguradas** en una **mini-mesa
-determinista**: cartas fijas, board, bote, fichas y acción previa del rival.
-No hay aleatoriedad: el caso 3 de una clase es siempre el mismo para poder
-replicarlo y repasarlo. Los cinco casos escalan de lo más obvio a lo más
-sutil, con el mejor ejemplo para dejar cada idea clara.
+El mapa agrupa las clases por módulo. Al elegir una clase, **el mapa se
+sustituye por la vista de esa clase**: cabecera con `← Ruta`, progreso `1..5`,
+una mesa a pantalla completa y navegación fija abajo. No hay scroll infinito ni
+contenido abriéndose al final de la lista; `Esc` o `← Ruta` vuelven al mapa.
 
-- **Iniciación:** jerarquía de manos (par → doble pareja → trío → escalera →
-  color); posiciones y ciegas (BTN/SB/BB/UTG); acciones básicas
-  (Check/Call/Bet/Raise/Fold).
-- **Básico:** manos iniciales por posición; Pot Odds con cinco precios
-  distintos; outs y regla del 4 y del 2 con cartas marcadas en el tapete.
-- **Intermedio:** ventaja de posición IP vs OOP; SPR y compromiso con Top Pair;
-  semi-faroles con color + escalera.
-- **Avanzado:** C-Bet según textura; farol en River con bloqueador; ajustes
-  explotativos por perfil (Calling Station, Nit, Maníaco, TAG, Weak-Tight).
+Tres formatos, elegidos según lo que se enseña:
 
-Flujo de cada caso: guía de 3 líneas → pregunta concreta sobre la mini-mesa →
-decisión con botones reales de póker (`Fold`, `Check/Call`, `Bet/Raise` o elegir
-la mano ganadora) → feedback inmediato sobre el tapete explicando el cálculo →
-botón «Siguiente caso». Sólo avanza la respuesta correcta; la incorrecta
-permite reintentar sin castigo. Puedes volver a cualquier caso ya resuelto con
-los puntos `1..5` y repasar los cinco cuando termines la clase.
+- **Mostrar** (clases 1, 2 y 4): 5 pantallas con revelación guiada, sin
+  preguntas. El board aparece flop → turn → river con `Entendido →`.
+- **Duelo** (clase 3): 5 enfrentamientos fijos de 5 cartas contra 5. El board
+  está visible, se elige ganador y se revelan las mejores 5 cartas de cada mano
+  con el nombre del evaluador y la comparación.
+- **Casos fijos** (clases 5 a 12): 5 situaciones preconfiguradas por clase,
+  nunca aleatorias, con bote, apuesta, outs marcados y acción del rival. Se
+  decide con los botones habituales (`Apostar/Subir`, `Pasar/Pagar`,
+  `Retirarse`) y el feedback explica el porqué. Sólo avanza la respuesta
+  correcta; la incorrecta permite reintentar sin castigo.
 
-El avance se guarda caso por caso en `appState.academia.caseProgress` y la
-clase se marca como completada en `appState.academia.completedIds` al resolver
-el caso 5, lo que desbloquea la siguiente. Al recargar se restaura el caso exacto
-donde estabas. La lista muestra `Caso x/5 · n/5 resueltos` y el paso
-`Clase 1/12` ... `Clase 12/12`. Filtros: **Todos / Iniciación / Básico /
-Intermedio / Avanzado**. Al completar la última se muestra
-`🏆 ¡Ruta completa! De 0 a pro.`
+Módulos: `0 Cero absoluto` (regla de 2 + 5 = 5, ranking, duelos),
+`1 Mecánica de la mesa` (posiciones, ciegas, rondas, acciones),
+`2 Números` (pot odds, outs y equity), `3 Táctica` (posición, C-Bet, SPR) y
+`4 Estrategia` (semi-farol, GTO y explotación).
+
+**Estado del rediseño:** prototipo jugable con las clases 1 (Mostrar), 3
+(Duelo) y 6 (Casos); las otras 9 aparecen como `EN PREPARACIÓN`.
+
+El avance nuevo se guarda por paso en `appState.academia.v2.stepProgress`, con
+la clase y el paso activos en `appState.academia.v2`; al recargar se restaura
+la vista y el paso exactos. El progreso anterior (`caseProgress`) se conserva
+por separado para no pisar partidas ya resueltas.

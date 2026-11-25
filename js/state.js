@@ -26,7 +26,13 @@ const DEFAULT_STATE = {
     completedIds: [],
     caseProgress: {},
     activeLessonId: null,
-    activeCaseIndex: 0
+    activeCaseIndex: 0,
+    v2: {
+      stepProgress: {},
+      activeLessonId: null,
+      activeStepIndex: 0,
+      view: 'map'
+    }
   }
 };
 
@@ -49,7 +55,18 @@ function loadState() {
             : {})
         },
         activeLessonId: typeof parsed.academia?.activeLessonId === 'string' ? parsed.academia.activeLessonId : null,
-        activeCaseIndex: Number.isInteger(parsed.academia?.activeCaseIndex) ? parsed.academia.activeCaseIndex : 0
+        activeCaseIndex: Number.isInteger(parsed.academia?.activeCaseIndex) ? parsed.academia.activeCaseIndex : 0,
+        v2: {
+          stepProgress: {
+            ...DEFAULT_STATE.academia.v2.stepProgress,
+            ...(parsed.academia?.v2?.stepProgress && typeof parsed.academia.v2.stepProgress === 'object'
+              ? parsed.academia.v2.stepProgress
+              : {})
+          },
+          activeLessonId: typeof parsed.academia?.v2?.activeLessonId === 'string' ? parsed.academia.v2.activeLessonId : null,
+          activeStepIndex: Number.isInteger(parsed.academia?.v2?.activeStepIndex) ? parsed.academia.v2.activeStepIndex : 0,
+          view: parsed.academia?.v2?.view === 'lesson' ? 'lesson' : 'map'
+        }
       }
     };
   } catch (e) {

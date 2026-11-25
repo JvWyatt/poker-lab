@@ -305,3 +305,251 @@
       .grade-pop.is-leaving,
       .hud-card { animation: none; }
     }
+
+    /* ======================================================================
+       ACADEMIA 2.0 — mapa por módulos, clase a pantalla completa y mesa limpia
+    ====================================================================== */
+    .acad-module {
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 20px;
+      padding: 0.9rem;
+    }
+    .acad-module-num {
+      font: 800 11px 'JetBrains Mono', monospace;
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 8px;
+      padding: 2px 7px;
+    }
+    .acad-lesson-card {
+      width: 100%;
+      text-align: left;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+      padding: 0.85rem;
+      transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .acad-lesson-card:hover:not(:disabled) {
+      border-color: rgba(16, 185, 129, 0.7);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+    }
+    .acad-lesson-card.is-locked { opacity: 0.45; cursor: not-allowed; }
+    .acad-lesson-num { font: 800 12px 'JetBrains Mono', monospace; color: #64748b; }
+    .acad-format-pill {
+      font: 700 10px 'JetBrains Mono', monospace;
+      padding: 2px 8px;
+      border-radius: 999px;
+      color: #a7f3d0;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .acad-map-dot {
+      width: 14px; height: 5px; border-radius: 99px;
+      background: #334155; display: block;
+    }
+    .acad-map-dot.is-done { background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.7); }
+
+    /* En clase, el contenido ocupa el viewport: sin scroll de página. */
+    body.is-acad-lesson { height: 100dvh; overflow: hidden; }
+    body.is-acad-lesson > main {
+      flex: 1 1 auto;
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+    }
+    body.is-acad-lesson #view-academia { flex: 1 1 auto; min-width: 0; min-height: 0; display: flex; }
+    body.is-acad-lesson #academia-workspace { flex: 1 1 auto; min-width: 0; min-height: 0; }
+
+    .acad-shell {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      min-width: 0;
+      height: 100%;
+      min-height: 0;
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+    }
+    .acad-shell-head {
+      flex: 0 0 auto;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+      background: rgba(2, 6, 23, 0.45);
+    }
+    .acad-back, .acad-prev, .acad-next {
+      border-radius: 10px;
+      padding: 0.45rem 0.75rem;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      transition: background 0.15s ease, border-color 0.15s ease;
+      white-space: nowrap;
+    }
+    .acad-back { border: 1px solid rgba(148, 163, 184, 0.3); color: #cbd5e1; background: rgba(15, 23, 42, 0.9); }
+    .acad-prev { border: 1px solid rgba(148, 163, 184, 0.25); color: #94a3b8; background: transparent; }
+    .acad-prev:disabled { opacity: 0.35; cursor: not-allowed; }
+    .acad-next { border: 1px solid rgba(52, 211, 153, 0.7); color: #052e24; background: #34d399; }
+    .acad-next:hover { background: #6ee7b7; }
+    .acad-step-dot {
+      width: 26px; height: 26px; border-radius: 8px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      background: #0f172a; color: #64748b;
+      font: 800 10px 'JetBrains Mono', monospace;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+    .acad-step-dot[data-state="done"] { border-color: rgba(16, 185, 129, 0.7); background: rgba(16, 185, 129, 0.25); color: #6ee7b7; }
+    .acad-step-dot[data-state="active"] { border-color: #34d399; background: #34d399; color: #052e24; box-shadow: 0 0 12px rgba(52, 211, 153, 0.5); }
+    .acad-shell-body {
+      flex: 1 1 auto;
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      padding: 0.85rem 1rem;
+      overflow: hidden;
+    }
+    .acad-shell-foot {
+      flex: 0 0 auto;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.65rem 1rem;
+      border-top: 1px solid rgba(148, 163, 184, 0.15);
+      background: rgba(2, 6, 23, 0.45);
+    }
+    .acad-step-title { flex: 0 0 auto; text-align: center; font-size: 0.9rem; font-weight: 800; color: #f8fafc; line-height: 1.3; }
+    .acad-lines { flex: 0 0 auto; display: grid; gap: 0.35rem; }
+    .acad-line {
+      display: flex; gap: 0.5rem; align-items: flex-start;
+      font-size: 11px; line-height: 1.35; color: #cbd5e1;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-left: 2px solid rgba(34, 211, 238, 0.5);
+      border-radius: 8px; padding: 0.4rem 0.6rem;
+    }
+    .acad-line span { font: 800 10px 'JetBrains Mono', monospace; color: #22d3ee; }
+
+    .acad-felt {
+      position: relative;
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.4rem;
+      padding: 0.75rem 1rem;
+      border-radius: 9% / 15%;
+      border: 6px solid rgba(15, 23, 42, 0.95);
+      outline: 1px solid rgba(16, 185, 129, 0.3);
+      background:
+        radial-gradient(ellipse at 50% 45%, rgba(6, 95, 70, 0.6) 0%, rgba(2, 44, 34, 0.94) 72%),
+        linear-gradient(145deg, #07130f, #040b09);
+      box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.7), 0 12px 28px rgba(0, 0, 0, 0.35);
+      overflow: hidden;
+    }
+    .acad-felt::before {
+      content: ''; position: absolute; inset: 10px;
+      border-radius: inherit; border: 1px solid rgba(16, 185, 129, 0.15);
+      pointer-events: none;
+    }
+    .acad-seat { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 0.6rem; width: 100%; }
+    .acad-seat--villain > div:first-child { border: 1px solid rgba(148, 163, 184, 0.25); background: rgba(2, 6, 23, 0.4); border-radius: 10px; padding: 0.25rem 0.5rem; }
+    .acad-seat--hero > div:last-child { border: 1px solid rgba(16, 185, 129, 0.5); background: rgba(6, 78, 59, 0.35); border-radius: 10px; padding: 0.25rem 0.5rem; }
+    .acad-card-back {
+      width: 30px; height: 42px; border-radius: 6px;
+      border: 2px solid #475569;
+      background: repeating-linear-gradient(45deg, #1e293b, #1e293b 5px, #0f172a 5px, #0f172a 10px);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+    }
+    .acad-board-wrap { position: relative; z-index: 1; text-align: center; }
+    .acad-board { display: flex; justify-content: center; gap: 0.35rem; }
+    .acad-slot { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .acad-slot-label { font: 700 8px 'JetBrains Mono', monospace; letter-spacing: 0.06em; color: #64748b; }
+    .acad-empty { width: 30px; height: 42px; border-radius: 6px; border: 1px dashed rgba(148, 163, 184, 0.35); background: rgba(2, 6, 23, 0.35); }
+    .acad-card--reveal { animation: acadCardIn 0.3s ease both; }
+    @keyframes acadCardIn { from { opacity: 0; transform: translateY(10px) rotate(-6deg) scale(0.85); } to { opacity: 1; transform: none; } }
+    .acad-chip {
+      display: inline-flex; gap: 0.3rem; align-items: center;
+      font: 700 10px 'JetBrains Mono', monospace; color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.25); background: rgba(2, 6, 23, 0.6);
+      border-radius: 999px; padding: 2px 8px;
+    }
+    .acad-chip strong { color: #fbbf24; }
+    .acad-chip--bet strong { color: #fb7185; }
+    .acad-outs { position: relative; z-index: 1; width: 100%; text-align: center; border-top: 1px solid rgba(251, 191, 36, 0.25); padding-top: 0.35rem; }
+    .acad-outs > span { font: 700 9px 'JetBrains Mono', monospace; color: #fbbf24; }
+    .acad-outs .acad-card { transform: scale(0.8); margin: -4px; }
+
+    .acad-actions { flex: 0 0 auto; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
+    .acad-action {
+      border-radius: 11px; border: 1px solid rgba(148, 163, 184, 0.3);
+      background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(8px);
+      color: #e2e8f0; font-size: 11px; font-weight: 800;
+      padding: 0.55rem 0.9rem; transition: border-color 0.15s ease, transform 0.15s ease, background 0.15s ease;
+    }
+    .acad-action:hover { border-color: rgba(16, 185, 129, 0.75); background: rgba(6, 78, 59, 0.8); transform: translateY(-1px); }
+    .acad-action--primary { border-color: rgba(52, 211, 153, 0.7); background: rgba(6, 78, 59, 0.7); color: #a7f3d0; }
+    .acad-action--danger { border-color: rgba(244, 63, 94, 0.4); color: #fda4af; }
+    .acad-feedback { flex: 0 0 auto; border-radius: 12px; border: 1px solid; padding: 0.55rem 0.75rem; animation: acadSlideUp 0.22s ease both; }
+    .acad-feedback strong { display: block; font-size: 12px; margin-bottom: 0.2rem; }
+    .acad-feedback p { font-size: 11px; line-height: 1.4; }
+    .acad-feedback.is-correct { border-color: rgba(16, 185, 129, 0.6); background: rgba(6, 78, 59, 0.35); color: #a7f3d0; }
+    .acad-feedback.is-wrong { border-color: rgba(244, 63, 94, 0.6); background: rgba(76, 5, 25, 0.35); color: #fecdd3; }
+    @keyframes acadSlideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    .acad-duel { flex: 1 1 auto; min-width: 0; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 0.6rem; align-items: center; }
+    .acad-duel--embed { min-height: auto; flex: 0 0 auto; }
+    .acad-duel-hand { border-radius: 14px; border: 1px solid rgba(148, 163, 184, 0.25); background: rgba(2, 6, 23, 0.55); padding: 0.7rem; text-align: center; transition: opacity 0.2s ease, border-color 0.2s ease; }
+    .acad-duel-hand.is-winner { border-color: rgba(16, 185, 129, 0.8); background: rgba(6, 78, 59, 0.4); box-shadow: 0 0 20px rgba(16, 185, 129, 0.25); }
+    .acad-duel-hand.is-loser { opacity: 0.55; }
+    .acad-duel-board {
+      grid-column: 1 / -1;
+      display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+      border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.25);
+      background: rgba(2, 44, 34, 0.45); padding: 0.4rem 0.6rem;
+    }
+    .acad-duel-board-label { font: 700 9px 'JetBrains Mono', monospace; letter-spacing: 0.1em; color: #6ee7b7; }
+    .acad-duel-cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; }
+    .acad-duel-vs { text-align: center; font: 900 12px 'JetBrains Mono', monospace; color: #fbbf24; }
+    .acad-why { flex: 0 0 auto; text-align: center; font-size: 11px; line-height: 1.4; color: #cbd5e1; border-radius: 10px; border: 1px solid rgba(251, 191, 36, 0.3); background: rgba(120, 53, 15, 0.2); padding: 0.5rem 0.7rem; }
+    .acad-summary { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; text-align: center; }
+
+    @media (max-width: 640px) {
+      .acad-shell { height: 100%; min-height: 0; border-radius: 16px; }
+      .acad-shell-head { padding: 0.5rem 0.6rem; gap: 0.4rem; }
+      .acad-shell-body { padding: 0.6rem; gap: 0.5rem; }
+      .acad-shell-foot { padding: 0.5rem 0.6rem; }
+      .acad-step-dot { width: 22px; height: 22px; font-size: 9px; }
+      .acad-card { width: 26px; height: 36px; }
+      .acad-card-rank { font-size: 11px; }
+      .acad-card-suit { font-size: 12px; }
+      .acad-card-back, .acad-empty { width: 26px; height: 36px; }
+      .acad-felt { padding: 0.5rem; border-width: 4px; }
+      .acad-line { font-size: 10px; padding: 0.35rem 0.45rem; }
+      .acad-actions { display: grid; grid-template-columns: 1fr; }
+      .acad-action { width: 100%; padding: 0.45rem 0.6rem; }
+      .acad-duel { grid-template-columns: 1fr; gap: 0.35rem; }
+      .acad-duel-hand { padding: 0.45rem; }
+      .acad-duel-vs { padding: 0.1rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .acad-card--reveal, .acad-feedback { animation: none; }
+    }

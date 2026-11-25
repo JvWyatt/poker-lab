@@ -85,6 +85,7 @@ const app = {
     if (tabId !== 'partidas' && typeof arena !== 'undefined' && arena.isActive) arena.exit();
     if (this.currentTab !== tabId) SoundFX.playNavigate();
     this.currentTab = tabId;
+    document.body.classList.toggle('is-acad-lesson', tabId === 'academia' && appState.academia.v2.view === 'lesson');
     document.querySelectorAll('.view-section').forEach(sec => sec.classList.add('hidden'));
     const target = document.getElementById(`view-${tabId}`);
     if (target) target.classList.remove('hidden');
