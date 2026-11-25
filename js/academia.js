@@ -5,7 +5,7 @@
      exhibit = mostrar con revelación guiada, sin preguntas
      duel    = enfrentar 5 cartas contra 5 cartas
      case    = caso fijo con decisión real y 5 ejemplos
-   Prototipo jugable: clases 1, 3 y 6. El resto aparece "En preparación".
+   Ruta completa: las 12 clases tienen 5 pasos fijos y son jugables.
 ============================================================================ */
 const SUIT_SYMBOL = { s: '♠', h: '♥', d: '♦', c: '♣' };
 const RED_SUITS = new Set(['h', 'd']);
@@ -97,7 +97,72 @@ const LESSONS_DATA = [
         })
     ]
   },
-  { id: 'ranking', number: 2, module: 0, format: 'exhibit', title: 'Ranking de manos', subtitle: 'De carta alta a escalera real', steps: null },
+  {
+    id: 'ranking', number: 2, module: 0, format: 'exhibit',
+    title: 'Ranking de manos', subtitle: 'De carta alta a escalera real',
+    steps: [
+      E('Carta alta contra pareja',
+        { street: 'SHOWDOWN', board: ['Ks', '6d', '9c', '2h', '4s'], pot: 100, hero: ['As', '5c'], villain: ['7s', '7h'], note: 'Carta alta A vs par de 7s' },
+        [
+          'Si no tienes ninguna combinación, tu mano es “carta alta”: se decide por la carta más alta y luego por los kickers.',
+          'Una sola pareja ya supera a cualquier carta alta, aunque tu carta suelta sea un As.',
+          'Aquí el rival tiene un par de 7s y gana; tus A♠ 5♣ no forman pareja ni proyecto completado.'
+        ], 5, {
+          board: ['Ks', '6d', '9c', '2h', '4s'],
+          hands: [{ label: 'MANO A', cards: ['As', '5c'] }, { label: 'MANO B', cards: ['7s', '7h'] }],
+          winner: 'B',
+          why: 'Carta alta As contra pareja de 7s. Cualquier pareja supera a carta alta: gana la Mano B.'
+        }),
+      E('Doble pareja contra trío',
+        { street: 'SHOWDOWN', board: ['Kc', 'Kd', '7c', '2h', '9s'], pot: 140, hero: ['As', '7s'], villain: ['Kh', 'Qd'], note: 'Doble pareja vs trío de Reyes' },
+        [
+          'La doble pareja usa dos pares distintos y un kicker: aquí Reyes y Sietes con As de kicker.',
+          'El trío son tres cartas del mismo valor. Tres Reyes superan siempre a dos pares.',
+          'Para comparar dos tríos se mira primero el valor del trío y después los kickers.'
+        ], 5, {
+          board: ['Kc', 'Kd', '7c', '2h', '9s'],
+          hands: [{ label: 'MANO A', cards: ['As', '7s'] }, { label: 'MANO B', cards: ['Kh', 'Qd'] }],
+          winner: 'B',
+          why: 'La Mano A tiene doble pareja (Reyes y Sietes). La Mano B tiene trío de Reyes. El trío gana.'
+        }),
+      E('Escalera contra trío',
+        { street: 'SHOWDOWN', board: ['5c', '6d', '7h', '2s', 'Kc'], pot: 160, hero: ['8s', '9d'], villain: ['5s', '5h'], note: 'Escalera 5-9 vs trío de 5s' },
+        [
+          'La escalera son cinco cartas consecutivas. Aquí 5-6-7-8-9, sin importar los palos.',
+          'El trío de 5s es fuerte, pero una escalera está un escalón por encima en el ranking.',
+          'Cuando dos escaleras empatan, gana la de mayor carta alta.'
+        ], 5, {
+          board: ['5c', '6d', '7h', '2s', 'Kc'],
+          hands: [{ label: 'MANO A', cards: ['8s', '9d'] }, { label: 'MANO B', cards: ['5s', '5h'] }],
+          winner: 'A',
+          why: 'La Mano A completa 5-6-7-8-9. La Mano B tiene trío de 5s. La escalera gana.'
+        }),
+      E('Full house contra póker',
+        { street: 'SHOWDOWN', board: ['As', 'Ad', '7c', '7d', '2h'], pot: 200, hero: ['7s', 'Kc'], villain: ['Ah', 'Ac'], note: 'Full house de 7s vs cuatro Ases' },
+        [
+          'El full house combina trío y pareja: tres 7s y dos Ases en la Mano A.',
+          'El póker (cuatro cartas iguales) es superior al full house: la Mano B tiene cuatro Ases.',
+          'Sólo la escalera real supera al póker en el ranking completo.'
+        ], 5, {
+          board: ['As', 'Ad', '7c', '7d', '2h'],
+          hands: [{ label: 'MANO A', cards: ['7s', 'Kc'] }, { label: 'MANO B', cards: ['Ah', 'Ac'] }],
+          winner: 'B',
+          why: 'La Mano A tiene full house (7s lleno de Ases). La Mano B tiene cuatro Ases: el póker gana.'
+        }),
+      E('La mano máxima: escalera real',
+        { street: 'SHOWDOWN', board: ['Ts', 'Js', 'Qs', '2c', '7d'], pot: 220, hero: ['Ks', 'As'], villain: ['9h', '9d'], note: 'Escalera real de espadas' },
+        [
+          'La escalera real es A-K-Q-J-T del mismo palo. Es la mano más alta y no puede ser superada.',
+          'Orden completo, de menor a mayor: carta alta, pareja, doble pareja, trío, escalera, color, full house, póker, escalera real.',
+          'Reconocer este orden es todo lo que necesitas antes de comparar manos en un duelo.'
+        ], 5, {
+          board: ['Ts', 'Js', 'Qs', '2c', '7d'],
+          hands: [{ label: 'MANO A', cards: ['Ks', 'As'] }, { label: 'MANO B', cards: ['9h', '9d'] }],
+          winner: 'A',
+          why: 'La Mano A tiene escalera real de espadas. Es la mano máxima: gana a cualquier otra, incluida una pareja de 9s.'
+        })
+    ]
+  },
   {
     id: 'duelos', number: 3, module: 0, format: 'duel',
     title: 'Duelos de 5 cartas', subtitle: 'Cuál gana y por qué',
@@ -119,8 +184,83 @@ const LESSONS_DATA = [
         'A♠ 3♠ con 9♠ 8♠ 7♠ forma color. El color está un escalón por encima de la escalera 7-8-9-T-J.')
     ]
   },
-  { id: 'posiciones', number: 4, module: 1, format: 'exhibit', title: 'Posiciones, ciegas y rondas', subtitle: 'Quién habla y cuándo', steps: null },
-  { id: 'acciones', number: 5, module: 1, format: 'case', title: 'Acciones básicas', subtitle: 'Check, Call, Bet, Raise, Fold', steps: null },
+  {
+    id: 'posiciones', number: 4, module: 1, format: 'exhibit',
+    title: 'Posiciones, ciegas y rondas', subtitle: 'Quién habla y cuándo',
+    steps: [
+      E('El botón y las ciegas',
+        { street: 'PREFLOP', board: [], pot: 3, hero: ['As', '7d'], villain: ['Kh', 'Qc'], villainHidden: true, heroPos: 'BTN', villainPos: 'BB', villainAction: 'Ciegas 1 / 2', note: 'Botón en BTN · ciegas 1 y 2' },
+        [
+          'Un botón giratorio (dealer button) marca quién es el BTN: es la mejor posición porque habla al final en las rondas post-flop.',
+          'A la izquierda del botón están SB (ciega pequeña, 1) y BB (ciega grande, 2). Son apuestas forzadas antes de repartir.',
+          'Las ciegas existen para que siempre haya fichas en el bote y no se pueda esperar gratis.'
+        ], 0),
+      E('Orden de la primera ronda',
+        { street: 'PREFLOP', board: [], pot: 3, hero: ['As', '7d'], villain: ['Kh', 'Qc'], heroPos: 'UTG', villainPos: 'BB', villainAction: 'Ciegas 1 / 2', note: 'Preflop: UTG habla primero, BB al final' },
+        [
+          'En preflop la acción empieza a la izquierda de la BB (UTG) y sigue en sentido horario.',
+          'La BB habla al final de la primera ronda: puede subir (raise), pasar (check) si nadie subió, o retirarse.',
+          'Después del flop el orden cambia: empieza SB y termina el BTN, que siempre cierra la acción.'
+        ], 0),
+      E('Flop: primera ronda post-flop',
+        { street: 'FLOP', board: BASE_BOARD, pot: 40, hero: ['As', '7d'], villain: ['Kh', 'Qc'], heroPos: 'BTN', villainPos: 'BB', villainAction: 'Pasa (Check)', note: '3 comunitarias · bote 40' },
+        [
+          'Tras preflop llegan las tres comunitarias del flop: K♠ Q♦ 7♠.',
+          'La ronda empieza en SB. Sin apuesta viva puedes pasar (check); si hay apuesta, debes pagar, subir o retirarte.',
+          'Ahora ya puedes formar 5 cartas con tus 2 privadas y las 3 de la mesa.'
+        ], 3),
+      E('Turn y River: las últimas rondas',
+        { street: 'RIVER', board: BASE_BOARD, pot: 140, hero: ['As', '7d'], villain: ['Kh', 'Qc'], heroPos: 'BTN', villainPos: 'BB', villainAction: 'Pasa (Check)', note: '5 comunitarias · ya no quedan cartas' },
+        [
+          'El Turn es la cuarta comunitaria (2♣) y el River la quinta (9♥). Cada una abre una ronda nueva de apuestas.',
+          'Las cartas salen flop → turn → river, con una ronda de apuestas entre cada revelación.',
+          'Tras el River no viene nada más: si quedan dos jugadores, se comparan las manos en el showdown.'
+        ], 5),
+      E('Showdown: quién gana y por qué',
+        { street: 'SHOWDOWN', board: BASE_BOARD, pot: 140, hero: ['As', '7d'], villain: ['Kh', 'Qc'], note: 'Comparación final de 5 cartas' },
+        [
+          'En el showdown cada jugador muestra su mejor mano de 5 cartas entre las 7 disponibles.',
+          'Gana el mejor tipo de mano; si empatan, se comparan los kickers uno a uno.',
+          'La posición no decide el ganador: decide quién habla al final y, por tanto, quién controla el bote.'
+        ], 5, {
+          board: BASE_BOARD,
+          hands: [{ label: 'TÚ · BTN', cards: ['As', '7d'] }, { label: 'RIVAL · BB', cards: ['Kh', 'Qc'] }],
+          winner: 'B',
+          why: 'Tienes pareja de 7s. El rival tiene doble pareja de Reyes y Reinas con kicker 9. El doble pareja gana.'
+        })
+    ]
+  },
+  {
+    id: 'acciones', number: 5, module: 1, format: 'case',
+    title: 'Acciones básicas', subtitle: 'Check, Call, Bet, Raise, Fold',
+    steps: [
+      K('Top pair en board seco: ¿apostar o pasar?', flopTable({ board: ['Ks', '7d', '2c'], pot: 60, bet: 0, hero: ['Kh', 'Qd'], villain: ['9h', '8h'], villainProfile: 'TAG', villainAction: 'Pasa (Check)', note: 'Par de Reyes, buen kicker, board seco' }), [
+        O('bet', 'Apostar / Subir por valor', true, 'Correcto. Apostar cobra valor de manos peores y de proyectos como el color del rival. Pasar dejaría de ganar fichas con tu mejor mano.'),
+        O('call', 'Pasar / Pagar', false, 'Pasar es legal, pero aquí es demasiado pasivo: tu par de Reyes debe apostar en un board seco.'),
+        O('fold', 'Retirarte', false, 'No hay apuesta viva y tienes una mano fuerte: retirarte sería regalar el bote.')
+      ]),
+      K('Dos sobrecartas con color projectado', flopTable({ board: ['Th', '7h', '3c'], pot: 80, bet: 40, hero: ['Ah', 'Kh'], villain: ['Qd', '9s'], villainAction: 'Apuesta 40', note: '9 outs de color · pagas 40 para 160' }), [
+        O('call', 'Pasar / Pagar', true, 'Correcto. 40 / (80 + 40 + 40) = 25%. Con 9 outs de color tienes ~35% en el flop: pagar es rentable.'),
+        O('bet', 'Apostar / Subir', false, 'Subir con sobrecartas sin completar no mejora tu precio y puede dejarte sin posición.'),
+        O('fold', 'Retirarte', false, 'Tienes equity suficiente y buen precio: foldear es perder una decisión +EV.')
+      ]),
+      K('Par mínimo contra apuesta grande', flopTable({ board: ['Ks', 'Qd', '7c'], pot: 100, bet: 80, hero: ['3s', '3c'], villain: ['Ah', 'Kd'], villainAction: 'Apuesta 80', note: 'Par de 3s · 2 outs · precio 31%' }), [
+        O('fold', 'Retirarte', true, 'Correcto. Debes pagar 80 para un bote final de 260 (31%). Un par de 3s con 2 outs no llega a ese equity.'),
+        O('call', 'Pasar / Pagar', false, 'Pagar 80 con un par mínimo y pocos outs es perder fichas de forma repetida.'),
+        O('bet', 'Apostar / Subir', false, 'Subir con la peor pareja contra un rango fuerte sólo añade pérdidas.')
+      ]),
+      K('Sin pareja y sin apuesta viva', flopTable({ board: ['9d', '6c', '2h'], pot: 80, bet: 0, hero: ['Ah', 'Kd'], villain: ['7s', '8s'], villainAction: 'Pasa (Check)', note: 'No hay apuesta: puedes pasar gratis' }), [
+        O('check', 'Pasar / Pagar (Check)', true, 'Correcto. Si nadie apostó, no hay nada que pagar: puedes pasar sin coste y ver el turn.'),
+        O('bet', 'Apostar / Subir', false, 'Podrías farolear, pero con dos sobrecartas sin proyecto claro y fuera de plan, pasar es la acción básica correcta.'),
+        O('fold', 'Retirarte', false, 'Nunca te retires cuando no hay apuesta: es gratis continuar.')
+      ]),
+      K('Trío en el flop: ¿pagar o subir?', flopTable({ board: ['8c', '4d', 'Js'], pot: 100, bet: 60, hero: ['8h', '8d'], villain: ['Kh', 'Qh'], villainAction: 'Apuesta 60', note: 'Trío de 8s · sube por valor' }), [
+        O('bet', 'Apostar / Subir', true, 'Correcto. Con trío, subir exige más fichas a manos peores y a proyectos. Pagar sólo es suficiente con manos más débiles.'),
+        O('call', 'Pasar / Pagar', false, 'Pagar es rentable, pero deja valor sobre la mesa: tu trío tiene ventaja clara.'),
+        O('fold', 'Retirarte', false, 'Un trío nunca se foldea a una apuesta de este tamaño en el flop.')
+      ])
+    ]
+  },
   {
     id: 'pot_odds', number: 6, module: 2, format: 'case',
     title: 'Pot Odds', subtitle: 'Cuándo pagar según el precio',
@@ -152,12 +292,192 @@ const LESSONS_DATA = [
       ])
     ]
   },
-  { id: 'outs', number: 7, module: 2, format: 'case', title: 'Outs y regla del 4 y del 2', subtitle: 'Estima tu equity en segundos', steps: null },
-  { id: 'posicion', number: 8, module: 3, format: 'case', title: 'Ventaja de posición', subtitle: 'IP vs OOP', steps: null },
-  { id: 'cbet', number: 9, module: 3, format: 'case', title: 'C-Bet según textura', subtitle: 'Boards secos y mojados', steps: null },
-  { id: 'spr', number: 10, module: 3, format: 'case', title: 'SPR y compromiso', subtitle: 'Cuánto vale una pareja', steps: null },
-  { id: 'semibluff', number: 11, module: 4, format: 'case', title: 'Semi-farol y bloqueadores', subtitle: 'Dos formas de ganar', steps: null },
-  { id: 'gto', number: 12, module: 4, format: 'case', title: 'GTO y explotación', subtitle: 'Frecuencias y perfiles', steps: null }
+  {
+    id: 'outs', number: 7, module: 2, format: 'case',
+    title: 'Outs y regla del 4 y del 2', subtitle: 'Estima tu equity en segundos',
+    steps: [
+      K('Color en flop, apuesta pequeña', flopTable({ board: ['9h', '8h', '2c'], pot: 100, bet: 25, hero: ['Ah', '5h'], villain: ['Kd', 'Qd'], villainAction: 'Apuesta 25', outCards: HEART_OUTS, note: '9 outs × 4 ≈ 36% · necesitas 16,7%' }), [
+        O('call', 'Pasar / Pagar', true, 'Correcto. En flop, 9 outs × 4 ≈ 36%. Pagas 25 para 150 (16,7%): hay mucha margen.'),
+        O('fold', 'Retirarte', false, 'Tu color liga casi el doble de lo que exige el precio: foldear es un error.'),
+        O('bet', 'Apostar / Subir', false, 'Con un proyecto todavía sin completar, la decisión limpia es pagar este precio tan bajo.')
+      ]),
+      K('Color en turn, apuesta de bote', turnTable({ board: ['9h', '8h', '2c', '4d'], pot: 100, bet: 100, hero: ['Ah', '5h'], villain: ['Kd', 'Qd'], villainAction: 'Apuesta 100', outCards: HEART_OUTS, note: '9 outs × 2 ≈ 18% · necesitas 33%' }), [
+        O('fold', 'Retirarte', true, 'Correcto. En turn se usa la regla del 2: 9 × 2 ≈ 18%. Necesitas 100 / 300 = 33%: el precio es malo.'),
+        O('call', 'Pasar / Pagar', false, 'El mismo color que era rentable en el flop ya no lo es en el turn con una apuesta de bote.'),
+        O('bet', 'Apostar / Subir', false, 'Subir sin haber completado el color y con pocos outs realizables empeora la decisión.')
+      ]),
+      K('Escalera abierta en flop', flopTable({ board: ['9d', '6c', '2h'], pot: 100, bet: 60, hero: ['8s', '7s'], villain: ['Ah', 'Kd'], villainAction: 'Apuesta 60', outCards: STRAIGHT_8_OUTS, note: '8 outs × 4 ≈ 32% · necesitas 27%' }), [
+        O('call', 'Pasar / Pagar', true, 'Correcto. Ocho outs en flop valen ~32% (8 × 4). Pagas 60 para 220 (27%): rentable.'),
+        O('fold', 'Retirarte', false, 'Tienes margen suficiente sobre las pot odds: foldear desperdicia una buena escalera projectada.'),
+        O('bet', 'Apostar / Subir', false, 'Tu proyecto es bueno, pero subir no mejora el precio que te están dando.')
+      ]),
+      K('Gutshot en turn con buen precio', turnTable({ board: ['9d', '6c', '2h', '3s'], pot: 200, bet: 50, hero: ['8s', '7s'], villain: ['Ah', 'Kd'], villainAction: 'Apuesta 50', outCards: GUTSHOT_4_OUTS, note: '4 outs × 2 ≈ 9% · necesitas 16,7%' }), [
+        O('fold', 'Retirarte', true, 'Correcto. En turn, 4 outs × 2 ≈ 9%. Aunque el precio parezca barato, necesitas 16,7%.'),
+        O('call', 'Pasar / Pagar', false, 'Un gutshot en turn sólo tiene una carta para ligar: 9% no cubre el 16,7% exigido.'),
+        O('bet', 'Apostar / Subir', false, 'Con 4 outs no hay ni equity ni fold equity suficiente para subir.')
+      ]),
+      K('Color en turn con precio bajo', turnTable({ board: ['9h', '8h', '2c', '4d'], pot: 300, bet: 60, hero: ['Ah', '5h'], villain: ['Kd', 'Qd'], villainAction: 'Apuesta 60', outCards: HEART_OUTS, note: '9 outs × 2 ≈ 18% · necesitas 14,3%' }), [
+        O('call', 'Pasar / Pagar', true, 'Correcto. En turn, 9 × 2 ≈ 18% y pagas 60 para 420 (14,3%). La regla del 2 justifica el call.'),
+        O('fold', 'Retirarte', false, 'El bote es grande y el precio bajo: tu equity supera lo exigido.'),
+        O('bet', 'Apostar / Subir', false, 'No necesitas subir: con este precio, pagar ya es una decisión rentable.')
+      ])
+    ]
+  },
+  {
+    id: 'posicion', number: 8, module: 3, format: 'case',
+    title: 'Ventaja de posición', subtitle: 'IP vs OOP',
+    steps: [
+      K('BTN con top pair, rival pasa', flopTable({ board: ['Ks', '7d', '2c'], pot: 80, bet: 0, hero: ['Kd', 'Qd'], villain: ['9h', '8h'], heroPos: 'BTN', villainPos: 'BB', villainAction: 'Pasa (Check)', note: 'IP · par de Reyes · bote 80' }), [
+        O('bet', 'Apostar / Subir', true, 'Correcto. En posición puedes apostar por valor y, si el rival sube, ver su acción antes de decidir. El BTN controla la ronda.'),
+        O('call', 'Pasar / Pagar', false, 'Pasar en posición con top pair cede el control del bote a una mano que actuará en peor posición.'),
+        O('fold', 'Retirarte', false, 'Tienes una mano fuerte y no hay apuesta: retirarte es imposible de justificar.')
+      ]),
+      K('BB con par débil, rival pasa', flopTable({ board: ['Ks', '7d', '2c'], pot: 80, bet: 0, hero: ['7s', '6s'], villain: ['Ah', 'Kc'], heroPos: 'BB', villainPos: 'BTN', villainAction: 'Pasa (Check)', note: 'OOP · par de 7s · bote 80' }), [
+        O('check', 'Pasar / Pagar (Check)', true, 'Correcto. Fuera de posición, pasar controla el bote y evita quedar atrapado por un raise del BTN. Tu par de 7s no quiere inflar el pozo.'),
+        O('bet', 'Apostar / Subir', false, 'Apostar OOP con un par débil te enfrenta a un raise con posición: pierdes el control.'),
+        O('fold', 'Retirarte', false, 'Sin apuesta viva no hay que foldear: ver el turn es gratis.')
+      ]),
+      K('IP con par medio en river', riverTable({ board: ['9c', '6d', '2h', '4s', 'Kc'], pot: 120, bet: 40, hero: ['9s', '8s'], villain: ['Ah', 'Kd'], heroPos: 'BTN', villainPos: 'BB', villainAction: 'Apuesta 40', note: 'IP · par de 9s · paga 40 para 200' }), [
+        O('call', 'Pasar / Pagar', true, 'Correcto. Con posición realizas mejor tu equity: pagas 40 para 200 (20%) y tu par medio puede ganar en el showdown.'),
+        O('bet', 'Apostar / Subir', false, 'Subir con par medio convierte una mano de showdown en un farol caro sin adaptación de rango.'),
+        O('fold', 'Retirarte', false, 'El precio es razonable y estás en posición: foldear es demasiado ajustado.')
+      ]),
+      K('OOP con la misma mano y más precio', riverTable({ board: ['9c', '6d', '2h', '4s', 'Kc'], pot: 120, bet: 80, hero: ['9s', '8s'], villain: ['Ah', 'Kd'], heroPos: 'BB', villainPos: 'BTN', villainAction: 'Apuesta 80', note: 'OOP · par de 9s · paga 80 para 280' }), [
+        O('fold', 'Retirarte', true, 'Correcto. Misma mano, pero fuera de posición y con precio mayor (80 para 280 = 28,6%). El par medio no realiza suficiente equity OOP.'),
+        O('call', 'Pasar / Pagar', false, 'El mismo par que podías pagar en posición se vuelve perdedor OOP y con peor precio.'),
+        O('bet', 'Apostar / Subir', false, 'No hay valor en subir con par medio contra un rango que te tiene en desventaja posicional.')
+      ]),
+      K('BTN con top pair tras check del rival', flopTable({ board: ['As', '7d', '2c'], pot: 80, bet: 0, hero: ['Ah', 'Kd'], villain: ['9h', '8h'], heroPos: 'BTN', villainPos: 'BB', villainAction: 'Pasa (Check)', note: 'IP · top pair · bote 80' }), [
+        O('bet', 'Apostar / Subir', true, 'Correcto. En posición, apostar pequeño con top pair cobra valor y obtiene información antes de la siguiente ronda.'),
+        O('check', 'Pasar / Pagar (Check)', false, 'Pasar en el BTN con top pair renuncia al valor de tu mejor posición.'),
+        O('fold', 'Retirarte', false, 'No tienes apuesta en contra y tu mano es fuerte: nunca foldees.')
+      ])
+    ]
+  },
+  {
+    id: 'cbet', number: 9, module: 3, format: 'case',
+    title: 'C-Bet según textura', subtitle: 'Boards secos y mojados',
+    steps: [
+      K('Board seco y alto: A-7-2', flopTable({ board: ['As', '7d', '2c'], pot: 100, bet: 0, hero: ['Ah', 'Kd'], villain: ['9h', '8h'], villainAction: 'Pasa (Check)', note: 'Fuiste el agresor preflop · top pair' }), [
+        O('bet', 'Apostar / Subir pequeño', true, 'Correcto. En A-7-2 sin draws claros, tu rango de preflop tiene mucha ventaja. Una C-Bet pequeña cobra valor y gana al instante.'),
+        O('check', 'Pasar / Pagar (Check)', false, 'Pasar aquí desaprovecha la ventaja de rango que tienes como agresor preflop en un board seco.'),
+        O('fold', 'Retirarte', false, 'No hay apuesta en contra y tienes top pair: retirarte es un error grave.')
+      ]),
+      K('Board mojado: 9♥-8♥-2♣', flopTable({ board: ['9h', '8h', '2c'], pot: 100, bet: 0, hero: ['As', 'Ks'], villain: ['7d', '6d'], villainAction: 'Pasa (Check)', note: 'Sobrecartas sin pareja · board coordinado' }), [
+        O('check', 'Pasar / Pagar (Check)', true, 'Correcto. En un board mojado con muchos draws y manos que ligaron, A♠ K♠ no tiene suficiente equity para farolear. Pasar controla el bote.'),
+        O('bet', 'Apostar / Subir', false, 'La C-Bet automática falla aquí: este board golpea los rangos de defensa y tendrás que jugar turn OOP.'),
+        O('fold', 'Retirarte', false, 'Sin apuesta viva puedes pasar gratis y conservar tus sobrecartas.')
+      ]),
+      K('Par inferior en board seco K-7-2', flopTable({ board: ['Ks', '7d', '2c'], pot: 100, bet: 0, hero: ['6s', '6h'], villain: ['Ah', 'Kd'], villainAction: 'Pasa (Check)', note: 'Par de 6s · no supera la carta alta de la mesa' }), [
+        O('check', 'Pasar / Pagar (Check)', true, 'Correcto. Tu par de 6s es inferior a la K de la mesa y no tiene valor contra manos peores que paguen. Pasar y ver el turn.'),
+        O('bet', 'Apostar / Subir', false, 'Apostar aquí sólo consigue que te suban con manos mejores: es un farol sin equity.'),
+        O('fold', 'Retirarte', false, 'No hay apuesta viva: pasar es gratis.')
+      ]),
+      K('Board pareado K-K-7 con trío', flopTable({ board: ['Kc', 'Kd', '7c'], pot: 100, bet: 0, hero: ['Kh', 'Qd'], villain: ['9s', '8s'], villainAction: 'Pasa (Check)', note: 'Trío de Reyes · board pareado' }), [
+        O('bet', 'Apostar / Subir', true, 'Correcto. Con trío apuestas por valor sí o sí: las manos con 7s, pares menores y draws te pagarán.'),
+        O('check', 'Pasar / Pagar (Check)', false, 'Pasar un trío es perder valor. Aunque el board esté pareado, tu mano está muy por encima del rango del rival.'),
+        O('fold', 'Retirarte', false, 'No hay apuesta en contra y tu mano es enorme: foldear es impensable.')
+      ]),
+      K('Sobrepar en board semimojado', flopTable({ board: ['Jc', '8d', '3s'], pot: 120, bet: 0, hero: ['Qh', 'Qd'], villain: ['As', 'Kh'], villainAction: 'Pasa (Check)', note: 'Sobrepar de Reinas · board con draws' }), [
+        O('bet', 'Apostar / Subir grande', true, 'Correcto. Con sobrepar apuestas tamaño grande en un board que permite draws: cobras valor y niegas precios baratos a proyectos.'),
+        O('check', 'Pasar / Pagar (Check)', false, 'Dar check gratis a manos con draws en J-8-3 permite que liguen barato. Tu sobrepar necesita protección.'),
+        O('fold', 'Retirarte', false, 'No hay apuesta viva y tienes una mano fuerte.')
+      ])
+    ]
+  },
+  {
+    id: 'spr', number: 10, module: 3, format: 'case',
+    title: 'SPR y compromiso', subtitle: 'Cuánto vale una pareja',
+    steps: [
+      K('SPR 0,5: ya estás comprometido', riverTable({ board: ['Ks', '7d', '2c', '4h', '9s'], pot: 200, bet: 40, hero: ['Kh', 'Qd'], villain: ['Qh', 'Jd'], villainAction: 'Apuesta 40', note: 'SPR 0,5 · top pair · pagas 40 para 280' }), [
+        O('call', 'Pasar / Pagar', true, 'Correcto. Con SPR 0,5 tu pila es corta respecto al bote: 40 / 280 ≈ 14%. Tu top pair gana muy a menudo y foldear sería terrible.'),
+        O('bet', 'Apostar / Subir', false, 'Subir con SPR tan bajo no añade presión: estás casi all-in y el rival no va a foldear mejor.'),
+        O('fold', 'Retirarte', false, 'Foldear top pair por 40 en un bote de 200 es regalar fichas.')
+      ]),
+      K('SPR 8: bote profundo, kicker débil', flopTable({ board: ['Ks', '7d', '2c'], pot: 40, bet: 0, hero: ['Kh', '9d'], villain: ['Ah', 'Kd'], heroPos: 'BB', villainPos: 'BTN', villainAction: 'Pasa (Check)', note: 'SPR 8 · par de Reyes con kicker 9' }), [
+        O('check', 'Pasar / Pagar (Check)', true, 'Correcto. Con SPR alto no quieres inflar el bote con par de Reyes y kicker débil. Pasar mantiene el pozo pequeño y limita tu riesgo.'),
+        O('bet', 'Apostar / Subir', false, 'En un bote profundo, apostar grande con kicker débil construye un bote que no puedes ganar cómodamente.'),
+        O('fold', 'Retirarte', false, 'Sin apuesta viva no hay que foldear tu par.')
+      ]),
+      K('SPR 2: sobrepar con espacio', flopTable({ board: ['9d', '4c', 'Js'], pot: 60, bet: 30, hero: ['Ah', 'Ad'], villain: ['Kd', 'Qd'], villainAction: 'Apuesta 30', note: 'SPR 2 · sobrepar de Ases' }), [
+        O('bet', 'Apostar / Subir', true, 'Correcto. Con SPR 2 hay espacio para construir el bote y tu sobrepar está muy por encima del rango del rival. Subir por valor.'),
+        O('call', 'Pasar / Pagar', false, 'Pagar es rentable, pero con SPR 2 dejas valor: subir tiene mejor EV.'),
+        O('fold', 'Retirarte', false, 'Un sobrepar nunca se foldea a una apuesta de medio bote.')
+      ]),
+      K('SPR 1: color projectado con buen precio', turnTable({ board: ['9h', '8h', '2c', '4d'], pot: 100, bet: 20, hero: ['Ah', '5h'], villain: ['Kd', 'Qd'], villainAction: 'Apuesta 20', outCards: HEART_OUTS, note: 'SPR 1 · 9 outs · paga 20 para 140' }), [
+        O('call', 'Pasar / Pagar', true, 'Correcto. Con SPR 1, si ligas podrás cobrar el resto de la pila. Pagas 20 para 140 (14,3%) y tus 9 outs valen ~18-20%: el precio es suficiente.'),
+        O('fold', 'Retirarte', false, 'El bajo SPR mejora tus implied odds: no foldees un color projectado con este precio.'),
+        O('bet', 'Apostar / Subir', false, 'Subir con un proyecto sin completar contra un rango fuerte no aporta fold equity suficiente.')
+      ]),
+      K('SPR 10: par mínimo ante apuesta de bote', flopTable({ board: ['Ks', 'Qd', '7c'], pot: 50, bet: 50, hero: ['3s', '3c'], villain: ['Ah', 'Kd'], villainAction: 'Apuesta 50', note: 'SPR 10 · paga 50 para 150 (33%)' }), [
+        O('fold', 'Retirarte', true, 'Correcto. Con SPR 10 hay mucha pila por detrás y un par de 3s tiene pocos outs. Pagar 50 para 150 exige 33% que no tienes.'),
+        O('call', 'Pasar / Pagar', false, 'El bote profundo castiga a las manos débiles: pagar par mínimo aquí es -EV.'),
+        O('bet', 'Apostar / Subir', false, 'Subir con la peor pareja y mucha pila pendiente es la peor opción.')
+      ])
+    ]
+  },
+  {
+    id: 'semibluff', number: 11, module: 4, format: 'case',
+    title: 'Semi-farol y bloqueadores', subtitle: 'Dos formas de ganar',
+    steps: [
+      K('Color projectado: dos formas de ganar', flopTable({ board: ['9h', '8h', '2c'], pot: 100, bet: 0, hero: ['Ah', '5h'], villain: ['7s', '6s'], villainAction: 'Pasa (Check)', outCards: HEART_OUTS, note: '9 outs + fold equity · bote 100' }), [
+        O('bet', 'Apostar / Subir', true, 'Correcto. Es un semi-farol: puedes ganar ahora si el rival foldea, o completar tu color en el turn. Con 9 outs tienes equity real aunque te llamen.'),
+        O('check', 'Pasar / Pagar (Check)', false, 'Pasar pierde la oportunidad de fold equity: tu mano gana de dos formas y debes aprovecharlas.'),
+        O('fold', 'Retirarte', false, 'Tienes una de las mejores manos de proyecto del flop: foldear sería desperdiciar equity.')
+      ]),
+      K('Gutshot contra un Nit', flopTable({ board: ['9d', '6c', '2h'], pot: 100, bet: 0, hero: ['8s', '7s'], villain: ['Ah', 'Kd'], villainProfile: 'Nit', villainAction: 'Pasa (Check)', outCards: GUTSHOT_4_OUTS, note: '4 outs · Nit casi no foldea' }), [
+        O('check', 'Pasar / Pagar (Check)', true, 'Correcto. Un semi-farol necesita folds. Contra un Nit que no abandona manos, 4 outs no bastan: pasa y busca precio barato.'),
+        O('bet', 'Apostar / Subir', false, 'Farolear contra quien no foldea es perder fichas: aquí no hay fold equity suficiente.'),
+        O('fold', 'Retirarte', false, 'Tu gutshot tiene algo de equity y no hay apuesta: pasar es gratis.')
+      ]),
+      K('Farol en River con bloqueador A♥', riverTable({ board: ['9h', '8h', '2c', '4d', 'Kd'], pot: 100, bet: 0, hero: ['Ah', 'Qs'], villain: ['7s', '6s'], villainAction: 'Pasa (Check)', note: 'A♥ bloquea combinaciones de color' }), [
+        O('bet', 'Apostar / Subir', true, 'Correcto. Tu A♥ bloquea las manos de color fuerte que el rival podría tener y tu farol puede hacer foldear pares medianos. Aquí el bloqueador importa.'),
+        O('check', 'Pasar / Pagar (Check)', false, 'Con toda tu gama de faroles bloqueada y el rival capacitado para foldear, pasar deja escapar el farol.'),
+        O('fold', 'Retirarte', false, 'No hay apuesta viva: foldear no tiene sentido cuando puedes farolear.')
+      ]),
+      K('Farol sin bloqueador contra Station', riverTable({ board: ['9h', '8h', '2c', '4d', 'Kd'], pot: 100, bet: 0, hero: ['As', 'Qs'], villain: ['7h', '6h'], villainProfile: 'Calling Station', villainAction: 'Pasa (Check)', note: 'Sin bloqueador · Station no foldea' }), [
+        O('check', 'Pasar / Pagar (Check)', true, 'Correcto. El farol necesita que el rival foldee y una Calling Station no lo hace. Sin bloqueador, apostar es regalar fichas.'),
+        O('bet', 'Apostar / Subir', false, 'Contra un jugador que paga demasiado, farolear es -EV: apuesta sólo con valor.'),
+        O('fold', 'Retirarte', false, 'Sin apuesta en contra, pasar gratis es mejor que foldear.')
+      ]),
+      K('Turn: semi-farol contra apuesta', turnTable({ board: ['9h', '8h', '2c', '4d'], pot: 100, bet: 40, hero: ['Ah', '5h'], villain: ['Kd', 'Qd'], villainAction: 'Apuesta 40', outCards: HEART_OUTS, note: '9 outs + posibilidad de fold' }), [
+        O('bet', 'Apostar / Subir', true, 'Correcto. Subir con tu color projectado combina equity real con fold equity: puedes ganar ya o ligar en el river.'),
+        O('call', 'Pasar / Pagar', false, 'Pagar es válido, pero aquí la subida es mejor: el rival puede foldear manos que te superan.'),
+        O('fold', 'Retirarte', false, 'Con 9 outs y algo de fold equity, retirarte es demasiado débil.')
+      ])
+    ]
+  },
+  {
+    id: 'gto', number: 12, module: 4, format: 'case',
+    title: 'GTO y explotación', subtitle: 'Frecuencias y perfiles',
+    steps: [
+      K('Frecuencia mixta aproximada en BTN', flopTable({ board: ['Ks', '7d', '2c'], pot: 100, bet: 30, hero: ['Ah', 'Jh'], villain: ['Qd', '9d'], heroPos: 'BTN', villainPos: 'BB', villainProfile: 'TAG', villainAction: 'Apuesta 30', note: 'Aproximación GTO · sobrecartas + cola de color' }), [
+        O('call', 'Pasar / Pagar', true, 'Correcto según nuestra aproximación GTO determinista: con dos sobrecartas y cola de color, pagar entra en la frecuencia mixta. 30 para 160 es 18,75%.'),
+        O('fold', 'Retirarte', false, 'Foldear sobrecartas con cola de color a ese precio es excesivo en una estrategia equilibrada.'),
+        O('bet', 'Apostar / Subir', false, 'Subir sin pareja ni draw completo añade riesgo; la frecuencia mixta prefiere pagar aquí.')
+      ]),
+      K('Calling Station: apuesta por valor', riverTable({ board: ['Ks', '7d', '2c', '4h', '9s'], pot: 100, bet: 0, hero: ['Kh', 'Ad'], villain: ['Qd', 'Qc'], villainProfile: 'Calling Station', villainAction: 'Pasa (Check)', note: 'Station paga demasiado · top pair' }), [
+        O('bet', 'Apostar / Subir', true, 'Correcto. Explotación: contra quien paga demasiado, apuesta por valor con top pair y no intentes faroles. Aquí tu ventaja está en cobrar.'),
+        O('check', 'Pasar / Pagar (Check)', false, 'Pasar con una mano fuerte contra un Station es perder valor: va a pagar con manos peores.'),
+        O('fold', 'Retirarte', false, 'No hay apuesta viva y tienes top pair.')
+      ]),
+      K('Nit sube en River', riverTable({ board: ['As', '9d', '4c', '6h', '2s'], pot: 100, bet: 80, hero: ['Kd', 'Qd'], villain: ['Ah', 'Kc'], villainProfile: 'Nit', villainAction: 'Apuesta 80', note: 'Rango muy fuerte · paga 80 para 260' }), [
+        O('fold', 'Retirarte', true, 'Correcto. Explotación: un Nit que apuesta fuerte en el river tiene casi siempre una mano superior. Tu K♦ Q♦ no gana lo suficiente.'),
+        O('call', 'Pasar / Pagar', false, 'Pagar 80 para 260 exige 30,7% de equity; contra el rango real de un Nit no lo tienes.'),
+        O('bet', 'Apostar / Subir', false, 'Subir contra un rango que te domina sólo aumenta la pérdida.')
+      ]),
+      K('Maníaco sobreapuesta el flop', flopTable({ board: ['7h', '6c', '2d'], pot: 100, bet: 80, hero: ['Ah', 'Kd'], villain: ['9s', '8s'], villainProfile: 'Maníaco', villainAction: 'Apuesta 80 (overbet)', note: 'Rango débil · paga 80 para 260' }), [
+        O('call', 'Pasar / Pagar', true, 'Correcto. Explotación: un Maníaco sobreapuesta con muchas manos débiles. Tus dos sobrecartas tienen suficiente equity contra ese rango para pagar.'),
+        O('fold', 'Retirarte', false, 'Foldear aquí es dejarse explotar por un rival que apuesta demasiado con aire.'),
+        O('bet', 'Apostar / Subir', false, 'Con sobrecartas sin completar, subir no es necesario: llama y decide con posición en turn.')
+      ]),
+      K('Weak-Tight tras tu C-Bet', turnTable({ board: ['Js', '8d', '3c', '2h'], pot: 100, bet: 0, hero: ['As', 'Ks'], villain: ['Qh', 'Qd'], villainProfile: 'Weak-Tight', villainAction: 'Pasa (Check)', note: 'Foldea demasiado tras C-Bet' }), [
+        O('bet', 'Apostar / Subir', true, 'Correcto. Explotación: un Weak-Tight abandona manos medianas cuando sigues presionando. Tu farol con sobrecartas tiene fold equity real.'),
+        O('check', 'Pasar / Pagar (Check)', false, 'Pasar le permite ver el river gratis con una mano que habría foldeado.'),
+        O('fold', 'Retirarte', false, 'No hay apuesta en contra y tienes una oportunidad clara de farol.')
+      ])
+    ]
+  }
 ];
 
 /* ---------------------------------------------------------------------------
@@ -357,7 +677,10 @@ const academia = {
 
   acknowledge() {
     const lesson = this.currentLesson();
-    this.completeStep(lesson, true);
+    const step = this.currentStep();
+    if (!step || step.kind !== 'exhibit') return;
+    const progress = this.progressOf(lesson.id);
+    if (progress < 5 && this.activeStepIndex === progress) this.completeStep(lesson, true);
     this.next();
   },
 
@@ -392,8 +715,9 @@ const academia = {
   },
 
   completeStep(lesson, silent) {
-    if (this.activeStepIndex >= this.progressOf(lesson.id)) {
-      appState.academia.v2.stepProgress[lesson.id] = this.activeStepIndex + 1;
+    const progress = this.progressOf(lesson.id);
+    if (progress < 5 && this.activeStepIndex >= progress) {
+      appState.academia.v2.stepProgress[lesson.id] = Math.min(5, this.activeStepIndex + 1);
       if (this.activeStepIndex + 1 >= 5 && !appState.academia.completedIds.includes(lesson.id)) {
         appState.academia.completedIds.push(lesson.id);
         showToast('Clase completada · ruta desbloqueada', 'success');
@@ -483,7 +807,7 @@ const academia = {
       : this.renderFelt(step.table, { revealCount: step.revealCount, showVillain: !step.table.villainHidden });
     return `
       ${cards}
-      <div class="acad-lines">
+      <div class="acad-lines ${step.showdown ? 'acad-lines--compact' : ''}">
         ${step.lines.map((line, i) => `<p class="acad-line"><span>${i + 1}</span>${line}</p>`).join('')}
       </div>
     `;

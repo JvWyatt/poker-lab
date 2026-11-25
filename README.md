@@ -143,10 +143,11 @@ Módulos: `0 Cero absoluto` (regla de 2 + 5 = 5, ranking, duelos),
 `2 Números` (pot odds, outs y equity), `3 Táctica` (posición, C-Bet, SPR) y
 `4 Estrategia` (semi-farol, GTO y explotación).
 
-**Estado del rediseño:** prototipo jugable con las clases 1 (Mostrar), 3
-(Duelo) y 6 (Casos); las otras 9 aparecen como `EN PREPARACIÓN`.
+**Estado del rediseño:** las 12 clases están completas y son jugables: 60
+pasos fijos en total (5 por clase), con cartas y situaciones deterministas para
+poder repetir cualquier paso. No queda ninguna clase en `EN PREPARACIÓN`.
 
 El avance nuevo se guarda por paso en `appState.academia.v2.stepProgress`, con
-la clase y el paso activos en `appState.academia.v2`; al recargar se restaura
-la vista y el paso exactos. El progreso anterior (`caseProgress`) se conserva
-por separado para no pisar partidas ya resueltas.
+la clase y el paso activos en `appState.academia.v2`; al volver a entrar en
+Academia se restaura la clase y el paso exactos. El progreso anterior
+(`caseProgress`) se conserva por separado para no pisar partidas ya resueltas.
