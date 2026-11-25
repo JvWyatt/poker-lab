@@ -141,6 +141,9 @@
 
     /* Visible chip piles using the provided 5x2 sprite sheet (teal background removed) */
     .chip-stacks {
+      --chip-u: 32px;
+      --chip-v: 36px;
+      --chip-step: 8px;
       display: flex;
       align-items: flex-end;
       gap: 2px;
@@ -149,15 +152,15 @@
     .chip-pile {
       position: relative;
       display: block;
-      width: 32px;
+      width: var(--chip-u, 32px);
       pointer-events: none;
       filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.75));
     }
     .chip-sprite {
       --col: 0;
       --row: 0;
-      --u: 32px;
-      --v: 36px;
+      --u: var(--chip-u, 32px);
+      --v: var(--chip-v, 36px);
       position: absolute;
       left: 0;
       bottom: 0;
@@ -195,8 +198,10 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-width: 56px;
-      padding: 3px 7px;
+      width: 51px;
+      height: 39px;
+      min-width: 0;
+      padding: 2px 3px;
       border-radius: 7px;
       border: 1px solid rgba(253, 230, 138, 0.75);
       background: linear-gradient(#f59e0b, #b45309);
@@ -211,15 +216,36 @@
 
     /* All-in: triangular card with the shoved amount */
     .chip-card--allin {
-      width: 68px;
-      height: 52px;
+      width: 51px;
+      height: 39px;
       min-width: 0;
-      padding: 0 0 7px;
+      padding: 0 0 4px;
       border: 0;
       border-radius: 0;
       justify-content: flex-end;
       clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
       background: linear-gradient(#fbbf24, #b45309);
+    }
+
+    /* Responsive: fichas más pequeñas para no invadir texto en móvil */
+    @media (max-width: 640px) {
+      .chip-stacks { --chip-u: 24px; --chip-v: 27px; --chip-step: 6px; gap: 1px; }
+      .chip-amount { font-size: 9px; }
+      .chip-card, .chip-card--allin { width: 42px; height: 33px; }
+      .chip-card { padding: 1px 2px; }
+      .chip-card--allin { padding-bottom: 3px; }
+      .chip-card-value { font-size: 10px; }
+      .chip-card-unit { font-size: 6px; }
+      /* Compact panels keep chips clear of text on narrow screens.
+         Counter-scale cards so all-in and big-pot cards render at the same 42×33. */
+      #table-seats-layer > div > div { transform: scale(0.88); }
+      #table-seats-layer .hero-panel { width: 168px; min-width: 168px; }
+      #table-seats-layer .chip-card,
+      #table-seats-layer .chip-card--allin {
+        width: calc(42px / 0.88);
+        height: calc(33px / 0.88);
+      }
+      .profile-tag, .last-action { display: none; }
     }
 
     @media (prefers-reduced-motion: reduce) {

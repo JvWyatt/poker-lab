@@ -145,7 +145,7 @@ const eyeballHUD = {
     }
     container.className = 'grid grid-cols-1 gap-1.5';
     container.innerHTML = items.map((item, i) => `
-      <div class="hud-card rounded-xl border bg-slate-950/85 backdrop-blur-md px-1.5 py-2 min-h-[54px] flex flex-col items-center justify-center ${item.tone}"
+      <div class="hud-card aspect-square rounded-xl border bg-slate-950/85 backdrop-blur-md px-1 py-1 flex flex-col items-center justify-center ${item.tone}"
            style="animation-delay: ${i * 45}ms">
         <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">${item.key}</span>
         <span class="text-[13px] sm:text-sm font-extrabold font-mono leading-tight whitespace-nowrap">${item.value}</span>

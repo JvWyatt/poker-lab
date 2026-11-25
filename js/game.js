@@ -30,7 +30,7 @@ const CHIP_DENOMINATIONS = [
 const CHIP_STACK_STEP = 8;       // px visibles de cada ficha al apilar
 const CHIP_STACK_MAX = 5;        // máximo de fichas por montón
 const CHIP_STACKS_PLAYER = 3;    // montones permitidos en la apuesta de cada jugador
-const CHIP_STACKS_POT = 5;       // montones permitidos en el bote
+const CHIP_STACKS_POT = 3;       // montones permitidos en el bote
 
 /**
  * Coordenadas exactas en sentido horario alrededor de la mesa ovalada
@@ -39,24 +39,24 @@ const CHIP_STACKS_POT = 5;       // montones permitidos en el bote
  */
 const SEAT_LAYOUTS = {
   2: [
-    { seat: 'left: 50%; top: 91%;', chip: 'left: 50%; top: 75%;' }, // 0: Héroe abajo centro
-    { seat: 'left: 50%; top: 9%;',  chip: 'left: 50%; top: 25%;' }  // 1: Rival arriba centro (enfrente)
+    { seat: 'left: 50%; top: 87%;', chip: 'left: 50%; top: 72%;' }, // 0: Héroe abajo centro
+    { seat: 'left: 50%; top: 20%;', chip: 'left: 50%; top: 32%;' }  // 1: Rival arriba centro (enfrente)
   ],
   6: [
-    { seat: 'left: 50%; top: 91%;', chip: 'left: 50%; top: 75%;' }, // 0: Héroe abajo centro
+    { seat: 'left: 50%; top: 87%;', chip: 'left: 50%; top: 72%;' }, // 0: Héroe abajo centro
     { seat: 'left: 11%; top: 69%;', chip: 'left: 26%; top: 63%;' }, // 1: Izquierda abajo
     { seat: 'left: 11%; top: 31%;', chip: 'left: 26%; top: 37%;' }, // 2: Izquierda arriba
-    { seat: 'left: 50%; top: 9%;',  chip: 'left: 50%; top: 25%;' }, // 3: Arriba centro (enfrente del héroe)
+    { seat: 'left: 50%; top: 20%;', chip: 'left: 50%; top: 32%;' }, // 3: Arriba centro (enfrente del héroe)
     { seat: 'left: 89%; top: 31%;', chip: 'left: 74%; top: 37%;' }, // 4: Derecha arriba
     { seat: 'left: 89%; top: 69%;', chip: 'left: 74%; top: 63%;' }  // 5: Derecha abajo
   ],
   9: [
-    { seat: 'left: 50%; top: 92%;', chip: 'left: 50%; top: 76%;' }, // 0: Héroe abajo centro
+    { seat: 'left: 50%; top: 87%;', chip: 'left: 50%; top: 72%;' }, // 0: Héroe abajo centro
     { seat: 'left: 13%; top: 76%;', chip: 'left: 27%; top: 68%;' }, // 1: Izquierda abajo
     { seat: 'left: 7%;  top: 50%;', chip: 'left: 22%; top: 50%;' }, // 2: Izquierda medio
     { seat: 'left: 13%; top: 24%;', chip: 'left: 27%; top: 32%;' }, // 3: Izquierda arriba
-    { seat: 'left: 34%; top: 8%;',  chip: 'left: 38%; top: 24%;' }, // 4: Arriba izquierda
-    { seat: 'left: 66%; top: 8%;',  chip: 'left: 62%; top: 24%;' }, // 5: Arriba derecha
+    { seat: 'left: 34%; top: 20%;', chip: 'left: 38%; top: 32%;' }, // 4: Arriba izquierda
+    { seat: 'left: 66%; top: 20%;', chip: 'left: 62%; top: 32%;' }, // 5: Arriba derecha
     { seat: 'left: 87%; top: 24%;', chip: 'left: 73%; top: 32%;' }, // 6: Derecha arriba
     { seat: 'left: 93%; top: 50%;', chip: 'left: 78%; top: 50%;' }, // 7: Derecha medio
     { seat: 'left: 87%; top: 76%;', chip: 'left: 73%; top: 68%;' }  // 8: Derecha abajo
@@ -94,6 +94,14 @@ const game = {
     this.setupPlayers();
     this.updateTableSizeButtons();
     this.startNewHand(false);
+
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (this.initialized) this.renderTable();
+      }, 120);
+    });
   },
 
   changeTableSize(size) {
@@ -1028,12 +1036,12 @@ const game = {
     const stacks = [];
     for (let i = 0; i < chips.length; i += CHIP_STACK_MAX) {
       const group = chips.slice(i, i + CHIP_STACK_MAX);
-      const height = 36 + (group.length - 1) * CHIP_STACK_STEP;
+      const height = `calc(var(--chip-v, 36px) + ${group.length - 1} * var(--chip-step, 8px))`;
       const sprites = group.map((d, j) =>
-        `<span class="chip-sprite chip-sprite--${d.color}" style="bottom:${j * CHIP_STACK_STEP}px"></span>`
+        `<span class="chip-sprite chip-sprite--${d.color}" style="bottom:calc(${j} * var(--chip-step, 8px))"></span>`
       ).join('');
       const breakdown = group.map(d => d.value).join(' + ');
-      stacks.push(`<span class="chip-pile" style="height:${height}px" title="${group.length} fichas: ${breakdown}">${sprites}</span>`);
+      stacks.push(`<span class="chip-pile" style="height:${height}" title="${group.length} fichas: ${breakdown}">${sprites}</span>`);
     }
 
     const label = showAmount ? `<span class="chip-amount">${total}</span>` : '';
@@ -1074,17 +1082,19 @@ const game = {
       const winnerTag = isWinner ? '<span class="text-[10px] font-bold text-amber-300 whitespace-nowrap">🏆 GANADOR</span>' : '';
       const posLabel = this.getSeatPositionLabel(p.seat);
 
-      // Interior Chip & Dealer Button Layer
-      if (isDealer || p.bet > 0 || p.allIn) {
+      // El botón de dealer va hacia el centro del tapete; las fichas viven dentro
+      // del panel de cada jugador para que se sepa de quién son y no tapes texto.
+      if (isDealer) {
         betsHTML += `
-          <div style="${coords.chip}" class="absolute -translate-x-1/2 -translate-y-1/2 flex items-center gap-1">
-            ${isDealer ? '<span class="w-5 h-5 rounded-full bg-amber-400 text-slate-950 font-extrabold text-[10px] flex items-center justify-center shadow-md border border-amber-200">D</span>' : ''}
-            ${p.bet > 0 || p.allIn ? `<div class="flex flex-col items-center gap-0.5">
-              ${this.chipPileHTML(p.bet, CHIP_STACKS_PLAYER, p.allIn)}
-            </div>` : ''}
+          <div style="${coords.chip}" class="absolute -translate-x-1/2 -translate-y-1/2">
+            <span class="w-5 h-5 rounded-full bg-amber-400 text-slate-950 font-extrabold text-[10px] flex items-center justify-center shadow-md border border-amber-200">D</span>
           </div>
         `;
       }
+
+      const betHTML = (p.bet > 0 || p.allIn)
+        ? `<div class="mt-1 flex flex-col items-center">${this.chipPileHTML(p.bet, CHIP_STACKS_PLAYER, p.allIn)}</div>`
+        : '';
 
       if (p.isHuman) {
         // Héroe abajo centro + Barra de Tiempo de 60s
@@ -1093,7 +1103,7 @@ const game = {
 
         seatsHTML += `
           <div style="${coords.seat}" class="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
-            <div class="bg-slate-950/95 border-2 ${isWinner ? 'border-amber-400 ring-4 ring-amber-500/30' : isTurn ? 'border-emerald-400 ring-4 ring-emerald-500/25' : 'border-slate-700'} rounded-2xl px-3.5 py-2.5 shadow-2xl min-w-[235px] sm:min-w-[265px]">
+            <div class="bg-slate-950/95 border-2 ${isWinner ? 'border-amber-400 ring-4 ring-amber-500/30' : isTurn ? 'border-emerald-400 ring-4 ring-emerald-500/25' : 'border-slate-700'} rounded-2xl px-3.5 py-2.5 shadow-2xl min-w-[200px] sm:min-w-[265px] hero-panel">
               <div class="flex items-center gap-3">
                 <div class="flex gap-1">
                   ${p.cards.length === 2 ? renderCardHTML(p.cards[0], 'sm') + renderCardHTML(p.cards[1], 'sm') : ''}
@@ -1108,6 +1118,7 @@ const game = {
                   <div class="text-[10px] font-mono text-slate-300 truncate">${heroEval}</div>
                 </div>
               </div>
+              ${betHTML}
               <!-- Hero 60-Second Action Timer Bar -->
               <div class="mt-2 pt-1.5 border-t border-slate-800/90 ${showTimer ? '' : 'opacity-30'}">
                 <div class="flex items-center justify-between mb-1">
@@ -1134,15 +1145,16 @@ const game = {
 
         seatsHTML += `
           <div style="${coords.seat}" class="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
-            <div class="bg-slate-950/95 border ${isWinner ? 'border-amber-400 ring-2 ring-amber-400/60' : isTurn ? 'border-amber-400 ring-2 ring-amber-400/50' : 'border-slate-700/90'} ${p.folded ? 'opacity-45' : ''} rounded-xl p-2 w-[114px] sm:w-[132px] text-center shadow-xl transition">
+            <div class="bg-slate-950/95 border ${isWinner ? 'border-amber-400 ring-2 ring-amber-400/60' : isTurn ? 'border-amber-400 ring-2 ring-amber-400/50' : 'border-slate-700/90'} ${p.folded ? 'opacity-45' : ''} rounded-xl p-2 w-[114px] sm:w-[132px] text-center shadow-xl transition rival-panel">
               <div class="flex items-center justify-between text-[9px] font-mono mb-0.5">
                 <span class="px-1.5 py-0.2 rounded bg-slate-800 text-slate-200 font-bold">${posLabel}</span>
-                ${p.lastAction ? `<span class="text-amber-300 font-bold truncate max-w-[65px]">${p.lastAction}</span>` : '<span class="text-slate-500">--</span>'}
+                ${p.lastAction ? `<span class="last-action text-amber-300 font-bold truncate max-w-[65px]">${p.lastAction}</span>` : '<span class="last-action text-slate-500">--</span>'}
               </div>
               <div class="text-[11px] font-bold text-white truncate">${p.name} ${winnerTag}</div>
-              ${showProfileTag ? `<div class="mt-0.5"><span class="inline-block text-[9px] font-mono px-1.5 py-0.2 rounded border ${p.profile.badge}">${p.profile.style}</span></div>` : ''}
+              ${showProfileTag ? `<div class="profile-tag mt-0.5"><span class="inline-block text-[9px] font-mono px-1.5 py-0.2 rounded border ${p.profile.badge}">${p.profile.style}</span></div>` : ''}
               <div class="text-[11px] font-mono text-emerald-400 font-bold mt-0.5">${p.stack}</div>
               <div class="flex justify-center mt-1">${cardsHTML}</div>
+              ${betHTML}
             </div>
           </div>
         `;
@@ -1151,7 +1163,87 @@ const game = {
 
     seatsLayer.innerHTML = seatsHTML;
     betsLayer.innerHTML = betsHTML;
+    this.clampSeatsToWrap();
     this.refreshTableOverlays();
+  },
+
+  // Ajusta los paneles (con fichas incluidas) para que no se salgan del tapete
+  // ni se pisen entre sí. Las coordenadas base se leen una sola vez del HTML
+  // recién generado y los desplazamientos se acumulan aparte: así un resize o
+  // un nuevo render no desplaza los paneles cada vez más hacia un borde.
+  clampSeatsToWrap() {
+    const wrap = document.getElementById('arena-table-wrap');
+    const layer = document.getElementById('table-seats-layer');
+    if (!wrap || !layer) return;
+
+    const bounds = wrap.getBoundingClientRect();
+    const items = [...layer.children]
+      .map(child => ({
+        child,
+        panel: child.firstElementChild,
+        baseLeft: parseFloat(child.style.left) || 0,
+        baseTop: parseFloat(child.style.top) || 0,
+        dx: 0,
+        dy: 0
+      }))
+      .filter(item => item.panel);
+
+    const apply = (item) => {
+      item.child.style.left = `calc(${item.baseLeft}% + ${item.dx}px)`;
+      item.child.style.top = `calc(${item.baseTop}% + ${item.dy}px)`;
+    };
+    const clampOne = (item) => {
+      const r = item.panel.getBoundingClientRect();
+      let dx = 0;
+      let dy = 0;
+      if (r.left < bounds.left + 3) dx = bounds.left + 3 - r.left;
+      else if (r.right > bounds.right - 3) dx = bounds.right - 3 - r.right;
+      if (r.top < bounds.top + 3) dy = bounds.top + 3 - r.top;
+      else if (r.bottom > bounds.bottom - 3) dy = bounds.bottom - 3 - r.bottom;
+      if (dx || dy) {
+        item.dx += dx;
+        item.dy += dy;
+        apply(item);
+      }
+    };
+
+    items.forEach(clampOne);
+
+    for (let pass = 0; pass < 6; pass++) {
+      let moved = false;
+      for (let i = 0; i < items.length; i++) {
+        for (let j = i + 1; j < items.length; j++) {
+          const a = items[i].panel.getBoundingClientRect();
+          const b = items[j].panel.getBoundingClientRect();
+          const overlapX = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+          const overlapY = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+          if (overlapX <= 0 || overlapY <= 0) continue;
+
+          const vertical = overlapY <= overlapX;
+          const aCenter = vertical ? (a.top + a.bottom) : (a.left + a.right);
+          const bCenter = vertical ? (b.top + b.bottom) : (b.left + b.right);
+          const sign = aCenter <= bCenter ? 1 : -1;
+          const distance = (vertical ? overlapY : overlapX) + 3;
+
+          // Mueve el panel que tenga más hueco libre en esa dirección: si uno
+          // está pegado al borde, el clamp lo devolvería y el solape seguiría.
+          const room = (rect, dir) => vertical
+            ? (dir > 0 ? bounds.bottom - 3 - rect.bottom : rect.top - bounds.top - 3)
+            : (dir > 0 ? bounds.right - 3 - rect.right : rect.left - bounds.left - 3);
+          const roomA = room(a, -sign);
+          const roomB = room(b, sign);
+          const target = roomB >= roomA ? items[j] : items[i];
+          const dir = roomB >= roomA ? sign : -sign;
+          if (vertical) target.dy += dir * distance;
+          else target.dx += dir * distance;
+
+          apply(target);
+          clampOne(target);
+          moved = true;
+        }
+      }
+      if (!moved) break;
+    }
   },
 
   log(msg) {

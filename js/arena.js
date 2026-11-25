@@ -69,7 +69,11 @@ const arena = {
     if (source && target) target.textContent = source.textContent;
 
     const btn = document.getElementById('btn-arena');
-    if (btn) btn.textContent = this.isActive ? '✕ Salir Arena' : '⛶ Pantalla Completa';
+    if (btn) {
+      btn.textContent = this.isActive ? '✕' : '⛶ Pantalla Completa';
+      btn.title = this.isActive ? 'Salir de pantalla completa' : 'Entrar en pantalla completa';
+      btn.setAttribute('aria-label', btn.title);
+    }
 
     this.updateAudioButton();
   },

@@ -1,129 +1,166 @@
 /* ============================================================================
-   5. MÓDULO: ACADEMIA (LECCIONES TEÓRICAS + DESAFÍOS PRÁCTICOS)
-============================================================================ */
+   5. MÓDULO: ACADEMIA (RUTA 0 → PRO: IDEA CLARA → EJEMPLO → POR QUÉ → PRÁCTICA)
+   ============================================================================ */
 const LESSONS_DATA = [
   {
     id: 'pot_odds_101',
     level: 'Básico',
-    title: 'Pot Odds y Equidad Mínima Requerida',
-    summary: 'Aprende a calcular cuándo pagar una apuesta es matemáticamente rentable a largo plazo.',
-    theory: `
-      <p>Las <strong>Pot Odds</strong> expresan la relación entre el tamaño de la apuesta que debes pagar y el tamaño total del bote tras tu pago:</p>
-      <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-emerald-400 my-2">
-        Equidad Requerida (%) = Call / (Bote Actual + Apuesta Rival + Tu Call)
-      </div>
-      <p>Si tu probabilidad real de ganar la mano (<strong>Equity</strong>) supera ese porcentaje, pagar es una decisión <strong>+EV</strong> (Valor Esperado positivo).</p>
-    `,
+    title: 'Pot Odds: cuándo pagar sale rentable',
+    summary: 'La cuenta mínima para decidir con números, no con corazonadas.',
+    idea: 'Paga sólo si te cuesta menos de lo que puedes ganar.',
+    example: [
+      'El bote tiene 100 fichas y el rival apuesta 50.',
+      'Si pagas 50, al final habrá 200 fichas en el centro.',
+      'Tu parte es 50 de 200 = 25%. Eso es lo que necesitas ligar.',
+      'Tu proyecto de color liga 35 de cada 100 veces (35%).',
+      'Como 35% > 25%, pagar gana fichas a largo plazo.'
+    ],
+    why: [
+      'El bote ya tiene fichas que no son tuyas: por eso pagar 50 puede salir barato.',
+      'Si ligas, ganas 150 (las 100 del bote + las 50 del rival). Si fallas, pierdes 50.',
+      'La cuenta completa: 35 × 150 − 65 × 50 = +2000 entre 100 manos = +20 fichas por mano.'
+    ],
+    atTable: 'Antes de pagar pregúntate: ¿cuánto pongo y cuánto hay ya en el centro?',
     challenge: {
-      question: 'El bote es de 100 fichas. El rival apuesta 50 fichas (bote total = 150). Tienes proyecto de color con ~35% de equity en el flop. ¿Cuál es la acción óptima?',
+      question: 'Bote de 100 fichas. El rival apuesta 50. Tienes proyecto de color con ~35% de equity en el flop. ¿Qué haces?',
       options: [
-        { text: 'Retirarse (Fold): 35% no es suficiente para pagar 50.', correct: false, feedback: 'Incorrecto. Necesitas pagar 50 para ganar un bote final de 200 (50 / 200 = 25% de equidad requerida). Como tienes 35% > 25%, el call es muy rentable.' },
-        { text: 'Pagar (Call): Necesitas 25% de equity y tienes 35% (+EV).', correct: true, feedback: '¡Exacto! 50 / (100 + 50 + 50) = 25%. Al tener 35% de equidad, obtienes un margen neto de +10% EV.' },
-        { text: 'Solo es rentable si el rival apuesta menos de 25 fichas.', correct: false, feedback: 'Incorrecto. Incluso pagando 50 fichas solo requieres un 25% de equidad.' }
+        { text: 'Retirarme: con 35% no llego.', correct: false, feedback: 'Te sobra margen. Pagas 50 para disputar 200 fichas: necesitas 50/200 = 25%. Como tienes 35%, el call es rentable.' },
+        { text: 'Pagar: necesito 25% y tengo 35% (+EV).', correct: true, feedback: 'Exacto. 50 / (100 + 50 + 50) = 25%. Tus 35% superan esa barrera, así que ganas ~20 fichas por mano a largo plazo.' },
+        { text: 'Sólo pagar si el rival apuesta menos de 25.', correct: false, feedback: 'No: pagando 50 ya necesitas sólo un 25%. El tamaño de la apuesta no cambia la regla, cambia el número a comparar.' }
       ]
     }
   },
   {
     id: 'rule_4_2',
     level: 'Básico',
-    title: 'Regla del 4 y del 2 (Cálculo Rápido de Outs)',
-    summary: 'Estima tu probabilidad de completar un proyecto en mesa sin necesidad de calculadora.',
-    theory: `
-      <p>Cuenta tus <strong>Outs</strong> (cartas limpias que completan tu jugada) y aplica la regla rápida:</p>
-      <ul class="list-disc pl-5 space-y-1 my-2 text-slate-300">
-        <li><strong>En el Flop (faltan Turn y River):</strong> Multiplica tus outs × 4.</li>
-        <li><strong>En el Turn (solo falta el River):</strong> Multiplica tus outs × 2.</li>
-      </ul>
-      <p>Por ejemplo, un proyecto de color tiene 9 outs: ~36% desde el flop y ~18% en el turn.</p>
-    `,
+    title: 'Regla del 4 y del 2: outs sin calculadora',
+    summary: 'Convierte cartas buenas en porcentaje en un segundo.',
+    idea: 'Cuenta tus cartas buenas: ×4 si faltan dos cartas, ×2 si falta una.',
+    example: [
+      'Tienes 8♠ 7♠ y el board es 9♦ 6♣ 2♥.',
+      'Te sirven los 5 (4 cartas) y los 10 (4 cartas): 8 cartas buenas u «outs».',
+      'Estás en el Turn: falta sólo el River → 8 × 2 = 16%.',
+      'En el Flop habrían quedado dos cartas → 8 × 4 = 32%.'
+    ],
+    why: [
+      'Quedan unas 46 cartas sin ver. Una carta concreta sale cerca del 2% de las veces (1 de 46).',
+      'Por eso cada out vale ~2% con una carta por venir y casi ~4% con dos.',
+      'Es un atajo: la cuenta exacta es 8/46 = 17,4%, muy cerca del 16%.'
+    ],
+    atTable: 'Flop → ×4. Turn → ×2. No necesitas sacar el móvil.',
     challenge: {
-      question: 'Tienes 8♠ 7♠ en un board 9♦ 6♣ 2♥ (Escalera abierta / OESD = 8 outs). Estás en el Turn. ¿Cuál es tu probabilidad aproximada de ligar en el River?',
+      question: '8♠ 7♠ en un board 9♦ 6♣ 2♥ (8 outs). Estás en el Turn. ¿Probabilidad aproximada de ligar en el River?',
       options: [
-        { text: '32% aproximadamente', correct: false, feedback: '32% sería en el Flop (8 × 4). En el Turn solo queda una carta por salir.' },
-        { text: '16% aproximadamente (8 outs × 2)', correct: true, feedback: '¡Correcto! Con 8 outs y una sola calle por venir, 8 × 2 = 16% (valor exacto: 8/46 = 17.4%).' },
-        { text: '24% aproximadamente', correct: false, feedback: 'Incorrecto. Multiplica 8 outs por 2 al estar en el Turn.' }
+        { text: '32%', correct: false, feedback: '32% sería en el Flop (8 × 4). En el Turn sólo queda una carta por salir.' },
+        { text: '16% (8 × 2)', correct: true, feedback: 'Correcto. Con una sola calle por venir, 8 × 2 = 16%. El valor exacto es 8/46 = 17,4%: el atajo sirve.' },
+        { text: '24%', correct: false, feedback: 'No. En el Turn se multiplica por 2, no por 3. La respuesta correcta es ~16%.' }
       ]
     }
   },
   {
     id: 'position_power',
     level: 'Intermedio',
-    title: 'Ventaja Posicional y Realización de Equity',
-    summary: 'Por qué actuar último en cada calle multiplica tus ganancias con el mismo rango.',
-    theory: `
-      <p>Jugar <strong>In Position (IP)</strong> —especialmente desde el <strong>Button (BTN)</strong>— te permite observar las acciones de todos los rivales antes de comprometer fichas.</p>
-      <p class="mt-2">Esto genera tres ventajas clave: control del tamaño del bote, robos efectivos cuando los rivales muestran debilidad y mayor realización de equidad postflop.</p>
-    `,
+    title: 'Posición: actuar al último manda',
+    summary: 'La misma mano gana más cuando decides después de ver a los demás.',
+    idea: 'Actuar al último te deja ver qué hacen todos antes de soltar fichas.',
+    example: [
+      'Desde UTG (el primero) hablan 5 jugadores detrás: abre pocas manos.',
+      'Desde BTN (el último) sólo quedan las ciegas antes que tú.',
+      'Después del flop, desde BTN decides al final en Flop, Turn y River.'
+    ],
+    why: [
+      'Ver más acciones significa tener más información y cometer menos errores.',
+      'Si todos pasan, puedes robar el bote con una apuesta pequeña.',
+      'Si alguien apuesta fuerte, te retiras sin haber gastado una ficha.'
+    ],
+    atTable: 'En BTN abre muchas manos; en UTG abre pocas y buenas.',
     challenge: {
-      question: '¿Desde qué posición debes abrir (Raise First In) el rango más amplio en una mesa 6-Max?',
+      question: '¿Desde qué posición abres el rango más amplio en una mesa de 6?',
       options: [
-        { text: 'UTG (Under the Gun)', correct: false, feedback: 'UTG es la posición más temprana; quedan 5 jugadores por hablar detrás, por lo que requiere un rango muy sólido (~15%).' },
-        { text: 'BTN (Button / Dealer)', correct: true, feedback: '¡Correcto! En BTN solo quedan las ciegas por hablar preflop y tendrás posición absoluta en Flop, Turn y River (~44% de apertura).' },
-        { text: 'SB (Small Blind)', correct: false, feedback: 'Aunque solo queda BB preflop, en SB jugarás fuera de posición (OOP) durante todo el postflop.' }
+        { text: 'UTG', correct: false, feedback: 'Es la peor posición: quedan 5 jugadores por hablar, así que hace falta un rango muy sólido (~15%).' },
+        { text: 'BTN', correct: true, feedback: 'Correcto. Sólo las ciegas hablan antes y tienes posición en las tres calles posteriores (~44% de manos).' },
+        { text: 'SB', correct: false, feedback: 'Aunque preflop queda poco, en SB juegas fuera de posición durante todo el postflop.' }
       ]
     }
   },
   {
     id: 'spr_commitment',
     level: 'Intermedio',
-    title: 'SPR (Stack-to-Pot Ratio) y Compromiso con el Bote',
-    summary: 'Cómo el tamaño de tu stack efectivo respecto al bote determina el valor de tus manos.',
-    theory: `
-      <p>El <strong>SPR</strong> se calcula dividiendo el stack efectivo restante entre el tamaño del bote en el flop:</p>
-      <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-amber-400 my-2">
-        SPR = Stack Efectivo / Bote en el Flop
-      </div>
-      <p>Con <strong>SPR bajo (&lt; 3)</strong>, parejas altas (Top Pair / Overpair) tienen suficiente fuerza para ir All-In. Con <strong>SPR alto (&gt; 10)</strong>, se necesitan manos muy fuertes (Dobles+, Sets, Proyectos nut) para jugar por todo el stack.</p>
-    `,
+    title: 'SPR: cuándo un par ya vale todo el stack',
+    summary: 'La relación entre tus fichas y el bote decide qué manos aguantan.',
+    idea: 'Si te quedan pocas fichas respecto al bote, un par bueno ya vale para jugarlo todo.',
+    example: [
+      'Bote en el flop: 40 BB. Te quedan 80 BB.',
+      'SPR = 80 / 40 = 2 (bajo).',
+      'Tienes A♠ K♦ y el flop cae K♠ 8♣ 3♦: par de K con el mejor kicker.',
+      'Apostando fuerte en dos calles dejas el all-in planteado sin forzar la primera.'
+    ],
+    why: [
+      'Con SPR bajo el bote ya es grande comparado con tus fichas: no necesitas una mano enorme.',
+      'Si haces all-in de 80, el rival pone 80 más: arriesgas 80 para ganar 120. Necesitas ~40% de equity; tu par de K la supera.',
+      'Con SPR alto (>10) hay mucho camino por recorrer: ahí sí hacen falta tríos, dobles o proyectos nut.'
+    ],
+    atTable: 'SPR < 3 → par bueno, a por todas. SPR > 10 → manos muy fuertes.',
     challenge: {
-      question: 'El bote en el flop es de 40 BB y tanto tú como tu rival tenéis 80 BB detrás (SPR = 2). Tienes A♠ K♦ en flop K♠ 8♣ 3♦. ¿Cuál es el plan óptimo?',
+      question: 'Bote de 40 BB en el flop, 80 BB detrás por jugador (SPR = 2). Tienes A♠ K♦ en K♠ 8♣ 3♦. ¿Plan óptimo?',
       options: [
-        { text: 'Jugar pasivo (Check-Fold) por miedo a que tenga trío.', correct: false, feedback: 'Con SPR = 2 y Top Pair Top Kicker (TPTK), retirarse sería un error grave -EV.' },
-        { text: 'Apostar por valor buscando comprometer el stack (All-In en 2 calles).', correct: true, feedback: '¡Excelente! Con SPR = 2, TPTK domina el rango del rival y tiene compromiso total con el bote.' },
-        { text: 'Hacer mini-apuestas de 1 BB para no asustar.', correct: false, feedback: 'Las mini-apuestas regalan cartas gratis a proyectos y no construyen el bote.' }
+        { text: 'Check-Fold por miedo a un trío.', correct: false, feedback: 'Error grave. Con SPR 2 y par de K con mejor kicker, retirarse tira una mano dominante.' },
+        { text: 'Apostar por valor y comprometer el stack en dos calles.', correct: true, feedback: 'Correcto. Con SPR 2, tu par domina el rango de call y el bote ya te devuelve la apuesta: es +EV.' },
+        { text: 'Mini-apuestas de 1 BB para no asustar.', correct: false, feedback: 'Regalas cartas gratis a los proyectos y nunca construyes el bote que ya tienes cerca.' }
       ]
     }
   },
   {
     id: 'cbet_texture',
     level: 'Avanzado',
-    title: 'Apuesta de Continuación (C-Bet) según Textura del Board',
-    summary: 'Adapta la frecuencia y el tamaño de tu C-Bet según la ventaja de rango y de nuts.',
-    theory: `
-      <p>Como agresor preflop (PFR), no debes hacer C-Bet el 100% de las veces:</p>
-      <ul class="list-disc pl-5 space-y-1 my-2 text-slate-300">
-        <li><strong>Boards secos y altos (ej. A♠ K♦ 4♣, K♣ 7♦ 2♠):</strong> Favorecen fuertemente al agresor preflop. Alta frecuencia de C-Bet con tamaño pequeño (25%–33% del bote).</li>
-        <li><strong>Boards coordinados bajos/medios (ej. 8♥ 7♥ 6♦, 9♠ 8♠ 5♣):</strong> Conectan mucho con el rango de defensa del caller. Reduce frecuencia y usa tamaños grandes (66%–75%) con tus manos fuertes y semi-faroles.</li>
-      </ul>
-    `,
+    title: 'C-Bet: apuesta según el board, no por costumbre',
+    summary: 'Cuándo seguir apostando tras el flop y con qué tamaño.',
+    idea: 'Apuesta tras el flop cuando el board te favorece; no lo hagas siempre.',
+    example: [
+      'Abres en CO y la BB paga. Flop: K♠ 7♦ 2♣ (seco, sin proyectos).',
+      'Tu rango tiene muchas K y pares altos; el de la BB tiene más cartas medias.',
+      'Apuesta 1/3 del bote con alta frecuencia (~80%).',
+      'En 8♥ 7♥ 6♦, en cambio, la BB conecta mucho más: apuesta menos seguido y más grande con manos fuertes.'
+    ],
+    why: [
+      'En boards altos y secos, quien subió preflop tiene más manos máximas (AA, KK, AK).',
+      'Una apuesta pequeña presiona barato: el rival foldea bastante y tú arriesgas poco.',
+      'En boards bajos y coordinados el rival tiene más parejas y proyectos: la apuesta pequeña no lo mueve.'
+    ],
+    atTable: 'Seco y alto → pequeña y seguido. Coordinado y bajo → grande y selectiva.',
     challenge: {
-      question: 'Abres en CO, paga BB. El flop cae K♠ 7♦ 2♣ (arcoíris y seco). ¿Qué estrategia de C-Bet recomienda la teoría GTO?',
+      question: 'Abres en CO, paga la BB. Flop K♠ 7♦ 2♣, arcoíris y seco. ¿Estrategia de C-Bet?',
       options: [
-        { text: 'Alta frecuencia (~80-90%) con tamaño pequeño (1/3 del bote).', correct: true, feedback: '¡Exacto! Tienes gran ventaja de rango y de manos máximas (AA, KK, AK); una apuesta pequeña presiona todo el rango débil del rival a bajo coste.' },
-        { text: 'Pasar el 100% de tu rango para proteger tu check.', correct: false, feedback: 'Pasar todo tu rango en un board tan favorable renuncia a valor inmediato y fold equity.' },
-        { text: 'Overbet de 150% del bote con toda tu baraja.', correct: false, feedback: 'Un tamaño tan grande aísla únicamente contra las mejores manos del rival.' }
+        { text: 'Alta frecuencia (~80%) con 1/3 del bote.', correct: true, feedback: 'Correcto. Tienes ventaja de rango y de manos máximas; una apuesta pequeña presiona todo su rango débil a bajo coste.' },
+        { text: 'Pasar siempre para «proteger» el check.', correct: false, feedback: 'Renuncias a valor inmediato y a los foldeos en un board que te favorece claramente.' },
+        { text: 'Overbet del 150% con toda la baraja.', correct: false, feedback: 'Un tamaño tan grande sólo consigue que te paguen las mejores manos.' }
       ]
     }
   },
   {
     id: 'exploitative_adjustments',
     level: 'Avanzado',
-    title: 'Ajustes Explotativos contra Perfiles de Rivales',
-    summary: 'Desvíate del equilibrio GTO para maximizar ganancias contra errores específicos de tus oponentes.',
-    theory: `
-      <p>Mientras que el juego GTO te hace inexplotable, el póker <strong>explotativo</strong> castiga los desequilibrios del rival:</p>
-      <ul class="list-disc pl-5 space-y-1 my-2 text-slate-300">
-        <li><strong>Contra Calling Stations:</strong> Elimina los faroles puros y apuesta por valor más fino (Thin Value) con tamaños grandes.</li>
-        <li><strong>Contra Nits / Weak-Tight:</strong> Roba botes con alta frecuencia y foldea tus manos medias cuando muestren agresión fuerte.</li>
-        <li><strong>Contra Maníacos (LAG extremos):</strong> Amplía tu rango de Call-Down (Bluff Catchers) y deja que se faroleen solos.</li>
-      </ul>
-    `,
+    title: 'Ajustes: gana castigando el error del rival',
+    summary: 'Salir del equilibrio GTO cuando enfrente hay un fallo claro.',
+    idea: 'No hace falta jugar perfecto: gana más haciendo lo que el rival no sabe defender.',
+    example: [
+      'Rival «Calling Station»: paga con cualquier pareja y casi nunca foldea.',
+      'Tienes A♥ 5♥ y no ligas nada en el river.',
+      'Un farol all-in no sirve: no va a retirarse, sólo pierdes fichas.',
+      'Mejor apostar cuando tienes algo y dejar de intentar robar ese bote.'
+    ],
+    why: [
+      'Un farol gana fichas sólo si el rival foldea. Sin foldeos es dinero regalado.',
+      'Contra quien foldea mucho, sube con aire; contra quien nunca foldea, sube con valor.',
+      'GTO es el punto de partida; la ganancia extra está en adaptarse al jugador de enfrente.'
+    ],
+    atTable: 'Que no foldea → valor. Que foldea mucho → farol. Que apuesta fuerte → cuidado.',
     challenge: {
-      question: 'Te enfrentas a un perfil "Calling Station" que paga con cualquier pareja o proyecto débil y casi nunca foldea. Tienes A♥ 5♥ sin ligar en el river. ¿Qué debes hacer?',
+      question: 'Un «Calling Station» paga con cualquier pareja y casi nunca foldea. Tienes A♥ 5♥ sin ligar en el river. ¿Qué haces?',
       options: [
-        { text: 'Hacer un farol gigante All-In para tirarlo.', correct: false, feedback: 'Nunca farolees a un jugador que no sabe retirarse; no tienes Fold Equity.' },
-        { text: 'Rendirse (Check / Fold): No hay Fold Equity suficiente para que el farol sea +EV.', correct: true, feedback: '¡Correcto! Sin Fold Equity contra un Calling Station, farolear aire puro quema fichas.' },
-        { text: 'Apostar 1/3 del bote como farol de bloqueo.', correct: false, feedback: 'Te pagará con cualquier pareja baja o incluso Rey alto.' }
+        { text: 'Farol gigante all-in para asustarlo.', correct: false, feedback: 'No tiene foldeos: no puedes asustarlo. Ese farol quema fichas.' },
+        { text: 'Check / retirarme: no hay foldeos que paguen el farol.', correct: true, feedback: 'Correcto. Sin Fold Equity, farolear aire es -EV. Guarda las fichas y apuesta sólo con valor.' },
+        { text: 'Apostar 1/3 como farol de bloqueo.', correct: false, feedback: 'Te pagará con cualquier pareja baja o incluso con rey alto.' }
       ]
     }
   }
@@ -162,9 +199,14 @@ const academia = {
     feedbackEl.classList.remove('hidden');
     if (opt.correct) SoundFX.playLessonCorrect();
     else SoundFX.playLessonWrong();
+
     if (opt.correct) {
       feedbackEl.className = 'p-4 rounded-xl bg-emerald-950/80 border border-emerald-500/60 text-xs text-emerald-200 leading-relaxed';
-      feedbackEl.innerHTML = `<strong class="text-emerald-400 block mb-1">✓ ¡Desafío Superado!</strong>${opt.feedback}`;
+      const next = LESSONS_DATA[LESSONS_DATA.indexOf(lesson) + 1];
+      const nextBtn = next
+        ? `<button onclick="academia.selectLesson('${next.id}')" class="mt-3 w-full rounded-xl bg-emerald-600 hover:bg-emerald-500 px-3 py-2 text-xs font-bold text-white transition">Siguiente paso: ${next.title} →</button>`
+        : '<p class="mt-3 font-bold text-emerald-300">🏆 ¡Ruta completa! De 0 a pro.</p>';
+      feedbackEl.innerHTML = `<strong class="text-emerald-400 block mb-1">✓ ¡Correcto! Por esto es la mejor decisión:</strong>${opt.feedback}${nextBtn}`;
       if (!appState.academia.completedIds.includes(lessonId)) {
         appState.academia.completedIds.push(lessonId);
         saveState();
@@ -173,7 +215,7 @@ const academia = {
       }
     } else {
       feedbackEl.className = 'p-4 rounded-xl bg-rose-950/80 border border-rose-500/60 text-xs text-rose-200 leading-relaxed';
-      feedbackEl.innerHTML = `<strong class="text-rose-400 block mb-1">✕ Revisa el cálculo:</strong>${opt.feedback}`;
+      feedbackEl.innerHTML = `<strong class="text-rose-400 block mb-1">✕ Revisa la cuenta:</strong>${opt.feedback}`;
     }
   },
 
@@ -187,6 +229,7 @@ const academia = {
     listEl.innerHTML = filtered.map(l => {
       const done = appState.academia.completedIds.includes(l.id);
       const isActive = l.id === this.activeLessonId;
+      const step = LESSONS_DATA.indexOf(l) + 1;
       const levelColor = l.level === 'Básico'
         ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30'
         : l.level === 'Intermedio'
@@ -197,7 +240,7 @@ const academia = {
         <div onclick="academia.selectLesson('${l.id}')" class="cursor-pointer rounded-2xl p-4 border transition ${isActive ? 'bg-slate-850 border-emerald-500 shadow-lg' : 'bg-slate-900 border-slate-800 hover:border-slate-700'}">
           <div class="flex items-center justify-between mb-1.5">
             <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full border ${levelColor}">${l.level}</span>
-            ${done ? '<span class="text-[11px] font-mono text-emerald-400 font-bold">✓ Completado</span>' : '<span class="text-[11px] font-mono text-slate-500">Pendiente</span>'}
+            <span class="text-[10px] font-mono text-slate-500">Paso ${step}/${LESSONS_DATA.length} · ${done ? '✓ Hecho' : 'Pendiente'}</span>
           </div>
           <h3 class="text-sm font-bold text-white">${l.title}</h3>
           <p class="text-xs text-slate-400 mt-1">${l.summary}</p>
@@ -211,16 +254,48 @@ const academia = {
     const ws = document.getElementById('academia-workspace');
     if (!ws) return;
     const lesson = LESSONS_DATA.find(l => l.id === this.activeLessonId) || LESSONS_DATA[0];
+    const step = LESSONS_DATA.indexOf(lesson) + 1;
+    const doneCount = appState.academia.completedIds.length;
+    const pct = Math.round((doneCount / LESSONS_DATA.length) * 100);
 
     ws.innerHTML = `
       <div class="space-y-5">
         <div class="border-b border-slate-800 pb-4">
-          <span class="text-xs font-mono text-emerald-400 uppercase tracking-wider">${lesson.level}</span>
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="text-xs font-mono text-emerald-400 uppercase tracking-wider">${lesson.level}</span>
+            <span class="text-[11px] font-mono text-slate-400">Paso ${step} de ${LESSONS_DATA.length} · Ruta 0 → Pro</span>
+          </div>
           <h3 class="text-xl font-extrabold text-white mt-1">${lesson.title}</h3>
+          <p class="text-xs text-slate-400 mt-1">${lesson.summary}</p>
+          <div class="mt-3 h-1.5 w-full rounded-full bg-slate-800 overflow-hidden">
+            <div class="h-full bg-emerald-500 rounded-full transition-all" style="width:${pct}%"></div>
+          </div>
         </div>
-        <div class="text-sm text-slate-300 leading-relaxed space-y-2">
-          ${lesson.theory}
+
+        <div class="rounded-2xl border border-emerald-500/25 bg-emerald-500/5 backdrop-blur-sm p-4">
+          <span class="text-[11px] font-mono font-bold text-emerald-300">💡 EN PALABRAS SIMPLES</span>
+          <p class="text-sm text-emerald-100 mt-1 leading-relaxed">${lesson.idea}</p>
         </div>
+
+        <div class="rounded-2xl border border-slate-700/60 bg-slate-950/70 backdrop-blur-sm p-4">
+          <span class="text-[11px] font-mono font-bold text-amber-300">🔢 EJEMPLO PRÁCTICO</span>
+          <ol class="list-decimal list-inside space-y-1.5 mt-2 text-sm text-slate-200 leading-relaxed">
+            ${lesson.example.map(line => `<li>${line}</li>`).join('')}
+          </ol>
+        </div>
+
+        <div class="rounded-2xl border border-slate-700/60 bg-slate-950/70 backdrop-blur-sm p-4">
+          <span class="text-[11px] font-mono font-bold text-cyan-300">🧠 ¿POR QUÉ PASA?</span>
+          <ul class="list-disc pl-5 space-y-1.5 mt-2 text-sm text-slate-300 leading-relaxed">
+            ${lesson.why.map(line => `<li>${line}</li>`).join('')}
+          </ul>
+        </div>
+
+        <div class="rounded-2xl border border-slate-700/60 bg-slate-950/70 backdrop-blur-sm p-4">
+          <span class="text-[11px] font-mono font-bold text-purple-300">🎯 EN LA MESA</span>
+          <p class="text-sm text-slate-200 mt-1 leading-relaxed">${lesson.atTable}</p>
+        </div>
+
         <div class="bg-slate-950/90 border border-slate-800 rounded-2xl p-5 space-y-4">
           <div class="flex items-center gap-2">
             <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[11px] font-mono font-bold">DESAFÍO PRÁCTICO</span>

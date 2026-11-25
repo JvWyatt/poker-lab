@@ -14,7 +14,7 @@ js/
   sound.js                 Motor de sonidos sintetizados (Web Audio API)
   poker-engine.js          Baraja, evaluador de manos, outs y Monte Carlo
   ui.js                    Render de cartas, toasts, badges y navegación
-  academia.js              Lecciones y desafíos
+  academia.js              Ruta 0 → pro: idea clara, ejemplo, por qué y desafío
   lab.js                   Laboratorio (equity, outs, EV)
   game.js                  Mesa, bots, reloj, calificación EV y feedback
   gto.js                   Matriz de rangos GTO
@@ -54,7 +54,7 @@ Tailwind se carga desde CDN, por lo que hace falta conexión a internet.
 
 - **Fullscreen Arena:** botón **⛶ Pantalla Completa** en la barra superior de
   partidas. Expanden el tapete, el HUD, los pop-ups y la botonera; la barra
-  superior de la arena muestra ciegas, audio y **✕ Salir Pantalla Completa**.
+  superior de la arena muestra ciegas, audio y un único botón **✕** para salir.
   Usa la Fullscreen API nativa con fallback CSS (`is-arena`); `Esc` también sale.
 - **HUD «ojito» 👁️ / 🙈:** botón flotante abajo a la derecha de la mesa que
   despliega una única columna vertical de tarjetitas hacia arriba
@@ -74,12 +74,19 @@ Tailwind se carga desde CDN, por lo que hace falta conexión a internet.
   los originales. Cada color tiene un valor fijo — gris 1, rojo 5, verde 25,
   azul 100, negro 500, amarillo 1000 — y el importe se descompone de forma
   greedy, así que 2 fichas azules significan siempre 200. El tooltip de cada
-  montón muestra el desglose. Todas las fichas miden lo mismo (32×36 px),
-  incluidas las del bote: los montones crecen apilando más fichas.
+  montón muestra el desglose. Todas las fichas miden lo mismo (32×36 px en
+  escritorio, 24×27 px en móvil) y los montones crecen apilando más fichas.
   Cada montón tiene como máximo 5 fichas; si sobran, se forma otro montón al
-  lado (hasta 3 en cada jugador y 5 en el bote). Si aún no caben, se muestra una
-  tarjeta con el importe en fichas. El all-in se representa con una tarjeta
-  triangular con el importe.
+  lado (hasta **3 montones por jugador y 3 en el bote**). Si aún no caben, se
+  muestra una tarjeta con el importe. El all-in se marca con una tarjeta
+  triangular: esa tarjeta y la del bote grande son del mismo tamaño
+  (51×39 px en escritorio, 42×33 px en móvil, compensando el `scale(0.88)`
+  de los paneles móviles para que se vean idénticas).
+  Las fichas de apuesta están **dentro del panel de cada jugador**, pegadas a
+  su nombre, para que siempre se sepa de quién son y no tapen texto; el botón
+  **D** de dealer sigue hacia el centro del tapete. En pantallas estrechas se
+  ocultan las etiquetas de perfil y última acción, los paneles se compactan y
+  se recolocan para no salirse del tapete ni solaparse.
 - **Ciclo de mano:** al decidirse el ganador se resalta su asiento y se reparte
   una nueva mano automáticamente tras 10 s. El botón **🃏 Nueva Mano** debajo
   del ganador permite saltarse la espera (también dentro de la arena).
@@ -88,3 +95,22 @@ Tailwind se carga desde CDN, por lo que hace falta conexión a internet.
   `?! IMPRECISA`, `? ERROR`, `?? PÉSIMA`) con el porcentaje de acierto.
   Desaparece a los 3.5 s. La explicación EV detallada y la comparativa por
   acción siguen únicamente en el panel del Coach.
+
+## Academia (ruta 0 → pro)
+
+Seis pasos ordenados de Básico a Avanzado. Cada lección usa siempre la misma
+estructura, pensada para entenderse sin conocimientos previos:
+
+1. **💡 En palabras simples:** una frase con la idea central.
+2. **🔢 Ejemplo práctico:** números concretos, paso a paso (bote 100, apuesta
+   50, 8 outs, SPR 2...).
+3. **🧠 ¿Por qué pasa?:** la causa de esa regla y la cuenta que la respalda,
+   sin saltos ni jerga innecesaria.
+4. **🎯 En la mesa:** una frase de aplicación inmediata.
+5. **Desafío:** una pregunta con tres respuestas; cada respuesta incorrecta
+   explica el error y la correcta explica por qué es la decisión óptima.
+
+La lista muestra el paso (`Paso 1/6` ... `Paso 6/6`) y el progreso guardado.
+Al acertar aparece un botón **Siguiente paso →** que encadena con la siguiente
+lección; al completar la última se muestra `🏆 ¡Ruta completa! De 0 a pro.`
+Los filtros **Todos / Básico / Intermedio / Avanzado** siguen disponibles.

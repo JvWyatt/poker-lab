@@ -101,7 +101,7 @@
             <span id="dash-academia-badge" class="text-xs font-mono text-slate-400">0/6 Desafíos</span>
           </div>
           <h3 class="text-lg font-bold text-white group-hover:text-emerald-400 transition">Academia</h3>
-          <p class="text-xs text-slate-400 mt-1">Lecciones estructuradas (Básico, Intermedio y Avanzado) con ejercicios evaluados dinámicamente por el motor.</p>
+          <p class="text-xs text-slate-400 mt-1">Ruta de 0 a pro: idea clara, ejemplo con números, el porqué y un desafío práctico en cada paso.</p>
         </div>
 
         <div onclick="app.navigate('laboratorio')" class="group cursor-pointer bg-slate-900/90 hover:bg-slate-850 border border-slate-800 hover:border-emerald-500/50 rounded-2xl p-5 transition shadow-lg">
@@ -157,8 +157,8 @@
     <section id="view-academia" class="view-section hidden space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 rounded-2xl p-5">
         <div>
-          <h2 class="text-xl font-bold text-white">Academia de Estrategia y Matemáticas</h2>
-          <p class="text-xs sm:text-sm text-slate-400">Estudia la teoría fundamental y resuelve escenarios prácticos evaluados en tiempo real.</p>
+          <h2 class="text-xl font-bold text-white">Academia: de 0 a pro, paso a paso</h2>
+          <p class="text-xs sm:text-sm text-slate-400">Idea en palabras simples, ejemplo con números, por qué pasa y un desafío. Sin tecnicismos innecesarios.</p>
         </div>
         <div class="flex items-center gap-2">
           <button onclick="academia.filterLevel('all')" data-level="all" class="acad-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white">Todos</button>
@@ -399,7 +399,7 @@
             </div>
             <div class="flex items-center gap-2">
               <button id="arena-sound-btn" onclick="SoundFX.toggle()" aria-label="Silenciar audio" class="px-2.5 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-xs transition text-emerald-300">🔊</button>
-              <button onclick="arena.exit()" class="px-3 py-1.5 rounded-lg bg-rose-950/70 hover:bg-rose-900/80 border border-rose-700/50 text-xs font-bold text-rose-200 transition">✕ Salir Pantalla Completa</button>
+              <button onclick="arena.exit()" aria-label="Salir de pantalla completa" title="Salir de pantalla completa" class="w-8 h-8 flex items-center justify-center rounded-lg bg-rose-950/70 hover:bg-rose-900/80 border border-rose-700/50 text-sm font-bold text-rose-200 transition">✕</button>
             </div>
           </div>
 
@@ -448,7 +448,7 @@
             <!-- Floating Eyeball HUD: bottom-right, expands upwards -->
             <div id="eyeball-hud" class="absolute bottom-2 right-2 z-30 flex flex-col-reverse items-end gap-2 pointer-events-none">
               <button id="btn-eyeball" onclick="eyeballHUD.toggle()" aria-label="Mostrar ayuda táctica" aria-expanded="false" class="pointer-events-auto w-11 h-11 rounded-full flex items-center justify-center text-lg shadow-xl border backdrop-blur-md transition hover:scale-105 bg-slate-950/85 border-slate-600/70 text-slate-200">👁️</button>
-              <div id="eyeball-panel" class="hidden pointer-events-auto w-[120px] rounded-2xl border border-slate-700/60 bg-slate-950/85 backdrop-blur-md p-2.5 shadow-2xl">
+              <div id="eyeball-panel" class="hidden pointer-events-auto w-[112px] rounded-2xl border border-slate-700/60 bg-slate-950/85 backdrop-blur-md p-2 shadow-2xl">
                 <div id="eyeball-cards" class="grid grid-cols-1 gap-1.5"></div>
               </div>
             </div>
