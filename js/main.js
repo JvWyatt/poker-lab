@@ -15,6 +15,7 @@ window.addEventListener('DOMContentLoaded', () => {
   config.loadToUI();
   arena.updateInfo();
   updateGlobalBadges();
+  academia.init();
   academia.render();
   lab.init();
   gtoView.render();

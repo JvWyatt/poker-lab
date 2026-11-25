@@ -118,26 +118,35 @@ Tailwind se carga desde CDN, por lo que hace falta conexión a internet.
   Desaparece a los 3.5 s. La explicación EV detallada y la comparativa por
   acción siguen únicamente en el panel del Coach.
 
-## Academia (12 micro-clases en mesa, de 0 a pro)
+## Academia (12 clases × 5 casos preconfigurados, de 0 a pro)
 
-Cada clase carga una **mini-mesa determinista**: cartas fijas, board, bote,
-fichas y la acción previa del rival. No hay aleatoriedad: el escenario es
-idéntico siempre para que se pueda replicar y mantener.
+Cada clase trae **5 situaciones preconfiguradas** en una **mini-mesa
+determinista**: cartas fijas, board, bote, fichas y acción previa del rival.
+No hay aleatoriedad: el caso 3 de una clase es siempre el mismo para poder
+replicarlo y repasarlo. Los cinco casos escalan de lo más obvio a lo más
+sutil, con el mejor ejemplo para dejar cada idea clara.
 
-- **Iniciación:** jerarquía de manos comparando A♠A♦ vs K♠K♦; posiciones y
-  ciegas (BTN/SB/BB/UTG); acciones básicas (Check/Call/Bet/Raise/Fold).
-- **Básico:** manos iniciales por posición (K9o en UTG vs BTN); Pot Odds con
-  bote 100 y apuesta 50 sobre proyecto de color; outs y regla del 4 y del 2
-  con cartas marcadas en el tapete.
-- **Intermedio:** ventaja de posición desde BTN; SPR y compromiso con Top Pair;
+- **Iniciación:** jerarquía de manos (par → doble pareja → trío → escalera →
+  color); posiciones y ciegas (BTN/SB/BB/UTG); acciones básicas
+  (Check/Call/Bet/Raise/Fold).
+- **Básico:** manos iniciales por posición; Pot Odds con cinco precios
+  distintos; outs y regla del 4 y del 2 con cartas marcadas en el tapete.
+- **Intermedio:** ventaja de posición IP vs OOP; SPR y compromiso con Top Pair;
   semi-faroles con color + escalera.
-- **Avanzado:** C-Bet según textura (`K72r` vs `876ss`); farol en River con
-  bloqueador; ajustes contra Calling Station y Nit.
+- **Avanzado:** C-Bet según textura; farol en River con bloqueador; ajustes
+  explotativos por perfil (Calling Station, Nit, Maníaco, TAG, Weak-Tight).
 
-Flujo de cada clase: guía de 2–3 líneas → decisión con botones reales de póker
-(`Fold`, `Check/Call`, `Bet/Raise` o elegir la mano ganadora) → feedback
-inmediato sobre el tapete con el cálculo exacto → desbloqueo de la siguiente.
-El progreso se guarda en `appState.academia.completedIds` y la lista muestra
-el paso (`Clase 1/12` ... `Clase 12/12`). Filtros: **Todos / Iniciación /
-Básico / Intermedio / Avanzado**. Al completar la última se muestra
+Flujo de cada caso: guía de 3 líneas → pregunta concreta sobre la mini-mesa →
+decisión con botones reales de póker (`Fold`, `Check/Call`, `Bet/Raise` o elegir
+la mano ganadora) → feedback inmediato sobre el tapete explicando el cálculo →
+botón «Siguiente caso». Sólo avanza la respuesta correcta; la incorrecta
+permite reintentar sin castigo. Puedes volver a cualquier caso ya resuelto con
+los puntos `1..5` y repasar los cinco cuando termines la clase.
+
+El avance se guarda caso por caso en `appState.academia.caseProgress` y la
+clase se marca como completada en `appState.academia.completedIds` al resolver
+el caso 5, lo que desbloquea la siguiente. Al recargar se restaura el caso exacto
+donde estabas. La lista muestra `Caso x/5 · n/5 resueltos` y el paso
+`Clase 1/12` ... `Clase 12/12`. Filtros: **Todos / Iniciación / Básico /
+Intermedio / Avanzado**. Al completar la última se muestra
 `🏆 ¡Ruta completa! De 0 a pro.`

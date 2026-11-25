@@ -23,7 +23,10 @@ const DEFAULT_STATE = {
     history: []
   },
   academia: {
-    completedIds: []
+    completedIds: [],
+    caseProgress: {},
+    activeLessonId: null,
+    activeCaseIndex: 0
   }
 };
 
@@ -37,7 +40,17 @@ function loadState() {
     return {
       config: { ...DEFAULT_STATE.config, ...(parsed.config || {}) },
       stats: { ...DEFAULT_STATE.stats, ...(parsed.stats || {}) },
-      academia: { ...DEFAULT_STATE.academia, ...(parsed.academia || {}) }
+      academia: {
+        completedIds: Array.isArray(parsed.academia?.completedIds) ? parsed.academia.completedIds : [],
+        caseProgress: {
+          ...DEFAULT_STATE.academia.caseProgress,
+          ...(parsed.academia?.caseProgress && typeof parsed.academia.caseProgress === 'object'
+            ? parsed.academia.caseProgress
+            : {})
+        },
+        activeLessonId: typeof parsed.academia?.activeLessonId === 'string' ? parsed.academia.activeLessonId : null,
+        activeCaseIndex: Number.isInteger(parsed.academia?.activeCaseIndex) ? parsed.academia.activeCaseIndex : 0
+      }
     };
   } catch (e) {
     return JSON.parse(JSON.stringify(DEFAULT_STATE));
