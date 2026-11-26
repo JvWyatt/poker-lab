@@ -76,27 +76,41 @@
     .action-flash-normal { animation: actionFlashNormal 0.55s ease-out; }
     .action-flash-bad    { animation: actionFlashBad 0.55s ease-out; }
 
-    /* HUD inferior: un panel, dos columnas fusionadas y exactamente igual de altas. */
+    /* HUD unificado: una sola pieza, sin scroll interno y con crecimiento suave. */
     #game-controls-panel {
       min-width: 0;
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(150px, 24%);
-      align-items: stretch;
-      gap: 0;
+      grid-template-columns: minmax(0, 1fr) 52px;
+      align-items: end;
+      gap: 0.6rem;
+      overflow: visible;
     }
-    #game-controls-left,
-    #game-controls-right { min-width: 0; height: 100%; }
-    #game-controls-left { display: flex; flex-direction: column; gap: 0.45rem; }
+    #game-controls-left {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
     #game-controls-right {
-      position: relative;
-      padding-left: 0.75rem;
+      min-width: 0;
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+      padding-left: 0.6rem;
       border-left: 1px solid rgba(148, 163, 184, 0.18);
     }
 
-    .game-action-row { display: flex; flex-wrap: nowrap; gap: 0.4rem; }
-    .game-action-row > button {
+    .game-action-row { display: flex; flex-wrap: nowrap; gap: 0.4rem; min-width: 0; }
+    .action-cell {
       flex: 1 1 0;
       min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+    .action-cell > button {
+      width: 100%;
       padding: 0.55rem 0.4rem;
       font-size: 11px;
       line-height: 1.1;
@@ -104,37 +118,54 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
-    #action-suggestion {
-      min-width: 0;
-      overflow-x: auto;
-      scrollbar-width: none;
+    .action-hint {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      min-height: 13px;
+      font-size: 9px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 0.01em;
+      color: #cbd5e1;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    #action-suggestion::-webkit-scrollbar { display: none; }
+    .action-hint:empty { display: none; }
+    .action-hint::before { content: '•'; font-size: 7px; color: currentColor; }
+    .action-cell[data-action="fold"] .action-hint { color: #fda4af; }
+    .action-cell[data-action="call"] .action-hint { color: #7dd3fc; }
+    .action-cell[data-action="raise"] .action-hint { color: #6ee7b7; }
+    #game-controls-panel:not(.eyeball-open) .action-hint { display: none; }
 
     .game-bet-row {
       display: flex;
-      flex-wrap: nowrap;
+      flex-wrap: wrap;
       align-items: center;
       gap: 0.4rem;
       min-width: 0;
-      overflow-x: auto;
-      scrollbar-width: none;
+      overflow: visible;
     }
-    .game-bet-row::-webkit-scrollbar { display: none; }
-    .bet-allin {
+    .bet-allin,
+    #bet-sizing-presets button {
       flex: 0 0 auto;
-      padding: 0.4rem 0.55rem;
+      padding: 0.36rem 0.45rem;
       font-size: 10px;
       white-space: nowrap;
+      transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     }
     .bet-slider-group {
-      flex: 1 1 110px;
-      min-width: 110px;
+      flex: 1 1 130px;
+      min-width: 120px;
       display: flex;
       align-items: center;
       gap: 0.35rem;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      padding: 0.1rem 0.2rem;
+      transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
     }
     .bet-slider-group input[type="range"] {
       flex: 1 1 auto;
@@ -147,27 +178,61 @@
       text-align: right;
       font-size: 12px;
     }
-    #bet-sizing-presets { flex: 0 0 auto; display: flex; flex-wrap: nowrap; gap: 0.3rem; }
-    #bet-sizing-presets button {
-      flex: 0 0 auto;
-      padding: 0.35rem 0.45rem;
-      font-size: 10px;
-      white-space: nowrap;
+    #bet-sizing-presets { flex: 0 0 auto; display: flex; flex-wrap: wrap; gap: 0.3rem; }
+
+    /* Control pre-seleccionado cuando el ojito recomienda subir. */
+    .bet-slider-group.is-suggested,
+    .bet-allin.is-suggested,
+    #bet-sizing-presets button.is-suggested {
+      border-color: rgba(251, 191, 36, 0.75);
+      background-color: rgba(120, 53, 15, 0.7);
+      color: #fde68a;
+      animation: suggestedPulse 1.35s ease-in-out 2;
+    }
+    .bet-slider-group.is-suggested input[type="range"] { accent-color: #fbbf24; }
+    @keyframes suggestedPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
+      50% { box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.28); }
     }
 
-    /* El ojito vive en la esquina inferior derecha y se abre hacia arriba. */
-    #eyeball-anchor {
-      position: absolute;
-      right: 0.15rem;
-      bottom: 0.15rem;
-      width: min(100%, 168px);
-      max-width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 0.35rem;
-      pointer-events: auto;
+    /* Fila extra del ojito: se abre desde abajo y nunca genera scroll. */
+    #game-hud-extra {
+      min-width: 0;
+      line-height: 1;
+      transform-origin: bottom center;
+      animation: hudExtraIn 0.22s ease-out both;
     }
+    #game-hud-extra.hidden { display: none; }
+    @keyframes hudExtraIn {
+      from { opacity: 0; transform: translateY(7px) scaleY(0.92); }
+      to { opacity: 1; transform: translateY(0) scaleY(1); }
+    }
+    .hud-metrics { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; min-width: 0; line-height: 1; }
+    .hud-metrics .hud-card {
+      display: flex;
+      align-items: baseline;
+      gap: 0.35rem;
+      font-size: 10px;
+      line-height: 1;
+      padding: 0.28rem 0.45rem;
+      border-width: 1px;
+      border-radius: 9px;
+      background: rgba(15, 23, 42, 0.85);
+      white-space: nowrap;
+    }
+    .hud-metrics .hud-card > span:first-child {
+      font-size: 8px;
+      letter-spacing: 0.08em;
+      color: #94a3b8;
+    }
+    .hud-metrics .hud-card > span:last-child {
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    /* El ojito queda abajo a la derecha; la información se despliega hacia arriba. */
+    #eyeball-anchor { display: flex; align-items: flex-end; justify-content: flex-end; pointer-events: auto; }
     .eyeball-btn {
       width: 44px;
       height: 44px;
@@ -188,54 +253,23 @@
     }
     .eyeball-btn:hover { transform: scale(1.05); }
     .eyeball-btn.is-open { border-color: rgba(52, 211, 153, 0.75); color: #6ee7b7; }
-    .eyeball-panel {
-      display: none;
-      width: 100%;
-      max-height: min(48vh, 280px);
-      overflow-y: auto;
-      overflow-x: hidden;
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      border-radius: 12px;
-      background: rgba(2, 6, 23, 0.92);
-      backdrop-filter: blur(12px);
-      padding: 0.45rem;
-      box-shadow: 0 16px 35px rgba(0, 0, 0, 0.55);
-      pointer-events: auto;
-    }
-    .eyeball-panel:not(.hidden) { display: block; }
-    .eyeball-panel::-webkit-scrollbar { width: 4px; }
-    .eyeball-cards { display: flex; flex-direction: column; gap: 0.3rem; }
-    .eyeball-cards .hud-card {
-      width: 100%;
-      min-height: 34px;
-      padding: 0.3rem 0.45rem;
-      border-width: 1px;
-      border-radius: 9px;
-      background: rgba(15, 23, 42, 0.85);
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      justify-content: center;
-    }
-    .eyeball-cards .hud-card > span:first-child {
-      font-size: 7px;
-      letter-spacing: 0.08em;
-      color: #94a3b8;
-    }
-    .eyeball-cards .hud-card > span:last-child {
-      margin-top: 2px;
-      font-size: 10px;
-      line-height: 1;
-    }
 
     @media (max-width: 640px) {
-      #game-controls-panel { grid-template-columns: minmax(0, 1fr) 118px; padding: 0.6rem; }
+      #game-controls-panel { grid-template-columns: minmax(0, 1fr) 44px; gap: 0.45rem; padding: 0.6rem; }
       #game-controls-right { padding-left: 0.4rem; }
-      .game-action-row > button { padding: 0.45rem 0.25rem; font-size: 9.5px; }
-      .bet-slider-group { flex-basis: 92px; min-width: 92px; }
-      #eyeball-anchor { width: min(100%, 136px); }
-      .eyeball-panel { width: 100%; max-height: 42vh; }
+      .action-cell > button { padding: 0.45rem 0.25rem; font-size: 9.5px; }
+      .action-hint { font-size: 8px; }
+      .bet-slider-group { flex-basis: 100px; min-width: 100px; }
+      #bet-sizing-presets button, .bet-allin { padding: 0.3rem 0.35rem; font-size: 9px; }
       .eyeball-btn { width: 40px; height: 40px; flex-basis: 40px; }
+      .hud-metrics .hud-card { padding: 0.22rem 0.35rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bet-slider-group.is-suggested,
+      .bet-allin.is-suggested,
+      #bet-sizing-presets button.is-suggested,
+      #game-hud-extra { animation: none; }
     }
 
     /* ======================================================================

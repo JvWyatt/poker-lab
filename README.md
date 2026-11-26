@@ -56,26 +56,27 @@ Tailwind se carga desde CDN, por lo que hace falta conexión a internet.
   partidas. Expanden el tapete, el HUD, los pop-ups y la botonera; la barra
   superior de la arena muestra ciegas, audio y un único botón **✕** para salir.
   Usa la Fullscreen API nativa con fallback CSS (`is-arena`); `Esc` también sale.
-- **Hub inferior en dos columnas fusionadas:** `#game-controls-panel` es un
-  único panel con dos grids de la misma altura. La columna izquierda lleva
-  arriba `Fold → Call → Raise` en horizontal y debajo `All-In + slider + montos
-  rápidos`, también en horizontal. La columna derecha, separada sólo por una
-  línea sutil, ancla el ojito en la esquina inferior derecha.
-- **HUD «ojito» 👁️ / 🙈:** al abrirlo, el panel se despliega **en vertical hacia
-  arriba** desde el ojito: cada dato (RAISE/CALL/FOLD o EQUITY/POT ODDS/OUTS/EV
-  MAX) queda apilado debajo del anterior, nunca en horizontal. La sugerencia
-  sigue bajo las acciones de la columna izquierda.
+- **HUD unificado sin scroll:** `#game-controls-panel` sigue siendo una sola
+  pieza. Arriba quedan `Fold → Call → Raise`; debajo, en su flujo natural,
+  `All-In + slider + 1/4, 1/3, 1/2, 3/4 y Pot`. El ojito permanece anclado abajo
+  a la derecha, separado sólo por una línea sutil. Al abrirlo el HUD crece un
+  poco y muestra la fila extra sin barras de desplazamiento internas.
+- **HUD «ojito» 👁️ / 🙈:** al abrirlo, la información se despliega **hacia arriba**
+  dentro del mismo panel: viñetas sobre cada botón de acción y métricas en
+  horizontal debajo de la zona de apuestas.
   - Preflop: frecuencias RAISE/CALL/FOLD de `GTOEngine`, con posición,
     secuencia (RFI / vs apertura / vs 3-Bet / defensa BB), tamaño de apertura,
     stack y MDF reales de la mano. Sólo se muestran acciones con `% > 0`.
-  - Postflop: sin GTO preflop; muestra EQUITY, POT ODDS, OUTS (sólo Flop/Turn)
-    y EV MAX en BB, calculados en el turno del Héroe.
-  - **Sugerencia bajo los botones:** cuando el ojito está activo, muestra la
-    mejor acción y sus porcentajes. En preflop usa las frecuencias GTO; en
-    flop/turn/river usa un porcentaje **estimado** derivado del EV de cada
-    opción disponible, incluida `Subir` cuando existe y es la mejor línea.
-  - La sugerencia se oculta con el ojito, fuera del turno del Héroe o si no hay
-    mano en curso. El detalle EV completo sigue en el Coach.
+  - Postflop: sin GTO preflop; los porcentajes son **estimados** a partir del EV
+    de cada opción disponible, incluida `Subir` cuando existe.
+  - **Viñetas sobre los botones:** cada acción lleva encima sólo su nombre y su
+    porcentaje (por ejemplo `Subir 42%`). No hay cajas de texto ni etiquetas
+    largas.
+  - **Sizing al subir:** si `Subir` es la mejor línea, se preselecciona el slider
+    en el monto sugerido y se resalta el atajo de bote más cercano (o All-In).
+    El detalle EV completo sigue en el Coach.
+  - Las viñetas y métricas se ocultan con el ojito, fuera del turno del Héroe o
+    si no hay mano en curso.
 - **GTO de frecuencias mixtas (estilo Preflop Vision):** `GTOEngine` es la
   única fuente de verdad de la matriz 13×13, el ojito y `gradeHeroMove`.
   Solo `AA-TT`, `AK`, `AQs` y la basura absoluta son puros (100 %); el resto

@@ -1,10 +1,18 @@
 /* ============================================================================
-   14. HUD FLOTANTE "OJITO" (ESQUINA INFERIOR DERECHA DEL HUB)
-   El ojito queda anclado abajo y su panel se apila en vertical hacia arriba.
-   La sugerencia vive bajo las acciones: GTO en preflop, EV estimado después.
+   14. HUD UNIFICADO "OJITO" (INFERIOR DERECHA DE LA MESA)
+   El ojito abre la información hacia arriba dentro del mismo panel: viñetas
+   sobre cada acción y métricas horizontales debajo de la zona de apuestas.
+   Preflop usa frecuencias GTO; después del flop, porcentajes estimados del EV.
 ============================================================================ */
 const eyeballHUD = {
   visible: false,
+  previousRaiseValue: null,
+  suggestionApplied: false,
+  lastAppliedAnalysis: null,
+  lastAnalysis: null,
+  lastHintRows: [],
+  lastSuggestedTotal: null,
+  restoringRaise: false,
 
   POSITION_ALIASES: {
     'UTG+1': 'MP',
@@ -15,14 +23,17 @@ const eyeballHUD = {
 
   toggle() {
     this.visible = !this.visible;
-    const panel = document.getElementById('eyeball-panel');
+    const panel = document.getElementById('game-controls-panel');
+    const extra = document.getElementById('game-hud-extra');
     const btn = document.getElementById('btn-eyeball');
 
-    if (panel) panel.classList.toggle('hidden', !this.visible);
-    if (!this.visible) this.clearSuggestion();
+    if (panel) panel.classList.toggle('eyeball-open', this.visible);
+    if (extra) extra.classList.toggle('hidden', !this.visible);
+    if (!this.visible) this.restoreRaiseSuggestion();
     if (btn) {
       btn.textContent = this.visible ? '🙈' : '👁️';
       btn.setAttribute('aria-expanded', String(this.visible));
+      btn.setAttribute('aria-label', this.visible ? 'Ocultar ayuda táctica' : 'Mostrar ayuda táctica');
       btn.className = `eyeball-btn${this.visible ? ' is-open' : ''}`;
     }
 
@@ -32,19 +43,52 @@ const eyeballHUD = {
 
   render() {
     const cards = document.getElementById('eyeball-cards');
+    const extra = document.getElementById('game-hud-extra');
     const hasGame = typeof game !== 'undefined' && game.handInProgress
       && game.players[0].cards.length === 2;
+    const isHeroTurn = hasGame && game.turnIdx === 0
+      && !game.players[0].folded && !game.players[0].allIn
+      && ['preflop', 'flop', 'turn', 'river'].includes(game.street);
 
-    if (!this.visible || !cards || !hasGame || game.turnIdx !== 0
-      || game.players[0].folded || game.players[0].allIn
-      || !['preflop', 'flop', 'turn', 'river'].includes(game.street)) {
-      if (cards) this.paint(cards, []);
-      this.clearSuggestion();
+    if (!this.visible || !isHeroTurn) {
+      this.clearActionHints();
+      this.paint(cards, []);
+      if (extra) extra.classList.add('hidden');
+      this.restoreRaiseSuggestion();
+      this.lastAppliedAnalysis = null;
       return;
     }
 
-    if (game.street === 'preflop') this.renderPreflop(cards);
-    else this.renderPostflop(cards);
+    if (extra) extra.classList.remove('hidden');
+
+    const analysis = this.ensureAnalysis();
+    if (!analysis) {
+      this.clearActionHints();
+      this.paint(cards, []);
+      this.lastAppliedAnalysis = null;
+      return;
+    }
+
+    this.lastAnalysis = analysis;
+    const rows = this.actionRows(analysis);
+    this.renderActionHints(rows);
+    this.paint(cards, this.metricItems(analysis));
+
+    if (this.lastAppliedAnalysis !== analysis) {
+      this.restoreRaiseSuggestion();
+      this.lastAppliedAnalysis = analysis;
+      this.clearRaiseHighlight();
+
+      if (this.shouldSuggestRaise(rows, analysis)) {
+        this.applyRaiseSuggestion(analysis);
+      }
+    }
+  },
+
+  ensureAnalysis() {
+    if (game.currentDecisionAnalysis) return game.currentDecisionAnalysis;
+    if (typeof game.computeRealEVMatrix === 'function') game.computeRealEVMatrix();
+    return game.currentDecisionAnalysis || null;
   },
 
   normalizePosition(rawPos) {
@@ -60,7 +104,6 @@ const eyeballHUD = {
     const suited = (c1 & 3) === (c2 & 3);
     const ctx = game.getPreflopGTOContext();
 
-    // Misma matriz y mismo contexto que usan la vista GTO y el calificador EV.
     return GTOEngine.getHandFreqs(this.normalizePosition(ctx.pos), r1, r2, suited, {
       situation: ctx.situation,
       facingRaise: ctx.facingRaise,
@@ -70,36 +113,32 @@ const eyeballHUD = {
     });
   },
 
-  renderPreflop(cards) {
-    const freqs = this.preflopFreqs();
+  actionRows(analysis) {
+    const order = { fold: 0, call: 1, raise: 2 };
+    let rows;
 
-    // Regla estricta: sólo acciones con frecuencia > 0%.
-    const items = [
-      { key: 'RAISE', value: `${freqs.raiseFreq}%`, tone: 'border-emerald-400/55 text-emerald-300' },
-      { key: 'CALL', value: `${freqs.callFreq}%`, tone: 'border-sky-400/55 text-sky-300' },
-      { key: 'FOLD', value: `${freqs.foldFreq}%`, tone: 'border-rose-400/55 text-rose-300' }
-    ].filter(item => parseInt(item.value, 10) > 0);
+    if (game.street === 'preflop') {
+      const freqs = this.preflopFreqs();
+      rows = [
+        { action: 'fold', label: 'Retirarse', pct: freqs.foldFreq },
+        { action: 'call', label: this.callLabel(), pct: freqs.callFreq },
+        { action: 'raise', label: 'Subir', pct: freqs.raiseFreq }
+      ];
+    } else {
+      const pcts = this.estimateEVPercentages(analysis.options || []);
+      rows = (analysis.options || []).map((option, i) => ({
+        action: option.action,
+        label: this.actionLabel(option.action),
+        pct: pcts[i]
+      }));
+    }
 
-    this.paint(cards, items);
-    this.renderSuggestion('GTO', [
-      { action: 'raise', label: 'Subir', pct: freqs.raiseFreq },
-      { action: 'call', label: this.callLabel(), pct: freqs.callFreq },
-      { action: 'fold', label: 'Retirarse', pct: freqs.foldFreq }
-    ]);
+    return rows
+      .filter(row => row.pct > 0 && this.isActionEnabled(row.action))
+      .sort((a, b) => order[a.action] - order[b.action]);
   },
 
-  renderPostflop(cards) {
-    // Sólo datos del turno del Héroe para no mostrar cifras obsoletas.
-    if (!game.currentDecisionAnalysis && typeof game.computeRealEVMatrix === 'function') {
-      game.computeRealEVMatrix();
-    }
-    const analysis = game.currentDecisionAnalysis;
-    if (!analysis) {
-      this.paint(cards, []);
-      this.clearSuggestion();
-      return;
-    }
-
+  metricItems(analysis) {
     const isRiver = game.street === 'river';
     const evBest = analysis.bestOption ? analysis.bestOption.ev : 0;
     const items = [
@@ -117,17 +156,7 @@ const eyeballHUD = {
       tone: 'border-cyan-400/55 text-cyan-300'
     });
 
-    this.paint(cards, items);
-
-    // Porcentaje derivado del EV de cada línea disponible; se etiqueta como
-    // estimado para no presentarlo como una tabla GTO exacta.
-    const pcts = this.estimateEVPercentages(analysis.options);
-    const rows = analysis.options.map((option, i) => ({
-      action: option.action,
-      label: this.actionLabel(option.action),
-      pct: pcts[i]
-    }));
-    this.renderSuggestion('EV ESTIMADO', rows);
+    return items;
   },
 
   callLabel() {
@@ -161,43 +190,135 @@ const eyeballHUD = {
     return pcts;
   },
 
-  renderSuggestion(source, rows) {
-    const el = document.getElementById('action-suggestion');
-    if (!el) return;
-    const available = rows.filter(row => row.pct > 0 && this.isActionEnabled(row.action));
-    if (!available.length) {
-      this.clearSuggestion();
-      return;
-    }
-    const sorted = [...available].sort((a, b) => b.pct - a.pct);
-    const best = sorted[0];
-    const chips = sorted.map(row => `
-      <span class="${row === best ? 'font-extrabold text-emerald-300' : 'font-semibold text-slate-300'}">${row.label} <span class="font-mono">${row.pct}%</span></span>
-    `).join('<span class="text-slate-600">·</span>');
+  renderActionHints(rows) {
+    this.lastHintRows = rows;
+    const raiseRow = rows.find(row => row.action === 'raise');
+    const size = this.suggestionApplied && this.lastAnalysis
+      ? this.lastAnalysis.suggestedRaise
+      : null;
 
-    el.innerHTML = `
-      <span class="font-mono uppercase tracking-wide text-emerald-400">SUGERENCIA ${source}</span>
-      <span class="text-slate-600">→</span>
-      <strong class="font-bold text-white">${best.label}</strong>
-      <span class="flex flex-nowrap items-center gap-1.5">${chips}</span>
-    `;
-    el.classList.remove('hidden');
-    el.classList.add('flex');
+    for (const action of ['fold', 'call', 'raise']) {
+      const el = document.getElementById(`hint-${action}`);
+      if (!el) continue;
+      const row = rows.find(item => item.action === action);
+      if (!row) {
+        el.textContent = '';
+        continue;
+      }
+      const suffix = action === 'raise' && size ? ` · ${size.presetLabel}` : '';
+      el.textContent = `${row.label} ${row.pct}%${suffix}`;
+    }
+
+    if (!raiseRow && size) this.clearRaiseHighlight();
   },
 
-  clearSuggestion() {
-    const el = document.getElementById('action-suggestion');
-    if (!el) return;
-    el.innerHTML = '';
-    el.classList.add('hidden');
-    el.classList.remove('flex');
+  clearActionHints() {
+    for (const action of ['fold', 'call', 'raise']) {
+      const el = document.getElementById(`hint-${action}`);
+      if (el) el.textContent = '';
+    }
+    this.lastHintRows = [];
+    this.lastAnalysis = null;
+  },
+
+  shouldSuggestRaise(rows, analysis) {
+    const raise = rows.find(row => row.action === 'raise');
+    if (!raise || !analysis.suggestedRaise) return false;
+    const bestPct = Math.max(...rows.map(row => row.pct));
+    return analysis.bestOption?.action === 'raise' || raise.pct === bestPct;
+  },
+
+  applyRaiseSuggestion(analysis) {
+    const slider = document.getElementById('raise-slider');
+    const size = analysis.suggestedRaise;
+    if (!slider || !size) return;
+
+    if (!this.suggestionApplied) {
+      this.previousRaiseValue = slider.value;
+      this.suggestionApplied = true;
+    }
+
+    const min = Number(slider.min) || 0;
+    const max = Number(slider.max) || Number.MAX_SAFE_INTEGER;
+    const target = Math.max(min, Math.min(max, Math.round(size.total)));
+    slider.value = target;
+    this.lastSuggestedTotal = target;
+
+    this.restoringRaise = true;
+    try {
+      if (typeof game !== 'undefined' && typeof game.updateRaiseLabel === 'function') {
+        game.updateRaiseLabel(target);
+      }
+    } finally {
+      this.restoringRaise = false;
+    }
+
+    this.highlightRaiseSuggestion(size);
+    this.renderActionHints(this.lastHintRows);
+  },
+
+  highlightRaiseSuggestion(size) {
+    this.clearRaiseHighlight();
+    const sliderGroup = document.getElementById('bet-slider-group');
+    if (sliderGroup) sliderGroup.classList.add('is-suggested');
+
+    if (size.kind === 'allin') {
+      const allin = document.querySelector('.bet-allin');
+      if (allin) allin.classList.add('is-suggested');
+      return;
+    }
+
+    const preset = document.querySelector(`#bet-sizing-presets button[data-fraction="${size.presetValue}"]`);
+    if (preset) preset.classList.add('is-suggested');
+  },
+
+  clearRaiseHighlight() {
+    document.querySelectorAll('.bet-slider-group.is-suggested, .bet-allin.is-suggested, #bet-sizing-presets button.is-suggested')
+      .forEach(el => el.classList.remove('is-suggested'));
+  },
+
+  restoreRaiseSuggestion() {
+    if (!this.suggestionApplied) return;
+
+    const slider = document.getElementById('raise-slider');
+    if (slider && this.previousRaiseValue !== null) {
+      const min = Number(slider.min) || 0;
+      const max = Number(slider.max) || Number.MAX_SAFE_INTEGER;
+      const previous = Math.max(min, Math.min(max, Number(this.previousRaiseValue)));
+      slider.value = previous;
+      this.restoringRaise = true;
+      try {
+        if (typeof game !== 'undefined' && typeof game.updateRaiseLabel === 'function') {
+          game.updateRaiseLabel(previous);
+        }
+      } finally {
+        this.restoringRaise = false;
+      }
+    }
+
+    this.suggestionApplied = false;
+    this.previousRaiseValue = null;
+    this.lastSuggestedTotal = null;
+    this.clearRaiseHighlight();
+    this.renderActionHints(this.lastHintRows);
+  },
+
+  onBetValueChanged(val) {
+    if (this.restoringRaise || !this.suggestionApplied) return;
+    if (this.lastSuggestedTotal === null || Math.abs(Number(val) - this.lastSuggestedTotal) <= 1) return;
+
+    this.suggestionApplied = false;
+    this.previousRaiseValue = null;
+    this.lastSuggestedTotal = null;
+    this.clearRaiseHighlight();
+    this.renderActionHints(this.lastHintRows);
   },
 
   paint(container, items) {
-    // Cada dato se apila debajo del anterior: el panel crece hacia arriba.
-    container.className = 'eyeball-cards';
+    if (!container) return;
+    container.className = 'hud-metrics';
     container.innerHTML = items.map((item, i) => `
-      <div class="hud-card border ${item.tone}" style="animation-delay: ${i * 45}ms">
+      <div class="hud-card border ${item.tone}" style="animation-delay: ${i * 35}ms">
         <span>${item.key}</span>
         <span>${item.value}</span>
       </div>

@@ -85,6 +85,7 @@ const game = {
   heroSecondsLeft: 60,
   heroStartingStack: 200,
   currentDecisionAnalysis: null,
+  isComputingAnalysis: false,
 
   init() {
     this.initialized = true;
@@ -472,6 +473,10 @@ const game = {
     document.getElementById('raise-amount-label').textContent = val;
     const btnRaise = document.getElementById('btn-raise');
     btnRaise.textContent = this.currentBet === 0 ? `Apostar ${val} (Raise)` : `Subir a ${val} (Raise)`;
+
+    if (typeof eyeballHUD !== 'undefined' && typeof eyeballHUD.onBetValueChanged === 'function') {
+      eyeballHUD.onBetValueChanged(val);
+    }
   },
 
   setBetFraction(frac) {
@@ -529,132 +534,172 @@ const game = {
    * MOTOR MATEMÁTICO DE EVALUACIÓN REAL DE EV POR ACCIÓN (MONTE CARLO + FOLD EQUITY)
    */
   computeRealEVMatrix() {
-    const hero = this.players[0];
-    const pos = this.getSeatPositionLabel(0);
-    const activeOpponents = this.players.filter(p => !p.isHuman && !p.folded);
-    const toCall = Math.max(0, this.currentBet - hero.bet);
-    const totalPotAfterCall = this.pot + toCall;
-    const potOdds = totalPotAfterCall > 0 ? (toCall / totalPotAfterCall) : 0;
-    const spr = this.pot > 0 ? (hero.stack / this.pot) : 99;
+    if (this.isComputingAnalysis) return;
+    this.isComputingAnalysis = true;
+    try {
+      const hero = this.players[0];
+      const pos = this.getSeatPositionLabel(0);
+      const activeOpponents = this.players.filter(p => !p.isHuman && !p.folded);
+      const toCall = Math.max(0, this.currentBet - hero.bet);
+      const totalPotAfterCall = this.pot + toCall;
+      const potOdds = totalPotAfterCall > 0 ? (toCall / totalPotAfterCall) : 0;
+      const spr = this.pot > 0 ? (hero.stack / this.pot) : 99;
 
-    // 1. Simulación Monte Carlo de 2,000 iteraciones contra rango ponderado
-    const rangeType = this.street === 'preflop' ? 'range_top30' : 'range_top30';
-    const mc = PokerEngine.runMonteCarlo(hero.cards, null, this.board, rangeType, 2000);
-    // Ajuste multiway realista según número de rivales activos en la mano
-    const multiwayPenalty = Math.pow(0.83, Math.max(0, activeOpponents.length - 1));
-    const equity = Math.min(0.99, Math.max(0.01, (mc.equity / 100) * multiwayPenalty));
+      // 1. Simulación Monte Carlo de 2,000 iteraciones contra rango ponderado
+      const rangeType = this.street === 'preflop' ? 'range_top30' : 'range_top30';
+      const mc = PokerEngine.runMonteCarlo(hero.cards, null, this.board, rangeType, 2000);
+      // Ajuste multiway realista según número de rivales activos en la mano
+      const multiwayPenalty = Math.pow(0.83, Math.max(0, activeOpponents.length - 1));
+      const equity = Math.min(0.99, Math.max(0.01, (mc.equity / 100) * multiwayPenalty));
 
-    const made = PokerEngine.evaluateHand([...hero.cards, ...this.board]);
-    const draws = PokerEngine.analyzeDrawsAndOuts(hero.cards, this.board);
-    const impliedBonus = (draws.outs >= 8 && this.street !== 'river') ? (draws.outs * 0.012 * Math.min(hero.stack, this.pot)) : 0;
+      const made = PokerEngine.evaluateHand([...hero.cards, ...this.board]);
+      const draws = PokerEngine.analyzeDrawsAndOuts(hero.cards, this.board);
+      const impliedBonus = (draws.outs >= 8 && this.street !== 'river') ? (draws.outs * 0.012 * Math.min(hero.stack, this.pot)) : 0;
 
-    // 2. Calcular Fold Equity promedio según los perfiles reales de los rivales activos
-    const avgFoldToBet = activeOpponents.length > 0
-      ? activeOpponents.reduce((acc, opp) => acc + (opp.profile ? opp.profile.foldToBet : 0.42), 0) / activeOpponents.length
-      : 0.40;
-    const foldEquity = Math.min(0.75, Math.max(0.08, Math.pow(avgFoldToBet, activeOpponents.length)));
+      // 2. Calcular Fold Equity promedio según los perfiles reales de los rivales activos
+      const avgFoldToBet = activeOpponents.length > 0
+        ? activeOpponents.reduce((acc, opp) => acc + (opp.profile ? opp.profile.foldToBet : 0.42), 0) / activeOpponents.length
+        : 0.40;
+      const foldEquity = Math.min(0.75, Math.max(0.08, Math.pow(avgFoldToBet, activeOpponents.length)));
 
-    // 3. Calcular EV exacto en Big Blinds (BB) para cada acción disponible
-    // A) EV(Fold) = 0 BB (referencia base desde el punto de decisión actual)
-    const evFoldBB = 0;
+      // 3. Calcular EV exacto en Big Blinds (BB) para cada acción disponible
+      // A) EV(Fold) = 0 BB (referencia base desde el punto de decisión actual)
+      const evFoldBB = 0;
 
-    // B) EV(Check / Call)
-    let evCallBB;
-    if (toCall === 0) {
-      // Check realiza parte de la equity sin invertir fichas adicionales
-      const realization = ['BTN', 'BTN / SB', 'CO'].includes(pos) ? 0.95 : 0.82;
-      evCallBB = ((equity * this.pot * realization) + impliedBonus) / this.bb;
-    } else {
-      // EV(Call) = Equity * (Pot + Call + Implied) - (1 - Equity) * Call
-      const rawEvCall = (equity * (this.pot + impliedBonus)) - ((1 - equity) * toCall);
-      evCallBB = rawEvCall / this.bb;
+      // B) EV(Check / Call)
+      let evCallBB;
+      if (toCall === 0) {
+        // Check realiza parte de la equity sin invertir fichas adicionales
+        const realization = ['BTN', 'BTN / SB', 'CO'].includes(pos) ? 0.95 : 0.82;
+        evCallBB = ((equity * this.pot * realization) + impliedBonus) / this.bb;
+      } else {
+        // EV(Call) = Equity * (Pot + Call + Implied) - (1 - Equity) * Call
+        const rawEvCall = (equity * (this.pot + impliedBonus)) - ((1 - equity) * toCall);
+        evCallBB = rawEvCall / this.bb;
+      }
+
+      // C) EV(Bet / Raise) con sizing estándar (~65% bote o subida 2.5x)
+      const raiseSize = toCall === 0
+        ? Math.min(hero.stack, Math.max(this.bb, Math.round(this.pot * 0.65)))
+        : Math.min(hero.stack, Math.max(this.minRaise - hero.bet, toCall + Math.round(this.pot * 0.65)));
+
+      // Cuando apostamos/subimos: ganamos el bote actual con prob = foldEquity,
+      // y cuando nos pagan (1 - foldEquity), jugamos un bote más grande donde el rango rival es más fuerte
+      const callerEquity = Math.max(0.05, equity * 0.86);
+      const potWhenCalled = this.pot + raiseSize * 2;
+      const rawEvRaise = (foldEquity * this.pot) + ((1 - foldEquity) * ((callerEquity * potWhenCalled) - raiseSize));
+      const evRaiseBB = hero.stack > toCall ? (rawEvRaise / this.bb) : -999;
+
+      // Determinar mejor acción y ordenar opciones
+      const options = [
+        { action: 'fold', label: 'Fold (Retirarse)', ev: evFoldBB },
+        { action: 'call', label: toCall === 0 ? 'Check (Pasar)' : `Call (Pagar ${toCall})`, ev: evCallBB }
+      ];
+      if (evRaiseBB > -900) {
+        options.push({ action: 'raise', label: toCall === 0 ? `Bet (~${raiseSize})` : `Raise (~${hero.bet + raiseSize})`, ev: evRaiseBB });
+      }
+
+      // Unificación GTO: el mismo mix del ojito y de la matriz matiza el EV
+      // preflop para que matriz, HUD y calificación nunca se contradigan.
+      let gto = null;
+      if (this.street === 'preflop' && typeof GTOEngine !== 'undefined') {
+        const c1 = hero.cards[0];
+        const c2 = hero.cards[1];
+        const highR = Math.max(c1 >> 2, c2 >> 2);
+        const lowR = Math.min(c1 >> 2, c2 >> 2);
+        const suited = (c1 & 3) === (c2 & 3);
+        const ctx = this.getPreflopGTOContext();
+        gto = GTOEngine.getHandFreqs(ctx.pos, highR, lowR, suited, {
+          situation: ctx.situation,
+          facingRaise: ctx.facingRaise,
+          mdf: ctx.mdf,
+          openSizeBb: ctx.openSizeBb,
+          stackBb: ctx.stackBb
+        });
+        options.forEach(option => {
+          const freq = option.action === 'raise' ? gto.raiseFreq
+            : option.action === 'call' ? gto.callFreq
+              : gto.foldFreq;
+          option.gtoFreq = freq;
+          option.ev += (freq / 100) * 0.55;
+        });
+      }
+
+      options.sort((a, b) => b.ev - a.ev);
+      const bestOption = options[0];
+
+      // Sizing que el ojito preselecciona cuando conviene apostar/subir.
+      // Sigue la misma semántica que el slider: target total, no incremento.
+      const sliderEl = document.getElementById('raise-slider');
+      const minTotal = sliderEl ? parseInt(sliderEl.min, 10) || this.bb : this.currentBet + this.bb;
+      const maxTotal = sliderEl ? parseInt(sliderEl.max, 10) || (hero.bet + hero.stack) : hero.bet + hero.stack;
+      const effectivePot = this.pot + toCall;
+      const suggestedTotalRaw = Math.round(this.currentBet + effectivePot * 0.65);
+      const suggestedTotal = Math.max(minTotal, Math.min(maxTotal, suggestedTotalRaw));
+      const suggestedFraction = effectivePot > 0 ? (suggestedTotal - this.currentBet) / effectivePot : 0;
+      const presets = [
+        { value: 0.25, label: '1/4 Pot' },
+        { value: 0.33, label: '1/3 Pot' },
+        { value: 0.5, label: '1/2 Pot' },
+        { value: 0.75, label: '3/4 Pot' },
+        { value: 1, label: 'Pot' }
+      ];
+      const nearestPreset = presets.reduce((best, preset) =>
+        Math.abs(suggestedFraction - preset.value) < Math.abs(suggestedFraction - best.value) ? preset : best,
+        presets[0]);
+      const isAllInSuggestion = suggestedTotal >= maxTotal && maxTotal > minTotal;
+      const suggestedPreset = isAllInSuggestion
+        ? { value: 999, label: 'All-In' }
+        : nearestPreset;
+      const suggestedRaise = {
+        total: suggestedTotal,
+        amount: Math.max(0, suggestedTotal - hero.bet),
+        bb: suggestedTotal / Math.max(1, this.bb),
+        fraction: suggestedFraction,
+        presetValue: suggestedPreset.value,
+        presetLabel: suggestedPreset.label,
+        kind: isAllInSuggestion ? 'allin' : 'preset'
+      };
+
+      this.currentDecisionAnalysis = {
+        pos,
+        street: this.street.toUpperCase(),
+        hand: hero.cards.map(c => PokerEngine.cardToObj(c).code).join(''),
+        madeName: made.name,
+        outs: draws.outs,
+        equityPct: equity * 100,
+        potOddsPct: potOdds * 100,
+        toCall,
+        pot: this.pot,
+        spr,
+        foldEquityPct: foldEquity * 100,
+        rivalsSummary: activeOpponents.map(o => o.profile ? o.profile.style : 'Rival').join(', '),
+        gto,
+        options,
+        bestOption,
+        suggestedRaise
+      };
+
+      // Actualizar métricas en el panel
+      const coachPanel = document.getElementById('live-coach-panel');
+      document.getElementById('coach-position-badge').textContent = `Pos: ${pos}`;
+      document.getElementById('coach-equity').textContent = (equity * 100).toFixed(1) + '%';
+      document.getElementById('coach-pot-odds').textContent = toCall > 0 ? (potOdds * 100).toFixed(1) + '%' : '0.0%';
+      document.getElementById('coach-spr').textContent = spr < 50 ? spr.toFixed(1) : '∞';
+      document.getElementById('coach-hand-strength').textContent = made.name + (draws.outs > 0 ? ` (+${draws.outs} outs)` : '');
+
+      if (appState.config.showCoach) {
+        coachPanel.classList.remove('opacity-75');
+        document.getElementById('coach-advice-text').innerHTML =
+          `Mejor línea proyectada: <strong class="text-emerald-400">${bestOption.label}</strong> (${bestOption.ev >= 0 ? '+' : ''}${bestOption.ev.toFixed(2)} BB) frente a ${activeOpponents.length} rival(es).`;
+      } else {
+        document.getElementById('coach-advice-text').textContent = 'Modo Examen activo: actúa y recibirás la calificación detallada al instante.';
+      }
+
+      this.refreshTableOverlays();
+    } finally {
+      this.isComputingAnalysis = false;
     }
-
-    // C) EV(Bet / Raise) con sizing estándar (~65% bote o subida 2.5x)
-    const raiseSize = toCall === 0
-      ? Math.min(hero.stack, Math.max(this.bb, Math.round(this.pot * 0.65)))
-      : Math.min(hero.stack, Math.max(this.minRaise - hero.bet, toCall + Math.round(this.pot * 0.65)));
-
-    // Cuando apostamos/subimos: ganamos el bote actual con prob = foldEquity,
-    // y cuando nos pagan (1 - foldEquity), jugamos un bote más grande donde el rango rival es más fuerte
-    const callerEquity = Math.max(0.05, equity * 0.86);
-    const potWhenCalled = this.pot + raiseSize * 2;
-    const rawEvRaise = (foldEquity * this.pot) + ((1 - foldEquity) * ((callerEquity * potWhenCalled) - raiseSize));
-    const evRaiseBB = hero.stack > toCall ? (rawEvRaise / this.bb) : -999;
-
-    // Determinar mejor acción y ordenar opciones
-    const options = [
-      { action: 'fold', label: 'Fold (Retirarse)', ev: evFoldBB },
-      { action: 'call', label: toCall === 0 ? 'Check (Pasar)' : `Call (Pagar ${toCall})`, ev: evCallBB }
-    ];
-    if (evRaiseBB > -900) {
-      options.push({ action: 'raise', label: toCall === 0 ? `Bet (~${raiseSize})` : `Raise (~${hero.bet + raiseSize})`, ev: evRaiseBB });
-    }
-
-    // Unificación GTO: el mismo mix del ojito y de la matriz matiza el EV
-    // preflop para que matriz, HUD y calificación nunca se contradigan.
-    let gto = null;
-    if (this.street === 'preflop' && typeof GTOEngine !== 'undefined') {
-      const c1 = hero.cards[0];
-      const c2 = hero.cards[1];
-      const highR = Math.max(c1 >> 2, c2 >> 2);
-      const lowR = Math.min(c1 >> 2, c2 >> 2);
-      const suited = (c1 & 3) === (c2 & 3);
-      const ctx = this.getPreflopGTOContext();
-      gto = GTOEngine.getHandFreqs(ctx.pos, highR, lowR, suited, {
-        situation: ctx.situation,
-        facingRaise: ctx.facingRaise,
-        mdf: ctx.mdf,
-        openSizeBb: ctx.openSizeBb,
-        stackBb: ctx.stackBb
-      });
-      options.forEach(option => {
-        const freq = option.action === 'raise' ? gto.raiseFreq
-          : option.action === 'call' ? gto.callFreq
-            : gto.foldFreq;
-        option.gtoFreq = freq;
-        option.ev += (freq / 100) * 0.55;
-      });
-    }
-
-    options.sort((a, b) => b.ev - a.ev);
-    const bestOption = options[0];
-
-    this.currentDecisionAnalysis = {
-      pos,
-      street: this.street.toUpperCase(),
-      hand: hero.cards.map(c => PokerEngine.cardToObj(c).code).join(''),
-      madeName: made.name,
-      outs: draws.outs,
-      equityPct: equity * 100,
-      potOddsPct: potOdds * 100,
-      toCall,
-      pot: this.pot,
-      spr,
-      foldEquityPct: foldEquity * 100,
-      rivalsSummary: activeOpponents.map(o => o.profile ? o.profile.style : 'Rival').join(', '),
-      gto,
-      options,
-      bestOption
-    };
-
-    // Actualizar métricas en el panel
-    const coachPanel = document.getElementById('live-coach-panel');
-    document.getElementById('coach-position-badge').textContent = `Pos: ${pos}`;
-    document.getElementById('coach-equity').textContent = (equity * 100).toFixed(1) + '%';
-    document.getElementById('coach-pot-odds').textContent = toCall > 0 ? (potOdds * 100).toFixed(1) + '%' : '0.0%';
-    document.getElementById('coach-spr').textContent = spr < 50 ? spr.toFixed(1) : '∞';
-    document.getElementById('coach-hand-strength').textContent = made.name + (draws.outs > 0 ? ` (+${draws.outs} outs)` : '');
-
-    if (appState.config.showCoach) {
-      coachPanel.classList.remove('opacity-75');
-      document.getElementById('coach-advice-text').innerHTML =
-        `Mejor línea proyectada: <strong class="text-emerald-400">${bestOption.label}</strong> (${bestOption.ev >= 0 ? '+' : ''}${bestOption.ev.toFixed(2)} BB) frente a ${activeOpponents.length} rival(es).`;
-    } else {
-      document.getElementById('coach-advice-text').textContent = 'Modo Examen activo: actúa y recibirás la calificación detallada al instante.';
-    }
-
-    this.refreshTableOverlays();
   },
 
   // Sincroniza arena + HUD flotante con el estado real de la mano.
