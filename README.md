@@ -130,11 +130,12 @@ Tailwind se carga desde CDN, por lo que hace falta conexión a internet.
 ## Academia (ruta de 12 clases en 5 niveles)
 
 El mapa agrupa las clases por nivel. Al elegir una clase, **el mapa se
-sustituye por la vista de esa clase**: cabecera con `← Ruta`, progreso `1..5`,
-una mesa a pantalla completa y navegación fija abajo. El avance sigue siendo
-paso a paso, pero el contenido permite **scroll corto** para que `Siguiente`
-nunca quede tapado por la barra del navegador o el móvil. `Esc` o `← Ruta`
-vuelven al mapa, también después de girar el teléfono.
+sustituye por la vista de esa clase**: cabecera con `← Ruta`, progreso
+`1..10` en `Las Manos` y `1..5` en el resto, contenido a pantalla completa y
+navegación fija abajo. El avance sigue siendo paso a paso, pero el contenido
+permite **scroll corto** para que `Siguiente` nunca quede tapado por la barra
+del navegador o el móvil. `Esc` o `← Ruta` vuelven al mapa, también después de
+girar el teléfono.
 
 - **Pantalla Completa de Academia:** botón `⛶ Pantalla Completa` en el mapa y
   `⛶` en la cabecera de cada clase (mismo patrón que Arena: Fullscreen API
@@ -145,40 +146,47 @@ vuelven al mapa, también después de girar el teléfono.
   cualquier marca de agua decorativa, tanto en vista normal como en pantalla
   completa.
 
-Las clases usan tres formatos internos (no se muestran como etiquetas):
+Las clases usan cuatro formatos internos (no se muestran como etiquetas):
 
-- **Jerarquía visual** (clase 1): 5 pantallas que enseñan primero el ranking
-  oficial de 9 manos, de la carta alta a la escalera real, ordenado de menor a
-  mayor fuerza con 5 cartas de ejemplo y una explicación breve por mano.
-  Las comparaciones y los casos llegan después.
-- **Revelación guiada** (clases 3 y 12): 5 pantallas sin preguntas. El board
-  aparece flop → turn → river con `Entendido →`.
-- **Comparación de manos** (clase 2): 5 enfrentamientos fijos de 5 cartas
-  contra 5. Se elige ganador y se revelan las mejores 5 cartas de cada mano con
-  el nombre del evaluador.
-- **Casos fijos** (clases 4 a 11): 5 situaciones preconfiguradas por clase,
-  nunca aleatorias, con bote, apuesta, outs marcados y acción del rival. Se
-  decide con los botones habituales (`Apostar/Subir`, `Pasar/Pagar`,
-  `Retirarse`) y el feedback explica el porqué. Sólo avanza la respuesta
+- **Las Manos** (clase 1): 10 pantallas, una por jugada oficial de menor a
+  mayor fuerza: Carta Alta (High Card), Par (One Pair), Doble par (Two Pair),
+  Trío (Three of a Kind / Set), Escalera (Straight), Color (Flush),
+  Full House, Póker (Four of a Kind), Escalera de color (Straight Flush) y
+  Escalera real (Royal Flush). Cada pantalla muestra siempre 5 espacios:
+  resalta sólo las cartas que forman la jugada, deja siluetas en los demás e
+  indica a qué jugada supera. Todavía no hay cartas comunitarias.
+- **Revelación guiada** (clase 2): 5 pantallas sin preguntas. Se explican las
+  Hole Cards, el Board (Flop → Turn → River), la mejor jugada de 5 entre 7
+  cartas, el Dealer button, las ciegas (Small Blind / Big Blind) y las rondas
+  Preflop / Flop / Turn / River con `Entendido →`.
+- **Showdown** (clase 3): 5 enfrentamientos fijos de Hero contra Villain con
+  2 Hole Cards cada uno y un mismo Board de 5 cartas. Se elige ganador y se
+  revelan las mejores 5 cartas de cada mano con el nombre del evaluador.
+- **Casos fijos** (clases 4 a 12): 5 situaciones preconfiguradas por clase,
+  nunca aleatorias, con bote, apuesta, outs marcados, posición y acción del
+  rival. Se decide con los botones oficiales (`Fold`, `Check`, `Call`, `Bet`,
+  `Raise`, `All-in`) y el feedback explica el porqué. Sólo avanza la respuesta
   correcta; la incorrecta permite reintentar sin castigo.
 
-Niveles y orden:
+Niveles y orden (de cero a avanzado):
 
-- **Fundamentos**: `01 Jerarquía de manos`, `02 Comparación de manos`.
-- **Mesa**: `03 Estructura de la mesa`, `04 Acciones en una mano`.
+- **Fundamentos**: `01 Las Manos` (10 jugadas), `02 Cómo se juega una mano`.
+- **Mesa**: `03 Showdown: lectura de mesa y comparación`,
+  `04 Acciones y posiciones` (UTG, MP, CO, BTN, SB, BB).
 - **Números**: `05 Pot odds y precio de decisión`, `06 Outs y equity estimada`.
 - **Táctica**: `07 Ventaja posicional`, `08 Apuesta de continuación`,
   `09 SPR y compromiso de pila`.
-- **Estrategia**: `10 Semi-farol con bloqueadores`,
-  `11 Equilibrio GTO y explotación`, `12 Cómo se juega una mano`
-  (cierre con la regla 2 privadas + 5 comunitarias).
+- **Estrategia**: `10 Semi-bluff con bloqueadores`,
+  `11 Equilibrio GTO y explotación`, `12 Value Bet, Bluff y equilibrio GTO`.
 
-Los IDs internos de las clases no cambiaron, así que el progreso guardado se
-conserva aunque el orden visible sea nuevo.
+Se conservan los IDs internos de las clases 1 a 11, así que el progreso
+guardado sigue vigente aunque el orden visible sea nuevo; la clase 12 usa el ID
+`cierre` con el cierre avanzado.
 
-**Estado del rediseño:** las 12 clases están completas y son jugables: 60
-pasos fijos en total (5 por clase), con cartas y situaciones deterministas para
-poder repetir cualquier paso. No queda ninguna clase en `EN PREPARACIÓN`.
+**Estado del rediseño:** las 12 clases están completas y son jugables: 65
+pasos fijos en total (10 en `Las Manos` y 5 en cada una de las otras 11), con
+cartas y situaciones deterministas para poder repetir cualquier paso. No queda
+ninguna clase en `EN PREPARACIÓN`.
 
 El avance nuevo se guarda por paso en `appState.academia.v2.stepProgress`, con
 la clase y el paso activos en `appState.academia.v2`; al volver a entrar en

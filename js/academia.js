@@ -1,19 +1,19 @@
 /* ============================================================================
    5. MÓDULO: ACADEMIA — RUTA POR PANTALLAS
    Mapa (12 clases / 5 niveles) → vista de clase a pantalla completa →
-   5 pasos fijos por clase. Los formatos internos (exhibit, duel, case)
-   sólo organizan el contenido; no se exponen como etiquetas.
-   Ruta completa: las 12 clases tienen 5 pasos fijos y son jugables.
+   pasos fijos por clase (10 en «Las Manos», 5 en el resto). Los formatos
+   internos (hand, exhibit, duel, case) sólo organizan el contenido.
+   Ruta completa: 12 clases jugables, de cero a estrategia avanzada.
 ============================================================================ */
 const SUIT_SYMBOL = { s: '♠', h: '♥', d: '♦', c: '♣' };
 const RED_SUITS = new Set(['h', 'd']);
 
 const MODULES = [
-  { id: 0, name: 'Fundamentos', subtitle: 'Jerarquía y showdown', tone: 'sky' },
-  { id: 1, name: 'Mesa', subtitle: 'Ciegas, orden y acciones', tone: 'emerald' },
+  { id: 0, name: 'Fundamentos', subtitle: 'Las Manos, Board y Showdown', tone: 'sky' },
+  { id: 1, name: 'Mesa', subtitle: 'Acciones, posiciones y ciegas', tone: 'emerald' },
   { id: 2, name: 'Números', subtitle: 'Probabilidades y equity', tone: 'amber' },
   { id: 3, name: 'Táctica', subtitle: 'Posición, boards y tamaños', tone: 'orange' },
-  { id: 4, name: 'Estrategia', subtitle: 'Cierre, GTO y explotación', tone: 'purple' }
+  { id: 4, name: 'Estrategia', subtitle: 'Faroles, GTO y cierre avanzado', tone: 'purple' }
 ];
 
 const E = (title, table, lines, revealCount, showdown = null, extra = {}) => ({ kind: 'exhibit', title, table, lines, revealCount, showdown, ...extra });
@@ -40,158 +40,141 @@ const GUTSHOT_4_OUTS = ['5s', '5h', '5d', '5c'];
 
 const BASE_BOARD = ['Ks', 'Qd', '7s', '2c', '9h'];
 
-/* Ranking oficial de 9 manos, de menor a mayor fuerza: posición 1 = carta alta,
-   9 = escalera real. Cada fila lleva 5 cartas de ejemplo y una explicación breve. */
-const R = (pos, name, cards, desc, tier) => ({ pos, name, cards, desc, tier });
-const RANK_LOW = [
-  R(1, 'Carta alta', ['As', 'Kd', '9c', '6h', '2s'], 'Sin combinaciones: manda la carta más alta y luego los kickers.', 'low'),
-  R(2, 'Pareja', ['Js', 'Jh', 'Ad', '7c', '3s'], 'Un par y tres kickers: se decide por el valor del par. Supera a la carta alta.', 'low'),
-  R(3, 'Doble pareja', ['As', 'Ah', '9d', '9c', 'Ks'], 'Dos pares distintos y un kicker. Gana a una sola pareja.', 'low')
+/* Las 10 jugadas oficiales de Texas Hold'em, de menor a mayor fuerza.
+   Cada pantalla muestra 5 espacios: sólo las cartas que forman la jugada
+   se resaltan y el resto quedan como siluetas vacías. Aquí todavía no hay
+   cartas comunitarias: el alumno aprende primero las combinaciones de 5. */
+const H = (name, english, cards, desc, prev = null, extra = {}) => ({
+  kind: 'hand',
+  title: english && english.toLowerCase() !== name.toLowerCase() ? `${name} (${english})` : name,
+  name, english, cards, desc, prev, ...extra
+});
+const HANDS = [
+  H('Carta alta', 'High Card', ['As', null, null, null, null],
+    'Si ningún jugador forma una combinación, gana quien tiene la carta individual de mayor valor. Si empatan, se comparan los kickers uno por uno.', null),
+  H('Par', 'One Pair', ['Js', 'Jh', null, null, null],
+    'Dos cartas del mismo valor y tres kickers. Se decide por el valor del par y, si hay empate, por los kickers en orden descendente.', 'Carta alta'),
+  H('Doble par', 'Two Pair', ['As', 'Ah', '9d', '9c', null],
+    'Dos pares de valores distintos y un kicker. Se comparan el par más alto, luego el segundo par y al final el kicker.', 'Par'),
+  H('Trío', 'Three of a Kind / Set', ['Qs', 'Qh', 'Qd', null, null],
+    'Tres cartas del mismo valor y dos kickers. Cuando el trío se forma con una carta de la mesa y un par privado se llama set.', 'Doble par'),
+  H('Escalera', 'Straight', ['5c', '6d', '7h', '8s', '9c'],
+    'Cinco valores consecutivos de palos distintos. El As puede jugar como alta (T-J-Q-K-A) o como baja (A-2-3-4-5).', 'Trío'),
+  H('Color', 'Flush', ['Ah', 'Jh', '9h', '6h', '3h'],
+    'Cinco cartas del mismo palo sin que tengan que ser consecutivas. Entre dos colores gana el que tenga la carta más alta.', 'Escalera'),
+  H('Full House', 'Full House', ['8s', '8h', '8d', 'Kc', 'Ks'],
+    'Un trío y un par en la misma mano de cinco cartas. Se decide primero por el valor del trío y después por el del par.', 'Color'),
+  H('Póker', 'Four of a Kind', ['7s', '7h', '7d', '7c', null],
+    'Cuatro cartas del mismo valor y un kicker. Se decide por el valor de las cuatro cartas; el kicker sólo importa entre pókers iguales.', 'Full House'),
+  H('Escalera de color', 'Straight Flush', ['9h', '8h', '7h', '6h', '5h'],
+    'Cinco cartas consecutivas del mismo palo. Se decide por la carta más alta de la escalera y sólo la escalera real la supera.', 'Póker'),
+  H('Escalera real', 'Royal Flush', ['As', 'Ks', 'Qs', 'Js', 'Ts'],
+    'T, J, Q, K y A del mismo palo: la jugada máxima. No puede ser superada; sólo empata contra otra escalera real.', 'Escalera de color', { top: true })
 ];
-const RANK_MID = [
-  R(4, 'Trío', ['Qs', 'Qh', 'Qd', '4c', '2s'], 'Tres cartas iguales más dos kickers. Supera a la doble pareja.', 'mid'),
-  R(5, 'Escalera', ['5c', '6d', '7h', '8s', '9c'], 'Cinco valores consecutivos de palos distintos. Gana al trío.', 'mid'),
-  R(6, 'Color', ['Ah', 'Jh', '9h', '6h', '3h'], 'Cinco cartas del mismo palo; gana a la escalera aunque los valores sean más bajos.', 'mid')
-];
-const RANK_TOP = [
-  R(7, 'Full house', ['8s', '8h', '8d', 'Kc', 'Ks'], 'Un trío más una pareja: tres 8s y dos Reyes. Supera al color.', 'top'),
-  R(8, 'Póker (cuatro iguales)', ['7s', '7h', '7d', '7c', '2s'], 'Cuatro cartas del mismo valor y un kicker. Supera al full house.', 'top'),
-  R(9, 'Escalera real', ['As', 'Ks', 'Qs', 'Js', 'Ts'], 'A-K-Q-J-T del mismo palo. Es la mano máxima: nadie la supera.', 'top')
-];
-const RANKING_FULL = [...RANK_LOW, ...RANK_MID, ...RANK_TOP];
-const RANKING_TABLE = { street: 'RANKING', board: [], pot: 0 };
 
 /* ---------------------------------------------------------------------------
-   CURRÍCULUM: 12 clases, 5 niveles y 5 pasos por clase. La clase 1 muestra
-   primero la jerarquía visual; las comparaciones llegan en la clase 2.
+   CURRÍCULUM: 12 clases, 5 niveles. Clase 1 = 10 jugadas oficiales de menor
+   a mayor; clase 2 = Hole Cards y Board; clase 3 = Showdown; después casos
+   fijos de acciones, pot odds, outs, equity y GTO.
 --------------------------------------------------------------------------- */
 const LESSONS_DATA = [
   {
-    id: 'ranking', number: 1, module: 0, format: 'exhibit',
-    title: 'Jerarquía de manos', subtitle: 'Ranking oficial de menor a mayor fuerza, con 5 cartas por mano',
+    id: 'ranking', number: 1, module: 0, format: 'hand',
+    title: 'Las Manos', subtitle: 'Las 10 jugadas oficiales, una por pantalla, de menor a mayor fuerza',
+    steps: HANDS
+  },
+  {
+    id: 'fundamentos', number: 2, module: 0, format: 'exhibit',
+    title: 'Cómo se juega una mano',
+    subtitle: 'Hole Cards, Board (Flop / Turn / River) y mejor jugada de 5 entre 7',
     steps: [
-      E('El ranking oficial: 9 manos de débil a fuerte', RANKING_TABLE, [
-        'Lee la lista de arriba abajo: va de la carta alta a la escalera real; cada fila gana a la que tiene encima.',
-        'Cada fila muestra 5 cartas de ejemplo del tipo de mano exacto y una explicación de una línea.',
-        'Con ver este orden ya sabes qué le gana a qué. La comparación mano contra mano llega en la clase 2.'
-      ], 5, null, { ranking: RANKING_FULL, rankingCompact: true }),
-      E('Carta alta, pareja y doble pareja', RANKING_TABLE, [
-        'Carta alta: sin combinaciones; manda la carta más alta y luego los kickers.',
-        'Pareja: un par y tres kickers. Cualquier pareja supera a la carta alta.',
-        'Doble pareja: dos pares distintos y un kicker. Gana a una sola pareja.'
-      ], 5, null, { ranking: RANK_LOW }),
-      E('Trío, escalera y color', RANKING_TABLE, [
-        'Trío: tres cartas iguales. Es el escalón inmediatamente por encima de la doble pareja.',
-        'Escalera: cinco valores seguidos, sin importar el palo. Supera al trío.',
-        'Color: cinco cartas del mismo palo; gana a la escalera aunque los valores sean más bajos.'
-      ], 5, null, { ranking: RANK_MID }),
-      E('Full house, póker y escalera real', RANKING_TABLE, [
-        'Full house: trío más pareja. Se decide por el trío y supera al color.',
-        'Póker: cuatro cartas iguales más un kicker. Sólo la escalera real lo supera.',
-        'Escalera real: A-K-Q-J-T del mismo palo. Es imbatible y ocupa el último lugar.'
-      ], 5, null, { ranking: RANK_TOP }),
-      E('Cómo usar el ranking en un showdown', RANKING_TABLE, [
-        'Primero mira la fila: una escalera (fila 5) siempre gana a un trío (fila 4), sin mirar los kickers.',
-        'Sólo cuando dos manos caen en la misma fila se comparan valores y kickers.',
-        'Este orden es la base de todas las clases siguientes; aquí todavía no enfrentamos dos manos.'
-      ], 5, null, { ranking: RANKING_FULL, rankingCompact: true })
+      E('Hole Cards: 2 cartas privadas',
+        { street: 'PREFLOP', board: [], pot: 3, hero: ['As', '7d'], villain: null, villainHidden: true, heroPos: 'BTN', villainPos: 'BB', villainAction: 'Small Blind 1 / Big Blind 2', note: 'Sólo tú ves A♠ 7♦' },
+        [
+          'En Texas Hold’em cada jugador recibe 2 Hole Cards (cartas privadas) boca abajo: sólo su dueño las ve.',
+          'Con A♠ 7♦ tienes una carta alta y un proyecto, pero todavía no puedes formar una jugada de 5 cartas.',
+          'Las Hole Cards se combinarán con las 5 cartas comunitarias (Board) que se revelarán sobre la mesa.'
+        ], 0),
+      E('Flop: 3 cartas comunitarias',
+        { street: 'FLOP', board: BASE_BOARD, pot: 40, hero: ['As', '7d'], villain: ['Kh', 'Qc'], villainProfile: 'TAG', villainAction: 'Check', note: 'Board: K♠ Q♦ 7♠ · bote 40' },
+        [
+          'Tras la ronda de Preflop se revelan las 3 primeras comunitarias: el Flop (K♠ Q♦ 7♠).',
+          'El Board es common card: todos los jugadores pueden usarlo para armar su mejor jugada.',
+          'Con 2 Hole Cards y 3 cartas del Flop ya hay 5 cartas visibles, pero aún faltan dos comunitarias.'
+        ], 3),
+      E('Turn: 4ª carta comunitaria',
+        { street: 'TURN', board: BASE_BOARD, pot: 80, hero: ['As', '7d'], villain: ['Kh', 'Qc'], villainProfile: 'TAG', villainAction: 'Check', note: 'Turn = 2♣ · 4 cartas en el Board' },
+        [
+          'La cuarta carta comunitaria es el Turn (2♣) y abre una nueva ronda de apuestas.',
+          'La fuerza de tu mano cambia: A♠ 7♦ con el 7♠ del Flop forman un Par de Sietes.',
+          'Después del Turn queda una sola carta comunitaria por revelar.'
+        ], 4),
+      E('River: 5ª comunitaria y mejor mano de 5',
+        { street: 'RIVER', board: BASE_BOARD, pot: 140, hero: ['As', '7d'], villain: ['Kh', 'Qc'], villainProfile: 'TAG', villainAction: 'Check', note: 'River = 9♥ · Board completo' },
+        [
+          'La quinta carta comunitaria es el River (9♥). Ya no se reparten más cartas.',
+          'Cada jugador dispone de 7 cartas (2 Hole Cards + 5 del Board), pero debe elegir la mejor jugada posible de 5.',
+          'Puedes usar 2 privadas y 3 del Board, 1 privada y 4 del Board, o incluso las 5 del Board si esa es la mejor combinación.'
+        ], 5),
+      E('Dealer button, ciegas y rondas de apuestas',
+        { street: 'PREFLOP', board: [], pot: 3, hero: ['As', '7d'], villain: ['Kh', 'Qc'], villainHidden: true, heroPos: 'BTN', villainPos: 'BB', villainAction: 'Small Blind 1 / Big Blind 2', note: 'Dealer en BTN · SB y BB a la izquierda' },
+        [
+          'El Dealer button (botón del crupier) gira entre los jugadores: marca quién habla al final en las rondas post-flop.',
+          'A su izquierda están la Small Blind (SB, ciega pequeña) y la Big Blind (BB, ciega grande): apuestas forzadas antes del Preflop.',
+          'La mano tiene cuatro rondas de apuestas: Preflop, Flop, Turn y River. Si quedan dos jugadores, termina en el Showdown.'
+        ], 0)
     ]
   },
   {
-    id: 'duelos', number: 2, module: 0, format: 'duel',
-    title: 'Comparación de manos', subtitle: 'Cómo decidir un showdown',
+    id: 'duelos', number: 3, module: 0, format: 'duel',
+    title: 'Showdown: lectura de mesa y comparación',
+    subtitle: 'Hero vs Villain · mejor jugada de 5 entre 7 con el mismo Board',
     steps: [
       D('Par de Ases contra par de Reyes', ['Qc', 'Jd', '7s', '2c', '9h'],
-        [{ label: 'MANO A', cards: ['As', 'Ad'] }, { label: 'MANO B', cards: ['Ks', 'Kd'] }], 'A',
-        'Ambas son una pareja. Gana la del par más alto: Ases por encima de Reyes. Los kickers no se miran cuando el par ya es distinto.'),
+        [{ label: 'HERO · BTN', cards: ['As', 'Ad'] }, { label: 'VILLAIN · BB', cards: ['Ks', 'Kd'] }], 'A',
+        'El Board no mejora a ninguno: ambos juegan un Par con tres kickers. Gana el par más alto, Ases sobre Reyes; los kickers no se miran cuando el par ya es distinto.'),
       D('El segundo par decide entre dos dobles parejas', ['Ac', 'Ad', '7h', '2c', '9s'],
-        [{ label: 'MANO A', cards: ['Qs', 'Qd'] }, { label: 'MANO B', cards: ['Ks', 'Kd'] }], 'B',
-        'Las dos forman doble pareja con los Ases del board. Se decide por el segundo par: Reyes superan Reinas.'),
-      D('Trío contra doble pareja', ['Ac', 'Ad', '7s', '2c', '9h'],
-        [{ label: 'MANO A', cards: ['As', '5d'] }, { label: 'MANO B', cards: ['Ks', 'Kd'] }], 'A',
-        'El board trae A♣ A♦. La Mano A completa trío de Ases; la Mano B completa doble pareja de Ases y Reyes. Tres cartas iguales valen más que dos pares: gana el trío.'),
+        [{ label: 'HERO · BTN', cards: ['Qs', 'Qd'] }, { label: 'VILLAIN · BB', cards: ['Ks', 'Kd'] }], 'B',
+        'Los dos usan los Ases del Board y forman Doble par. Se comparan el par más alto (Ases, empatado), luego el segundo par: Reyes superan Reinas.'),
+      D('Trío (set) contra doble par', ['Ac', 'Ad', '7s', '2c', '9h'],
+        [{ label: 'HERO · BTN', cards: ['As', '5d'] }, { label: 'VILLAIN · BB', cards: ['Ks', 'Kd'] }], 'A',
+        'El Board trae A♣ A♦. Hero convierte su A♠ en un set (trío de Ases); Villain juega doble par de Ases y Reyes. El trío gana siempre al doble par.'),
       D('Escalera contra trío', ['5c', '6d', '7h', '2c', '9s'],
-        [{ label: 'MANO A', cards: ['7s', '7d'] }, { label: 'MANO B', cards: ['8s', '4d'] }], 'B',
-        '5-6-7-8-9 es escalera y una escalera supera siempre al trío, aunque el trío sean Sietes.'),
+        [{ label: 'HERO · BTN', cards: ['7s', '7d'] }, { label: 'VILLAIN · BB', cards: ['8s', '4d'] }], 'B',
+        'Hero tiene un trío de Sietes. Villain usa 5-6-7 del Board con su 8♠ y 9♠ del Board para formar una Escalera; la escalera supera al trío.'),
       D('Color contra escalera', ['9s', '8s', '2c', '7s', 'Kd'],
-        [{ label: 'MANO A', cards: ['As', '3s'] }, { label: 'MANO B', cards: ['Tc', 'Jd'] }], 'A',
-        'A♠ 3♠ con 9♠ 8♠ 7♠ forma color. El color está un escalón por encima de la escalera 7-8-9-T-J.')
-    ]
-  },
-  {
-    id: 'posiciones', number: 3, module: 1, format: 'exhibit',
-    title: 'Estructura de la mesa', subtitle: 'Ciegas, orden de acción y rondas',
-    steps: [
-      E('El botón y las ciegas',
-        { street: 'PREFLOP', board: [], pot: 3, hero: ['As', '7d'], villain: ['Kh', 'Qc'], villainHidden: true, heroPos: 'BTN', villainPos: 'BB', villainAction: 'Ciegas 1 / 2', note: 'Botón en BTN · ciegas 1 y 2' },
-        [
-          'Un botón giratorio (dealer button) marca quién es el BTN: es la mejor posición porque habla al final en las rondas post-flop.',
-          'A la izquierda del botón están SB (ciega pequeña, 1) y BB (ciega grande, 2). Son apuestas forzadas antes de repartir.',
-          'Las ciegas existen para que siempre haya fichas en el bote y no se pueda esperar gratis.'
-        ], 0),
-      E('Orden de la primera ronda',
-        { street: 'PREFLOP', board: [], pot: 3, hero: ['As', '7d'], villain: ['Kh', 'Qc'], heroPos: 'UTG', villainPos: 'BB', villainAction: 'Ciegas 1 / 2', note: 'Preflop: UTG habla primero, BB al final' },
-        [
-          'En preflop la acción empieza a la izquierda de la BB (UTG) y sigue en sentido horario.',
-          'La BB habla al final de la primera ronda: puede subir (raise), pasar (check) si nadie subió, o retirarse.',
-          'Después del flop el orden cambia: empieza SB y termina el BTN, que siempre cierra la acción.'
-        ], 0),
-      E('Flop: primera ronda post-flop',
-        { street: 'FLOP', board: BASE_BOARD, pot: 40, hero: ['As', '7d'], villain: ['Kh', 'Qc'], heroPos: 'BTN', villainPos: 'BB', villainAction: 'Pasa (Check)', note: '3 comunitarias · bote 40' },
-        [
-          'Tras preflop llegan las tres comunitarias del flop: K♠ Q♦ 7♠.',
-          'La ronda empieza en SB. Sin apuesta viva puedes pasar (check); si hay apuesta, debes pagar, subir o retirarte.',
-          'Ahora ya puedes formar 5 cartas con tus 2 privadas y las 3 de la mesa.'
-        ], 3),
-      E('Turn y River: las últimas rondas',
-        { street: 'RIVER', board: BASE_BOARD, pot: 140, hero: ['As', '7d'], villain: ['Kh', 'Qc'], heroPos: 'BTN', villainPos: 'BB', villainAction: 'Pasa (Check)', note: '5 comunitarias · ya no quedan cartas' },
-        [
-          'El Turn es la cuarta comunitaria (2♣) y el River la quinta (9♥). Cada una abre una ronda nueva de apuestas.',
-          'Las cartas salen flop → turn → river, con una ronda de apuestas entre cada revelación.',
-          'Tras el River no viene nada más: si quedan dos jugadores, se comparan las manos en el showdown.'
-        ], 5),
-      E('Showdown: quién gana y por qué',
-        { street: 'SHOWDOWN', board: BASE_BOARD, pot: 140, hero: ['As', '7d'], villain: ['Kh', 'Qc'], note: 'Comparación final de 5 cartas' },
-        [
-          'En el showdown cada jugador muestra su mejor mano de 5 cartas entre las 7 disponibles.',
-          'Gana el mejor tipo de mano; si empatan, se comparan los kickers uno a uno.',
-          'La posición no decide el ganador: decide quién habla al final y, por tanto, quién controla el bote.'
-        ], 5, {
-          board: BASE_BOARD,
-          hands: [{ label: 'TÚ · BTN', cards: ['As', '7d'] }, { label: 'RIVAL · BB', cards: ['Kh', 'Qc'] }],
-          winner: 'B',
-          why: 'Tienes pareja de 7s. El rival tiene doble pareja de Reyes y Reinas con kicker 9. El doble pareja gana.'
-        })
+        [{ label: 'HERO · BTN', cards: ['As', '3s'] }, { label: 'VILLAIN · BB', cards: ['Tc', 'Jd'] }], 'A',
+        'Hero juega A♠ 3♠ con 9♠ 8♠ 7♠ del Board: Color. Villain forma la escalera 7-8-9-T-J. El color está por encima de la escalera en la jerarquía de jugadas.')
     ]
   },
   {
     id: 'acciones', number: 4, module: 1, format: 'case',
-    title: 'Acciones en una mano', subtitle: 'Pasar, pagar, apostar, subir y retirarse',
+    title: 'Acciones y posiciones', subtitle: 'Fold, Check, Call, Bet, Raise, All-in · UTG, MP, CO, BTN, SB, BB',
     steps: [
-      K('Top pair en board seco: ¿apostar o pasar?', flopTable({ board: ['Ks', '7d', '2c'], pot: 60, bet: 0, hero: ['Kh', 'Qd'], villain: ['9h', '8h'], villainProfile: 'TAG', villainAction: 'Pasa (Check)', note: 'Par de Reyes, buen kicker, board seco' }), [
-        O('bet', 'Apostar / Subir por valor', true, 'Correcto. Apostar cobra valor de manos peores y de proyectos como el color del rival. Pasar dejaría de ganar fichas con tu mejor mano.'),
-        O('call', 'Pasar / Pagar', false, 'Pasar es legal, pero aquí es demasiado pasivo: tu par de Reyes debe apostar en un board seco.'),
-        O('fold', 'Retirarte', false, 'No hay apuesta viva y tienes una mano fuerte: retirarte sería regalar el bote.')
+      K('Fold: par mínimo ante una apuesta grande', flopTable({ board: ['Ks', 'Qd', '7c'], pot: 100, bet: 80, hero: ['3s', '3c'], villain: ['Ah', 'Kd'], heroPos: 'UTG', villainPos: 'BB', villainAction: 'Bet 80', note: 'UTG · Par de 3s · 2 outs · precio 31%' }), [
+        O('fold', 'Fold (retirarse)', true, 'Correcto. Desde UTG pagas 80 para un bote final de 260 (31%). Un par de 3s con 2 outs no alcanza ese equity: fold es la acción correcta.'),
+        O('call', 'Call (pagar)', false, 'Pagar con el par mínimo y pocos outs contra un rango fuerte es perder fichas de forma repetida.'),
+        O('raise', 'Raise (subir)', false, 'Subir con la peor pareja y fuera de posición contra la BB sólo añade pérdidas.')
       ]),
-      K('Dos sobrecartas con color projectado', flopTable({ board: ['Th', '7h', '3c'], pot: 80, bet: 40, hero: ['Ah', 'Kh'], villain: ['Qd', '9s'], villainAction: 'Apuesta 40', note: '9 outs de color · pagas 40 para 160' }), [
-        O('call', 'Pasar / Pagar', true, 'Correcto. 40 / (80 + 40 + 40) = 25%. Con 9 outs de color tienes ~35% en el flop: pagar es rentable.'),
-        O('bet', 'Apostar / Subir', false, 'Subir con sobrecartas sin completar no mejora tu precio y puede dejarte sin posición.'),
-        O('fold', 'Retirarte', false, 'Tienes equity suficiente y buen precio: foldear es perder una decisión +EV.')
+      K('Check: sin apuesta viva en el Flop', flopTable({ board: ['9d', '6c', '2h'], pot: 80, bet: 0, hero: ['Ah', 'Kd'], villain: ['7s', '8s'], heroPos: 'MP', villainPos: 'CO', villainAction: 'Check', note: 'MP · sin apuesta: check es gratis' }), [
+        O('check', 'Check (pasar)', true, 'Correcto. Desde MP, si nadie ha apostado no hay nada que pagar: puedes hacer check sin coste y ver el Turn.'),
+        O('bet', 'Bet (apostar)', false, 'Podrías farolear, pero con dos sobrecartas sin proyecto claro y actuando antes que CO, check es la acción básica.'),
+        O('fold', 'Fold (retirarse)', false, 'Nunca hagas fold cuando no hay apuesta en contra: continuar es gratis.')
       ]),
-      K('Par mínimo contra apuesta grande', flopTable({ board: ['Ks', 'Qd', '7c'], pot: 100, bet: 80, hero: ['3s', '3c'], villain: ['Ah', 'Kd'], villainAction: 'Apuesta 80', note: 'Par de 3s · 2 outs · precio 31%' }), [
-        O('fold', 'Retirarte', true, 'Correcto. Debes pagar 80 para un bote final de 260 (31%). Un par de 3s con 2 outs no llega a ese equity.'),
-        O('call', 'Pasar / Pagar', false, 'Pagar 80 con un par mínimo y pocos outs es perder fichas de forma repetida.'),
-        O('bet', 'Apostar / Subir', false, 'Subir con la peor pareja contra un rango fuerte sólo añade pérdidas.')
+      K('Call: color projectado con buen precio', flopTable({ board: ['Th', '7h', '3c'], pot: 80, bet: 40, hero: ['Ah', 'Kh'], villain: ['Qd', '9s'], heroPos: 'CO', villainPos: 'BTN', villainAction: 'Bet 40', note: 'CO · 9 outs de color · call 40 para 160' }), [
+        O('call', 'Call (pagar)', true, 'Correcto. 40 / (80 + 40 + 40) = 25%. Con 9 outs de color tienes ~35% en el Flop: el call es rentable y juegas con posición sobre BTN.'),
+        O('raise', 'Raise (subir)', false, 'Subir con sobrecartas sin completar no mejora tu precio y te deja sin posición frente al BTN.'),
+        O('fold', 'Fold (retirarse)', false, 'Tienes equity suficiente y buen precio: foldear es descartar una decisión +EV.')
       ]),
-      K('Sin pareja y sin apuesta viva', flopTable({ board: ['9d', '6c', '2h'], pot: 80, bet: 0, hero: ['Ah', 'Kd'], villain: ['7s', '8s'], villainAction: 'Pasa (Check)', note: 'No hay apuesta: puedes pasar gratis' }), [
-        O('check', 'Pasar / Pagar (Check)', true, 'Correcto. Si nadie apostó, no hay nada que pagar: puedes pasar sin coste y ver el turn.'),
-        O('bet', 'Apostar / Subir', false, 'Podrías farolear, pero con dos sobrecartas sin proyecto claro y fuera de plan, pasar es la acción básica correcta.'),
-        O('fold', 'Retirarte', false, 'Nunca te retires cuando no hay apuesta: es gratis continuar.')
+      K('Bet / Raise por valor con top pair', flopTable({ board: ['Ks', '7d', '2c'], pot: 60, bet: 0, hero: ['Kh', 'Qd'], villain: ['9h', '8h'], heroPos: 'BTN', villainPos: 'BB', villainAction: 'Check', note: 'BTN · top pair · board seco · bote 60' }), [
+        O('bet', 'Bet / Raise (apostar o subir)', true, 'Correcto. Desde BTN, apostar por valor cobra de manos peores y de proyectos. Si la BB sube, puedes raise de nuevo con tu top pair.'),
+        O('check', 'Check (pasar)', false, 'Pasar en posición con top pair es demasiado pasivo: renuncias a valor con una mano que probablemente va por delante.'),
+        O('fold', 'Fold (retirarse)', false, 'No hay apuesta en contra y tienes una mano fuerte: foldear sería regalar el bote.')
       ]),
-      K('Trío en el flop: ¿pagar o subir?', flopTable({ board: ['8c', '4d', 'Js'], pot: 100, bet: 60, hero: ['8h', '8d'], villain: ['Kh', 'Qh'], villainAction: 'Apuesta 60', note: 'Trío de 8s · sube por valor' }), [
-        O('bet', 'Apostar / Subir', true, 'Correcto. Con trío, subir exige más fichas a manos peores y a proyectos. Pagar sólo es suficiente con manos más débiles.'),
-        O('call', 'Pasar / Pagar', false, 'Pagar es rentable, pero deja valor sobre la mesa: tu trío tiene ventaja clara.'),
-        O('fold', 'Retirarte', false, 'Un trío nunca se foldea a una apuesta de este tamaño en el flop.')
+      K('All-in con set y SPR bajo', flopTable({ board: ['8c', '4d', 'Js'], pot: 100, bet: 60, hero: ['8h', '8d'], villain: ['Kh', 'Qh'], heroPos: 'SB', villainPos: 'BB', villainAction: 'Bet 60', note: 'SB · set de 8s · SPR 0,5 · pila 60' }), [
+        O('allin', 'All-in (toda la pila)', true, 'Correcto. Desde SB tu set es muy fuerte y el SPR es 0,5: mover toda la pila cobra valor máximo y niega precios a los proyectos.'),
+        O('call', 'Call (pagar)', false, 'Pagar deja valor sobre la mesa: con SPR tan bajo, el all-in es mejor que llamar.'),
+        O('fold', 'Fold (retirarse)', false, 'Un set en el Flop nunca se foldea a una apuesta de este tamaño.')
       ])
     ]
   },
@@ -352,10 +335,10 @@ const LESSONS_DATA = [
   },
   {
     id: 'semibluff', number: 10, module: 4, format: 'case',
-    title: 'Semi-farol con bloqueadores', subtitle: 'Equity real, folds y bloqueos',
+    title: 'Semi-bluff con bloqueadores', subtitle: 'Equity real, Fold equity y bloqueos',
     steps: [
       K('Color projectado: dos formas de ganar', flopTable({ board: ['9h', '8h', '2c'], pot: 100, bet: 0, hero: ['Ah', '5h'], villain: ['7s', '6s'], villainAction: 'Pasa (Check)', outCards: HEART_OUTS, note: '9 outs + fold equity · bote 100' }), [
-        O('bet', 'Apostar / Subir', true, 'Correcto. Es un semi-farol: puedes ganar ahora si el rival foldea, o completar tu color en el turn. Con 9 outs tienes equity real aunque te llamen.'),
+        O('bet', 'Apostar / Subir', true, 'Correcto. Es un Semi-bluff: puedes ganar ahora si el rival hace Fold, o completar tu color en el Turn. Con 9 outs tienes equity real aunque te paguen.'),
         O('check', 'Pasar / Pagar (Check)', false, 'Pasar pierde la oportunidad de fold equity: tu mano gana de dos formas y debes aprovecharlas.'),
         O('fold', 'Retirarte', false, 'Tienes una de las mejores manos de proyecto del flop: foldear sería desperdiciar equity.')
       ]),
@@ -413,50 +396,35 @@ const LESSONS_DATA = [
     ]
   },
   {
-    id: 'fundamentos', number: 12, module: 4, format: 'exhibit',
-    title: 'Cómo se juega una mano',
-    subtitle: '2 privadas + 5 comunitarias = mejor mano de 5',
+    id: 'cierre', number: 12, module: 4, format: 'case',
+    title: 'Value Bet, Bluff y equilibrio GTO',
+    subtitle: 'Cierre avanzado: equity, apuestas por valor, faroles y rangos equilibrados',
     steps: [
-      E('Tus 2 cartas privadas',
-        { street: 'PREFLOP', board: [], pot: 3, hero: ['As', '7d'], villain: null, villainHidden: true, heroPos: 'BTN', villainPos: 'BB', villainAction: 'Ciegas 1 / 2', note: 'Sólo tú ves A♠ 7♦' },
-        [
-          'En Texas Hold’em cada jugador recibe 2 cartas privadas: son tuyas, nadie más las ve.',
-          'Con A♠ 7♦ ya tienes una carta alta y un posible proyecto, pero todavía no puedes ganar.',
-          'Faltan las cartas comunitarias, que se pondrán boca arriba sobre la mesa.'
-        ], 0),
-      E('El Flop: 3 cartas comunitarias',
-        { street: 'FLOP', board: BASE_BOARD, pot: 40, hero: ['As', '7d'], villain: ['Kh', 'Qc'], villainProfile: 'TAG', villainAction: 'Pasa (Check)', note: 'Ahora hay 5 cartas visibles' },
-        [
-          'Tras la primera ronda de apuestas se revelan 3 cartas comunitarias: K♠ Q♦ 7♠.',
-          'Éstas son de todos: el rival puede usarlas igual que tú.',
-          'Con tus 2 cartas y 3 comunitarias ya puedes elegir 5 cartas, pero aún faltan 2.'
-        ], 3),
-      E('El Turn: 4ª comunitaria',
-        { street: 'TURN', board: BASE_BOARD, pot: 80, hero: ['As', '7d'], villain: ['Kh', 'Qc'], villainProfile: 'TAG', villainAction: 'Pasa (Check)', note: '4 cartas sobre la mesa' },
-        [
-          'La cuarta carta comunitaria es el Turn: 2♣.',
-          'La mesa crece y también cambia la fuerza de tu mano: ahora tienes un par de 7s.',
-          'Después de esta ronda vendrá una última carta.'
-        ], 4),
-      E('El River: 5ª y última comunitaria',
-        { street: 'RIVER', board: BASE_BOARD, pot: 140, hero: ['As', '7d'], villain: ['Kh', 'Qc'], villainProfile: 'TAG', villainAction: 'Pasa (Check)', note: 'Ya no quedan cartas por venir' },
-        [
-          'La quinta carta comunitaria es el River: 9♥. Ya no viene ninguna carta más.',
-          'Cada jugador tiene 7 cartas disponibles, pero debe formar la mejor mano posible de 5.',
-          'Esa es la regla central: 2 propias + 5 comunitarias → mejor combinación de 5.'
-        ], 5),
-      E('Así se decide el ganador',
-        { street: 'SHOWDOWN', board: BASE_BOARD, pot: 140, hero: ['As', '7d'], villain: ['Kh', 'Qc'], note: 'Compara las mejores 5 cartas' },
-        [
-          'En el showdown se comparan las mejores 5 cartas de cada jugador.',
-          'El evaluador elige automáticamente la mejor combinación de 5 entre las 7 disponibles.',
-          'Gana el tipo de mano más alto; si hay empate, se comparan los kickers.'
-        ], 5, {
-          board: BASE_BOARD,
-          hands: [{ label: 'TÚ', cards: ['As', '7d'] }, { label: 'RIVAL', cards: ['Kh', 'Qc'] }],
-          winner: 'B',
-          why: 'Tú tienes una pareja de 7s. El rival tiene doble pareja: Reyes y Reinas, con 9 de kicker. El doble pareja supera siempre a una sola pareja. Esta comparación directa es el tema de la clase 2.'
-        })
+      K('Value Bet fina en el River', riverTable({ board: ['Ks', '7d', '2c', '4h', '9s'], pot: 100, bet: 0, hero: ['Kh', '9d'], villain: ['Qd', 'Qc'], villainProfile: 'Calling Station', villainAction: 'Check', note: 'Doble par K-9 · Station paga con pares menores' }), [
+        O('bet', 'Bet (apostar por valor)', true, 'Correcto. Es un Value Bet: tu doble par gana de Reinas y de otros pares menores. Apuesta un tamaño que esas manos puedan pagar.'),
+        O('check', 'Check (pasar)', false, 'Hacer check con una mano que gana de tantas peores renuncia a valor. El Value Bet existe para cobrar.'),
+        O('allin', 'All-in (toda la pila)', false, 'El all-in sólo expulsa a las manos peores y recibe pago de las que te superan: destruye el valor de tu apuesta.')
+      ]),
+      K('Bluff con bloqueador de As en el River', riverTable({ board: ['9h', '8h', '2c', '4d', 'Kd'], pot: 100, bet: 0, hero: ['Ah', '5s'], villain: ['7s', '6s'], villainProfile: 'Weak-Tight', villainAction: 'Check', note: 'Color fallido · A♠ bloquea combinaciones de color' }), [
+        O('bet', 'Bet (farol con bloqueador)', true, 'Correcto. Es un Bluff (farol): tu A♠ quita combinaciones fuertes del rango rival y el Weak-Tight foldea pares medianos. Tu mano no tiene valor de showdown, pero tiene foldeos.'),
+        O('check', 'Check (pasar)', false, 'Con un farol bien bloqueado y un rival que foldea, pasar deja escapar la oportunidad de ganar el bote sin showdown.'),
+        O('fold', 'Fold (retirarse)', false, 'No hay apuesta en contra: foldear sería regalar el bote cuando puedes presionar.')
+      ]),
+      K('Semi-bluff con color projectado', flopTable({ board: ['Th', '7h', '3c'], pot: 80, bet: 0, hero: ['Ah', 'Kh'], villain: ['Qd', '9s'], villainProfile: 'TAG', villainAction: 'Check', note: '9 outs de color + fold equity · semi-bluff' }), [
+        O('raise', 'Raise (semi-bluff)', true, 'Correcto. Es un Semi-bluff: ganas ahora si el rival hace fold o completas tu color con 9 outs. Tienes equity real aunque te paguen.'),
+        O('call', 'Call (pagar)', false, 'No hay apuesta que pagar: pasar renuncia a la fold equity que hace rentable el semi-bluff.'),
+        O('fold', 'Fold (retirarse)', false, 'Con sobrecartas, 9 outs y buen precio, foldear es desperdiciar dos formas de ganar.')
+      ]),
+      K('GTO: mano de showdown media en el River', riverTable({ board: ['As', '7d', '2c', '4h', '9s'], pot: 100, bet: 0, hero: ['Ad', 'Td'], villain: ['Kd', 'Qd'], villainProfile: 'TAG', villainAction: 'Check', note: 'Par de Ases con kicker débil · rango polarizado del rival' }), [
+        O('check', 'Check (pasar)', true, 'Correcto. En una aproximación GTO, las manos medias de showdown hacen check: apostar sólo recibe pago de manos mejores. El equilibrio apuesta con manos polarizadas (muy fuertes y faroles con bloqueadores).'),
+        O('bet', 'Bet (apostar)', false, 'Apostar una mano media con kicker débil no es equilibrado: te pagan las manos que te ganan y foldean las peores.'),
+        O('fold', 'Fold (retirarse)', false, 'No hay apuesta en contra: con par de Ases, foldear no tiene sentido.')
+      ]),
+      K('Integración final: Pot Odds y Outs en el Turn', turnTable({ board: ['9h', '8h', '2c', '4d'], pot: 100, bet: 80, hero: ['Ah', '5h'], villain: ['Kd', 'Qd'], villainAction: 'Bet 80', outCards: HEART_OUTS, note: '9 outs ≈ 18% · pagas 80 para 260 (31%)' }), [
+        O('fold', 'Fold (retirarse)', true, 'Correcto. Pot odds: 80 / (100 + 80 + 80) = 31%. Con una carta por venir, 9 outs de color valen ~18% de equity, muy por debajo del precio: la decisión correcta es fold.'),
+        O('call', 'Call (pagar)', false, 'El proyecto es atractivo, pero el precio no: 18% de equity no cubre 31% de pot odds.'),
+        O('allin', 'All-in (toda la pila)', false, 'Mover toda la pila con un color sin completar y pocas cartas muertas no aporta fold equity suficiente.')
+      ])
     ]
   },
 ];
@@ -472,8 +440,9 @@ const academia = {
   init() {
     const v2 = appState.academia.v2;
     const stored = LESSONS_DATA.find(l => l.id === v2.activeLessonId);
-    this.activeLessonId = stored && this.isPlayable(stored) ? stored.id : LESSONS_DATA[0].id;
-    this.activeStepIndex = Math.max(0, Math.min(5, Number(v2.activeStepIndex) || 0));
+    const lesson = stored && this.isPlayable(stored) ? stored : LESSONS_DATA[0];
+    this.activeLessonId = lesson.id;
+    this.activeStepIndex = Math.max(0, Math.min(this.stepCount(lesson), Number(v2.activeStepIndex) || 0));
     this.persist();
     window.addEventListener('keydown', event => {
       if (event.key !== 'Escape') return;
@@ -516,16 +485,21 @@ const academia = {
     return LESSONS_DATA.find(l => l.id === this.activeLessonId) || LESSONS_DATA[0];
   },
 
+  stepCount(lesson) {
+    return Array.isArray(lesson?.steps) ? lesson.steps.length : 0;
+  },
+
   isPlayable(lesson) {
-    return Array.isArray(lesson.steps) && lesson.steps.length === 5;
+    return this.stepCount(lesson) > 0;
   },
 
   progressOf(lessonId) {
     const lesson = LESSONS_DATA.find(l => l.id === lessonId);
-    if (!lesson || !this.isPlayable(lesson)) return 0;
-    if (appState.academia.completedIds.includes(lessonId)) return 5;
+    if (!lesson) return 0;
+    const count = this.stepCount(lesson);
+    if (appState.academia.completedIds.includes(lessonId)) return count;
     const value = Number(appState.academia.v2.stepProgress[lessonId]) || 0;
-    return Math.max(0, Math.min(5, Math.floor(value)));
+    return Math.max(0, Math.min(count, Math.floor(value)));
   },
 
   currentStep() {
@@ -587,7 +561,7 @@ const academia = {
       <div class="mb-5 flex flex-wrap items-center gap-2 text-[11px] font-mono text-slate-400">
         <span class="px-2.5 py-1 rounded-full border border-emerald-500/40 bg-emerald-500/10 text-emerald-300">Ruta completa · ${playable} clases</span>
         <span class="px-2.5 py-1 rounded-full border border-slate-700 bg-slate-900">12 clases · 5 niveles</span>
-        <span class="px-2.5 py-1 rounded-full border border-slate-700 bg-slate-900">5 pasos por clase · avance guiado</span>
+        <span class="px-2.5 py-1 rounded-full border border-slate-700 bg-slate-900">10 pasos en Las Manos · 5 en el resto</span>
       </div>
       ${MODULES.map(mod => {
         const lessons = LESSONS_DATA.filter(l => l.module === mod.id);
@@ -604,9 +578,10 @@ const academia = {
             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2.5">
               ${lessons.map(l => {
                 const ready = this.isPlayable(l);
+                const count = this.stepCount(l);
                 const done = this.progressOf(l.id);
-                const dots = [0, 1, 2, 3, 4].map(i => `<i class="acad-map-dot ${i < done ? 'is-done' : ''}"></i>`).join('');
-                const status = !ready ? 'EN PREPARACIÓN' : done === 5 ? 'COMPLETA' : done ? `${done}/5` : 'EMPEZAR';
+                const dots = Array.from({ length: count }, (_, i) => `<i class="acad-map-dot ${i < done ? 'is-done' : ''}"></i>`).join('');
+                const status = !ready ? 'EN PREPARACIÓN' : done === count ? 'COMPLETA' : done ? `${done}/${count}` : 'EMPEZAR';
                 const click = ready ? `onclick="academia.openLesson('${l.id}')"` : '';
                 return `
                   <button ${click} ${ready ? '' : 'disabled'} class="acad-lesson-card ${ready ? '' : 'is-locked'}">
@@ -635,7 +610,7 @@ const academia = {
     if (!lesson || !this.isPlayable(lesson)) return;
     SoundFX.playSelect();
     this.activeLessonId = id;
-    this.activeStepIndex = Math.min(this.progressOf(id), 5);
+    this.activeStepIndex = Math.min(this.progressOf(id), this.stepCount(lesson));
     this.lastAnswer = null;
     appState.academia.v2.view = 'lesson';
     this.persist();
@@ -657,7 +632,7 @@ const academia = {
   goStep(index) {
     const lesson = this.currentLesson();
     const target = Number(index);
-    if (!Number.isInteger(target) || target < 0 || target > 5) return;
+    if (!Number.isInteger(target) || target < 0 || target > this.stepCount(lesson)) return;
     if (target > this.progressOf(lesson.id)) return;
     SoundFX.playClick();
     this.activeStepIndex = target;
@@ -668,7 +643,7 @@ const academia = {
 
   next() {
     const lesson = this.currentLesson();
-    if (this.activeStepIndex < 5) this.goStep(this.activeStepIndex + 1);
+    if (this.activeStepIndex < this.stepCount(lesson)) this.goStep(this.activeStepIndex + 1);
     else this.closeLesson();
   },
 
@@ -679,9 +654,9 @@ const academia = {
   acknowledge() {
     const lesson = this.currentLesson();
     const step = this.currentStep();
-    if (!step || step.kind !== 'exhibit') return;
+    if (!step || (step.kind !== 'exhibit' && step.kind !== 'hand')) return;
     const progress = this.progressOf(lesson.id);
-    if (progress < 5 && this.activeStepIndex === progress) this.completeStep(lesson, true);
+    if (progress < this.stepCount(lesson) && this.activeStepIndex === progress) this.completeStep(lesson, true);
     this.next();
   },
 
@@ -705,7 +680,7 @@ const academia = {
     if (!step || step.kind !== 'duel' || (key !== 'A' && key !== 'B')) return;
     const opt = {
       key,
-      label: key === 'A' ? 'Mano A' : 'Mano B',
+      label: key === 'A' ? 'Hero' : 'Villain',
       correct: key === step.winner,
       feedback: step.why
     };
@@ -717,9 +692,10 @@ const academia = {
 
   completeStep(lesson, silent) {
     const progress = this.progressOf(lesson.id);
-    if (progress < 5 && this.activeStepIndex >= progress) {
-      appState.academia.v2.stepProgress[lesson.id] = Math.min(5, this.activeStepIndex + 1);
-      if (this.activeStepIndex + 1 >= 5 && !appState.academia.completedIds.includes(lesson.id)) {
+    const count = this.stepCount(lesson);
+    if (progress < count && this.activeStepIndex >= progress) {
+      appState.academia.v2.stepProgress[lesson.id] = Math.min(count, this.activeStepIndex + 1);
+      if (this.activeStepIndex + 1 >= count && !appState.academia.completedIds.includes(lesson.id)) {
         appState.academia.completedIds.push(lesson.id);
         showToast('Clase completada · ruta desbloqueada', 'success');
       }
@@ -744,10 +720,11 @@ const academia = {
     const lesson = this.currentLesson();
     const mod = MODULES[lesson.module];
     const index = this.activeStepIndex;
+    const count = this.stepCount(lesson);
     const progress = this.progressOf(lesson.id);
     const solved = index < progress;
 
-    const dots = [0, 1, 2, 3, 4].map(i => {
+    const dots = Array.from({ length: count }, (_, i) => {
       const state = i < progress ? 'done' : i === index ? 'active' : 'todo';
       const click = i <= progress ? `onclick="academia.goStep(${i})"` : 'disabled';
       return `<button ${click} class="acad-step-dot" data-state="${state}" title="Paso ${i + 1}">${i + 1}</button>`;
@@ -764,28 +741,29 @@ const academia = {
           <div class="text-sm sm:text-base font-extrabold text-white truncate">Clase ${lesson.number} · ${lesson.title}</div>
         </div>
         <div class="flex flex-col items-end gap-1">
-          <span class="text-[10px] font-mono text-slate-400">${index === 5 ? 'RESUMEN' : `PASO ${index + 1} / 5`}</span>
-          <div class="flex gap-1">${dots}</div>
+          <span class="text-[10px] font-mono text-slate-400">${index === count ? 'RESUMEN' : `PASO ${index + 1} / ${count}`}</span>
+          <div class="acad-step-dots ${count > 5 ? 'is-long' : ''}">${dots}</div>
         </div>
       </div>
     `;
 
     let body;
     let footNext = '';
-    if (index === 5) {
+    if (index === count) {
       body = this.renderSummary(lesson);
       footNext = `<button onclick="academia.closeLesson()" class="acad-next">Volver a la ruta →</button>`;
     } else {
       const step = lesson.steps[index];
       body = `
         <div class="acad-step-title">${step.title || step.prompt}</div>
+        ${step.kind === 'hand' ? this.renderHand(step) : ''}
         ${step.kind === 'exhibit' ? this.renderExhibit(step, solved) : ''}
         ${step.kind === 'duel' ? this.renderDuel(step, solved) : ''}
         ${step.kind === 'case' ? this.renderCase(step, solved) : ''}
       `;
       if (solved) {
-        footNext = `<button onclick="academia.next()" class="acad-next">${index === 4 ? 'Ver resumen →' : 'Siguiente paso →'}</button>`;
-      } else if (step.kind === 'exhibit') {
+        footNext = `<button onclick="academia.next()" class="acad-next">${index === count - 1 ? 'Ver resumen →' : 'Siguiente paso →'}</button>`;
+      } else if (step.kind === 'exhibit' || step.kind === 'hand') {
         footNext = `<button onclick="academia.acknowledge()" class="acad-next">Entendido →</button>`;
       } else {
         footNext = `<span class="text-[11px] font-mono text-slate-500">Elige una opción ↑</span>`;
@@ -805,34 +783,47 @@ const academia = {
     academiaFullscreen.updateInfo();
   },
 
-  renderExhibit(step, solved) {
-    const cards = step.ranking
-      ? this.renderRanking(step.ranking, !!step.rankingCompact)
-      : step.showdown
-        ? this.renderDuel(step.showdown, solved, true)
-        : this.renderFelt(step.table, { revealCount: step.revealCount, showVillain: !step.table.villainHidden });
+  /* Cada jugada se muestra con sus 5 espacios: sólo las cartas que forman la
+     jugada aparecen resaltadas, el resto son siluetas vacías. */
+  renderHand(step) {
+    const slots = step.cards.map((code, i) => `
+      <div class="acad-hand-slot">
+        <span class="acad-hand-slot-label">${i + 1}</span>
+        ${code ? this.cardHTML(code, 'acad-card--spotlight') : '<div class="acad-empty acad-empty--slot" aria-hidden="true"></div>'}
+      </div>
+    `).join('');
+    const gain = step.top
+      ? 'Es la jugada máxima: le gana a todas las demás; sólo empata contra otra Escalera real.'
+      : step.prev
+        ? `Le gana a <strong>${step.prev}</strong>: está un escalón por encima en la jerarquía oficial.`
+        : 'Es el escalón más bajo de la jerarquía: cualquier combinación la supera.';
     return `
-      ${cards}
-      <div class="acad-lines ${step.showdown ? 'acad-lines--compact' : ''}">
-        ${step.lines.map((line, i) => `<p class="acad-line"><span>${i + 1}</span>${line}</p>`).join('')}
+      <div class="acad-hand">
+        <div class="acad-board-wrap">
+          <div class="text-center text-[10px] font-mono uppercase tracking-[0.2em] text-slate-400 mb-2">5 ESPACIOS · SÓLO CARTAS RELEVANTES</div>
+          <div class="acad-hand-slots">${slots}</div>
+          <div class="acad-hand-legend">
+            <span><i class="acad-hand-key acad-hand-key--card"></i> Carta que forma la jugada</span>
+            <span><i class="acad-hand-key"></i> Espacio vacío (sin valor)</span>
+          </div>
+        </div>
+        <div class="acad-lines acad-lines--compact">
+          <p class="acad-line"><span>01</span>${step.desc}</p>
+          <p class="acad-line acad-line--gain"><span>02</span>${gain}</p>
+          <p class="acad-line"><span>03</span>Aquí no hay cartas comunitarias: son 5 cartas sueltas, sin Board. El Board llega en la clase 2.</p>
+        </div>
       </div>
     `;
   },
 
-  renderRanking(rows, compact) {
+  renderExhibit(step, solved) {
+    const cards = step.showdown
+      ? this.renderDuel(step.showdown, solved, true)
+      : this.renderFelt(step.table, { revealCount: step.revealCount, showVillain: !step.table.villainHidden });
     return `
-      <div class="acad-ranking ${compact ? 'is-compact' : ''}">
-        <p class="acad-ranking-hint"><strong>Jerarquía oficial · Texas Hold'em.</strong> De menor a mayor: cada fila gana a la que tiene encima; la última es la mano máxima.</p>
-        ${rows.map(row => `
-          <div class="acad-rank-row" data-tier="${row.tier}">
-            <span class="acad-rank-num">${String(row.pos).padStart(2, '0')}</span>
-            <div class="acad-rank-info">
-              <strong>${row.name}</strong>
-              <span>${row.desc}</span>
-            </div>
-            <div class="acad-rank-cards">${row.cards.map(c => this.cardHTML(c)).join('')}</div>
-          </div>
-        `).join('')}
+      ${cards}
+      <div class="acad-lines ${step.showdown ? 'acad-lines--compact' : ''}">
+        ${step.lines.map((line, i) => `<p class="acad-line"><span>${i + 1}</span>${line}</p>`).join('')}
       </div>
     `;
   },
@@ -863,11 +854,11 @@ const academia = {
         <div class="acad-duel-vs">VS</div>
         ${handHTML(spec.hands[1], 1)}
       </div>
-      ${revealed ? `<div class="acad-why">${spec.why}</div>` : ''}
+      ${revealed ? `<div class="acad-why">${spec.why}<br><strong>El bote (Pot) se lo lleva ${spec.hands[winnerIndex].label}.</strong></div>` : ''}
       ${!embedded && !revealed ? `
         <div class="acad-actions">
-          <button onclick="academia.answer('A')" class="acad-action">Elegir Mano A</button>
-          <button onclick="academia.answer('B')" class="acad-action">Elegir Mano B</button>
+          <button onclick="academia.answer('A')" class="acad-action">Elegir Hero</button>
+          <button onclick="academia.answer('B')" class="acad-action">Elegir Villain</button>
         </div>
       ` : ''}
       ${!embedded && answer ? this.renderFeedback(answer, !!answer.correct) : ''}
@@ -876,8 +867,11 @@ const academia = {
 
   renderCase(step, solved) {
     const answer = this.lastAnswer && this.lastAnswer.stepIndex === this.activeStepIndex ? this.lastAnswer.option : null;
-    const label = { bet: 'Apostar / Subir', raise: 'Apostar / Subir', call: 'Pasar / Pagar', check: 'Pasar / Pagar', fold: 'Retirarse' };
-    const order = { bet: 0, raise: 0, call: 1, check: 1, fold: 2 };
+    const label = {
+      bet: 'Bet (apostar)', raise: 'Raise (subir)', call: 'Call (pagar)',
+      check: 'Check (pasar)', fold: 'Fold (retirarse)', allin: 'All-in (toda la pila)'
+    };
+    const order = { bet: 0, raise: 0, call: 1, check: 1, fold: 2, allin: 3 };
     const options = [...step.options].sort((a, b) => (order[a.key] ?? 9) - (order[b.key] ?? 9));
     return `
       ${this.renderFelt(step.table)}
@@ -949,13 +943,14 @@ const academia = {
   },
 
   renderSummary(lesson) {
+    const count = this.stepCount(lesson);
     return `
       <div class="acad-summary">
         <div class="text-4xl">🏆</div>
         <h3 class="text-xl font-extrabold text-white">Clase completada</h3>
-        <p class="text-sm text-slate-300 max-w-md">${lesson.title} · 5 de 5 pasos resueltos.</p>
+        <p class="text-sm text-slate-300 max-w-md">${lesson.title} · ${count} de ${count} pasos resueltos.</p>
         <div class="flex flex-wrap justify-center gap-2 mt-2">
-          <button onclick="academia.goStep(0)" class="acad-action">Repasar los 5 pasos</button>
+          <button onclick="academia.goStep(0)" class="acad-action">Repasar los ${count} pasos</button>
           ${this.nextPlayableLesson() ? `<button onclick="academia.openLesson('${this.nextPlayableLesson().id}')" class="acad-action acad-action--primary">Siguiente clase →</button>` : ''}
         </div>
       </div>
