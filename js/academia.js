@@ -40,25 +40,25 @@ const GUTSHOT_4_OUTS = ['5s', '5h', '5d', '5c'];
 
 const BASE_BOARD = ['Ks', 'Qd', '7s', '2c', '9h'];
 
-/* Ranking oficial de 9 manos: posición 1 = más fuerte, 9 = más débil.
-   Cada fila lleva 5 cartas de ejemplo y una explicación de una línea. */
-const R = (pos, name, cards, desc) => ({ pos, name, cards, desc });
-const RANK_TOP = [
-  R(1, 'Escalera real', ['As', 'Ks', 'Qs', 'Js', 'Ts'], 'A-K-Q-J-T del mismo palo. Es la mano máxima: nadie la supera.'),
-  R(2, 'Póker (cuatro iguales)', ['7s', '7h', '7d', '7c', '2s'], 'Cuatro cartas del mismo valor y un kicker. Supera al full house.'),
-  R(3, 'Full house', ['8s', '8h', '8d', 'Kc', 'Ks'], 'Un trío más una pareja: tres 8s y dos Reyes.')
+/* Ranking oficial de 9 manos, de menor a mayor fuerza: posición 1 = carta alta,
+   9 = escalera real. Cada fila lleva 5 cartas de ejemplo y una explicación breve. */
+const R = (pos, name, cards, desc, tier) => ({ pos, name, cards, desc, tier });
+const RANK_LOW = [
+  R(1, 'Carta alta', ['As', 'Kd', '9c', '6h', '2s'], 'Sin combinaciones: manda la carta más alta y luego los kickers.', 'low'),
+  R(2, 'Pareja', ['Js', 'Jh', 'Ad', '7c', '3s'], 'Un par y tres kickers: se decide por el valor del par. Supera a la carta alta.', 'low'),
+  R(3, 'Doble pareja', ['As', 'Ah', '9d', '9c', 'Ks'], 'Dos pares distintos y un kicker. Gana a una sola pareja.', 'low')
 ];
 const RANK_MID = [
-  R(4, 'Color', ['Ah', 'Jh', '9h', '6h', '3h'], 'Cinco cartas del mismo palo; el orden de los valores no importa.'),
-  R(5, 'Escalera', ['5c', '6d', '7h', '8s', '9c'], 'Cinco valores consecutivos de palos distintos.'),
-  R(6, 'Trío', ['Qs', 'Qh', 'Qd', '4c', '2s'], 'Tres cartas iguales más dos kickers.')
+  R(4, 'Trío', ['Qs', 'Qh', 'Qd', '4c', '2s'], 'Tres cartas iguales más dos kickers. Supera a la doble pareja.', 'mid'),
+  R(5, 'Escalera', ['5c', '6d', '7h', '8s', '9c'], 'Cinco valores consecutivos de palos distintos. Gana al trío.', 'mid'),
+  R(6, 'Color', ['Ah', 'Jh', '9h', '6h', '3h'], 'Cinco cartas del mismo palo; gana a la escalera aunque los valores sean más bajos.', 'mid')
 ];
-const RANK_LOW = [
-  R(7, 'Doble pareja', ['As', 'Ah', '9d', '9c', 'Ks'], 'Dos pares distintos y un kicker.'),
-  R(8, 'Pareja', ['Js', 'Jh', 'Ad', '7c', '3s'], 'Un par y tres kickers: se decide por el valor del par.'),
-  R(9, 'Carta alta', ['As', 'Kd', '9c', '6h', '2s'], 'Sin combinaciones: manda la carta más alta y luego los kickers.')
+const RANK_TOP = [
+  R(7, 'Full house', ['8s', '8h', '8d', 'Kc', 'Ks'], 'Un trío más una pareja: tres 8s y dos Reyes. Supera al color.', 'top'),
+  R(8, 'Póker (cuatro iguales)', ['7s', '7h', '7d', '7c', '2s'], 'Cuatro cartas del mismo valor y un kicker. Supera al full house.', 'top'),
+  R(9, 'Escalera real', ['As', 'Ks', 'Qs', 'Js', 'Ts'], 'A-K-Q-J-T del mismo palo. Es la mano máxima: nadie la supera.', 'top')
 ];
-const RANKING_FULL = [...RANK_TOP, ...RANK_MID, ...RANK_LOW];
+const RANKING_FULL = [...RANK_LOW, ...RANK_MID, ...RANK_TOP];
 const RANKING_TABLE = { street: 'RANKING', board: [], pot: 0 };
 
 /* ---------------------------------------------------------------------------
@@ -68,30 +68,30 @@ const RANKING_TABLE = { street: 'RANKING', board: [], pot: 0 };
 const LESSONS_DATA = [
   {
     id: 'ranking', number: 1, module: 0, format: 'exhibit',
-    title: 'Jerarquía de manos', subtitle: 'Ranking oficial de más fuerte a más débil, con 5 cartas por mano',
+    title: 'Jerarquía de manos', subtitle: 'Ranking oficial de menor a mayor fuerza, con 5 cartas por mano',
     steps: [
-      E('El ranking oficial: 9 manos de fuerte a débil', RANKING_TABLE, [
-        'Lee la lista de arriba abajo: la fila 1 gana a todas las que tiene debajo; la fila 9 es la más débil.',
+      E('El ranking oficial: 9 manos de débil a fuerte', RANKING_TABLE, [
+        'Lee la lista de arriba abajo: va de la carta alta a la escalera real; cada fila gana a la que tiene encima.',
         'Cada fila muestra 5 cartas de ejemplo del tipo de mano exacto y una explicación de una línea.',
         'Con ver este orden ya sabes qué le gana a qué. La comparación mano contra mano llega en la clase 2.'
       ], 5, null, { ranking: RANKING_FULL, rankingCompact: true }),
-      E('Las tres manos máximas', RANKING_TABLE, [
-        'Escalera real: A-K-Q-J-T del mismo palo. Es imbatible y ocupa el primer lugar.',
-        'Póker: cuatro cartas iguales más un kicker. Sólo la escalera real lo supera.',
-        'Full house: trío más pareja. Se decide por el trío y queda por debajo del póker.'
-      ], 5, null, { ranking: RANK_TOP }),
-      E('Color, escalera y trío', RANKING_TABLE, [
-        'Color: cinco cartas del mismo palo; gana a la escalera aunque los valores sean más bajos.',
-        'Escalera: cinco valores seguidos, sin importar el palo. Supera al trío.',
-        'Trío: tres cartas iguales. Es el escalón inmediatamente por encima de la doble pareja.'
-      ], 5, null, { ranking: RANK_MID }),
-      E('Doble pareja, pareja y carta alta', RANKING_TABLE, [
-        'Doble pareja: dos pares distintos y un kicker. Gana a una sola pareja.',
+      E('Carta alta, pareja y doble pareja', RANKING_TABLE, [
+        'Carta alta: sin combinaciones; manda la carta más alta y luego los kickers.',
         'Pareja: un par y tres kickers. Cualquier pareja supera a la carta alta.',
-        'Carta alta: sin combinaciones; se decide por la carta más alta y luego por los kickers.'
+        'Doble pareja: dos pares distintos y un kicker. Gana a una sola pareja.'
       ], 5, null, { ranking: RANK_LOW }),
+      E('Trío, escalera y color', RANKING_TABLE, [
+        'Trío: tres cartas iguales. Es el escalón inmediatamente por encima de la doble pareja.',
+        'Escalera: cinco valores seguidos, sin importar el palo. Supera al trío.',
+        'Color: cinco cartas del mismo palo; gana a la escalera aunque los valores sean más bajos.'
+      ], 5, null, { ranking: RANK_MID }),
+      E('Full house, póker y escalera real', RANKING_TABLE, [
+        'Full house: trío más pareja. Se decide por el trío y supera al color.',
+        'Póker: cuatro cartas iguales más un kicker. Sólo la escalera real lo supera.',
+        'Escalera real: A-K-Q-J-T del mismo palo. Es imbatible y ocupa el último lugar.'
+      ], 5, null, { ranking: RANK_TOP }),
       E('Cómo usar el ranking en un showdown', RANKING_TABLE, [
-        'Primero mira la fila: una escalera (fila 5) siempre gana a un trío (fila 6), sin mirar los kickers.',
+        'Primero mira la fila: una escalera (fila 5) siempre gana a un trío (fila 4), sin mirar los kickers.',
         'Sólo cuando dos manos caen en la misma fila se comparan valores y kickers.',
         'Este orden es la base de todas las clases siguientes; aquí todavía no enfrentamos dos manos.'
       ], 5, null, { ranking: RANKING_FULL, rankingCompact: true })
@@ -820,12 +820,11 @@ const academia = {
   },
 
   renderRanking(rows, compact) {
-    const tier = row => row.pos <= 3 ? 'top' : row.pos <= 6 ? 'mid' : 'low';
     return `
       <div class="acad-ranking ${compact ? 'is-compact' : ''}">
-        <p class="acad-ranking-hint"><strong>Jerarquía oficial · Texas Hold'em.</strong> Se lee de arriba abajo: cada fila gana a todas las inferiores.</p>
+        <p class="acad-ranking-hint"><strong>Jerarquía oficial · Texas Hold'em.</strong> De menor a mayor: cada fila gana a la que tiene encima; la última es la mano máxima.</p>
         ${rows.map(row => `
-          <div class="acad-rank-row" data-tier="${tier(row)}">
+          <div class="acad-rank-row" data-tier="${row.tier}">
             <span class="acad-rank-num">${String(row.pos).padStart(2, '0')}</span>
             <div class="acad-rank-info">
               <strong>${row.name}</strong>
@@ -1042,9 +1041,8 @@ const academiaFullscreen = {
     const active = this.isActive;
     document.querySelectorAll('.js-acad-fullscreen-btn').forEach(btn => {
       const compact = btn.dataset.compact === 'true';
-      btn.textContent = active
-        ? (compact ? '✕' : '✕ Salir de pantalla completa')
-        : (compact ? '⛶' : '⛶ Pantalla Completa');
+      btn.classList.toggle('is-active', active);
+      btn.textContent = active ? '✕' : (compact ? '⛶' : '⛶ Pantalla Completa');
       const title = active ? 'Salir de pantalla completa' : 'Entrar en pantalla completa';
       btn.title = title;
       btn.setAttribute('aria-label', title);

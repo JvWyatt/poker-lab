@@ -441,6 +441,14 @@
       background: linear-gradient(#fbbf24, #b45309);
     }
 
+    /* Perfiles de jugador un 25% más pequeños. clampSeatsToWrap() mide
+       getBoundingClientRect(), así que la escala se respeta al ajustar asientos. */
+    #table-seats-layer { --seat-scale: 0.75; }
+    #table-seats-layer > div > div {
+      transform: scale(var(--seat-scale));
+      transform-origin: center;
+    }
+
     /* Responsive: fichas más pequeñas para no invadir texto en móvil */
     @media (max-width: 640px) {
       .chip-stacks { --chip-u: 18px; --chip-v: 20px; --chip-step: 4.5px; gap: 1px; }
@@ -451,13 +459,12 @@
       .chip-card-value { font-size: 8px; }
       .chip-card-unit { font-size: 5px; }
       /* Compact panels keep chips clear of text on narrow screens.
-         Counter-scale cards so all-in and big-pot cards render at the same 31×25. */
-      #table-seats-layer > div > div { transform: scale(0.88); }
+         Counter-scale cards so all-in and big-pot cards render legible at 31×25. */
       #table-seats-layer .hero-panel { width: 152px; min-width: 152px; }
       #table-seats-layer .chip-card,
       #table-seats-layer .chip-card--allin {
-        width: calc(31px / 0.88);
-        height: calc(25px / 0.88);
+        width: calc(31px / var(--seat-scale));
+        height: calc(25px / var(--seat-scale));
       }
       .profile-tag, .last-action { display: none; }
     }
@@ -591,6 +598,26 @@
       pointer-events: auto;
     }
     .acad-fs-btn:hover { border-color: rgba(52, 211, 153, 0.7); color: #6ee7b7; }
+    /* Botón activo de Academia: mismo ✕ rosa de salida que el de partidas. */
+    .acad-fs-btn.is-active {
+      width: 2rem;
+      height: 2rem;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.5rem;
+      background: rgba(76, 5, 25, 0.7);
+      border-color: rgba(159, 18, 57, 0.5);
+      color: #fecdd3;
+      font-size: 0.875rem;
+      font-weight: 700;
+    }
+    .acad-fs-btn.is-active:hover {
+      background: rgba(127, 29, 29, 0.8);
+      border-color: rgba(159, 18, 57, 0.7);
+      color: #ffe4e6;
+    }
     .acad-step-dot {
       width: 26px; height: 26px; border-radius: 8px;
       border: 1px solid rgba(148, 163, 184, 0.3);
@@ -742,7 +769,7 @@
     .acad-lines--compact .acad-line { font-size: 10px; line-height: 1.25; padding: 0.25rem 0.45rem; }
     .acad-summary { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; text-align: center; }
 
-    /* Clase 1: jerarquía oficial de manos, de más fuerte a más débil. */
+    /* Clase 1: jerarquía oficial de manos, de menor a mayor fuerza. */
     .acad-ranking { display: flex; flex-direction: column; gap: 0.4rem; }
     .acad-ranking-hint {
       text-align: center;

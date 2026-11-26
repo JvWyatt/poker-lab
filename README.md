@@ -148,8 +148,8 @@ vuelven al mapa, también después de girar el teléfono.
 Las clases usan tres formatos internos (no se muestran como etiquetas):
 
 - **Jerarquía visual** (clase 1): 5 pantallas que enseñan primero el ranking
-  oficial de 9 manos, de la escalera real a la carta alta, ordenado de más
-  fuerte a más débil con 5 cartas de ejemplo y una explicación breve por mano.
+  oficial de 9 manos, de la carta alta a la escalera real, ordenado de menor a
+  mayor fuerza con 5 cartas de ejemplo y una explicación breve por mano.
   Las comparaciones y los casos llegan después.
 - **Revelación guiada** (clases 3 y 12): 5 pantallas sin preguntas. El board
   aparece flop → turn → river con `Entendido →`.
