@@ -40,7 +40,7 @@ Tailwind se carga desde CDN, por lo que hace falta conexión a internet.
 ## Cambios respecto al original
 
 - Misma funcionalidad y aspecto, con el código separado por responsabilidades.
-- Orden de botones de acción: **Apostar/Subir → Pasar/Pagar → Retirarse (Fold)**.
+- Orden de botones de acción: **Retirarse (Fold) → Pasar/Pagar (Call) → Apostar/Subir (Raise)**, en una sola fila horizontal.
 - Motor de sonido ampliado: UI, cartas, fichas, all-in, showdown, victoria/derrota,
   calificación de jugadas (`!! ! ✓ ?! ? ??`) y reloj (avisos a 10 s y 5 s, ticks,
   tiempo agotado y cuenta atrás de la siguiente mano). El audio se activa solo tras
@@ -56,10 +56,15 @@ Tailwind se carga desde CDN, por lo que hace falta conexión a internet.
   partidas. Expanden el tapete, el HUD, los pop-ups y la botonera; la barra
   superior de la arena muestra ciegas, audio y un único botón **✕** para salir.
   Usa la Fullscreen API nativa con fallback CSS (`is-arena`); `Esc` también sale.
-- **HUD «ojito» 👁️ / 🙈:** la barra inferior tiene dos zonas: a la izquierda
-  `Apostar/Subir → Pasar/Pagar → Retirarse`; a la derecha el ojito. Al abrirlo,
-  las tarjetitas siguen en una sola fila horizontal de altura fija, sin
-  engordar el hub ni invadir el tapete.
+- **Hub inferior en dos columnas fusionadas:** `#game-controls-panel` es un
+  único panel con dos grids de la misma altura. La columna izquierda lleva
+  arriba `Fold → Call → Raise` en horizontal y debajo `All-In + slider + montos
+  rápidos`, también en horizontal. La columna derecha, separada sólo por una
+  línea sutil, ancla el ojito en la esquina inferior derecha.
+- **HUD «ojito» 👁️ / 🙈:** al abrirlo, el panel se despliega **en vertical hacia
+  arriba** desde el ojito: cada dato (RAISE/CALL/FOLD o EQUITY/POT ODDS/OUTS/EV
+  MAX) queda apilado debajo del anterior, nunca en horizontal. La sugerencia
+  sigue bajo las acciones de la columna izquierda.
   - Preflop: frecuencias RAISE/CALL/FOLD de `GTOEngine`, con posición,
     secuencia (RFI / vs apertura / vs 3-Bet / defensa BB), tamaño de apertura,
     stack y MDF reales de la mano. Sólo se muestran acciones con `% > 0`.
@@ -131,9 +136,22 @@ paso a paso, pero el contenido permite **scroll corto** para que `Siguiente`
 nunca quede tapado por la barra del navegador o el móvil. `Esc` o `← Ruta`
 vuelven al mapa, también después de girar el teléfono.
 
+- **Pantalla Completa de Academia:** botón `⛶ Pantalla Completa` en el mapa y
+  `⛶` en la cabecera de cada clase (mismo patrón que Arena: Fullscreen API
+  nativa con fallback CSS `is-acad-full`, `Esc` para salir). Funciona igual en
+  el mapa, en una clase y en móvil.
+- **«Siguiente» siempre accesible:** el pie `.acad-shell-foot` y el botón
+  `.acad-next` tienen `z-index` propio y `pointer-events:auto`, por encima de
+  cualquier marca de agua decorativa, tanto en vista normal como en pantalla
+  completa.
+
 Las clases usan tres formatos internos (no se muestran como etiquetas):
 
-- **Revelación guiada** (clases 1, 3 y 12): 5 pantallas sin preguntas. El board
+- **Jerarquía visual** (clase 1): 5 pantallas que enseñan primero el ranking
+  oficial de 9 manos, de la escalera real a la carta alta, ordenado de más
+  fuerte a más débil con 5 cartas de ejemplo y una explicación breve por mano.
+  Las comparaciones y los casos llegan después.
+- **Revelación guiada** (clases 3 y 12): 5 pantallas sin preguntas. El board
   aparece flop → turn → river con `Entendido →`.
 - **Comparación de manos** (clase 2): 5 enfrentamientos fijos de 5 cartas
   contra 5. Se elige ganador y se revelan las mejores 5 cartas de cada mano con

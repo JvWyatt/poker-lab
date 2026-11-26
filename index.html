@@ -160,7 +160,10 @@
           <h2 class="text-xl font-bold text-white">Academia · ruta de entrenamiento</h2>
           <p class="text-xs sm:text-sm text-slate-400">12 clases en 5 niveles. Entra en una clase y avanza pantalla por pantalla, con scroll corto cuando lo necesites.</p>
         </div>
-        <button id="acad-resume" onclick="academia.resume()" class="hidden rounded-xl bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 text-xs font-bold text-white transition">Continuar →</button>
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="acad-resume" onclick="academia.resume()" class="hidden rounded-xl bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 text-xs font-bold text-white transition">Continuar →</button>
+          <button class="acad-fs-btn js-acad-fullscreen-btn" onclick="academiaFullscreen.toggle()" title="Entrar en pantalla completa" aria-label="Entrar en pantalla completa">⛶ Pantalla Completa</button>
+        </div>
       </div>
 
       <div id="academia-list"></div>
@@ -434,47 +437,44 @@
             <div id="grade-popup-layer" class="absolute top-2 left-1/2 -translate-x-1/2 z-40 pointer-events-none flex justify-center"></div>
           </div>
 
-          <!-- Action Controls Bar -->
-          <div id="game-controls-panel" class="bg-slate-900 border border-slate-800 rounded-2xl p-3 sm:p-4 space-y-2.5">
-            <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
-              <div class="flex flex-wrap items-center gap-2 min-w-0">
-                <button id="btn-raise" onclick="game.humanAction('raise')" disabled class="px-4 sm:px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:pointer-events-none text-white font-bold text-xs sm:text-sm transition">
-                  Apostar / Subir
-                </button>
-                <button id="btn-call" onclick="game.humanAction('call')" disabled class="px-4 sm:px-5 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 disabled:opacity-40 disabled:pointer-events-none text-white font-bold text-xs sm:text-sm transition">
-                  Pasar (Check)
-                </button>
-                <button id="btn-fold" onclick="game.humanAction('fold')" disabled class="px-4 sm:px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-40 disabled:pointer-events-none text-white font-bold text-xs sm:text-sm transition">
-                  Retirarse (Fold)
-                </button>
+          <!-- Action Controls Bar: un panel, dos columnas fusionadas y de igual altura. -->
+          <div id="game-controls-panel" class="bg-slate-900 border border-slate-800 rounded-2xl p-3 sm:p-4">
+            <!-- Columna izquierda: acciones en horizontal arriba, apuestas en horizontal abajo. -->
+            <div id="game-controls-left">
+              <div class="game-action-row">
+                <button id="btn-fold" onclick="game.humanAction('fold')" disabled class="rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-40 disabled:pointer-events-none text-white font-bold transition">Retirarse (Fold)</button>
+                <button id="btn-call" onclick="game.humanAction('call')" disabled class="rounded-xl bg-slate-700 hover:bg-slate-600 disabled:opacity-40 disabled:pointer-events-none text-white font-bold transition">Pasar (Check)</button>
+                <button id="btn-raise" onclick="game.humanAction('raise')" disabled class="rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:pointer-events-none text-white font-bold transition">Apostar / Subir (Raise)</button>
               </div>
 
-              <!-- HUD derecho: ojito con panel horizontal de altura fija. -->
-              <div id="eyeball-hud" class="flex items-center gap-2 justify-self-end pointer-events-auto">
-                <button id="btn-eyeball" onclick="eyeballHUD.toggle()" aria-label="Mostrar ayuda táctica" aria-expanded="false" class="pointer-events-auto w-11 h-11 shrink-0 rounded-full flex items-center justify-center text-lg shadow-xl border backdrop-blur-md transition hover:scale-105 bg-slate-950/85 border-slate-600/70 text-slate-200">👁️</button>
-                <div id="eyeball-panel" class="hidden pointer-events-auto h-11 items-center rounded-xl border border-slate-700/60 bg-slate-950/85 backdrop-blur-md p-1 shadow-2xl">
-                  <div id="eyeball-cards" class="flex items-center gap-1.5 h-full"></div>
+              <!-- Sugerencia del ojito: GTO en preflop, EV estimado después. -->
+              <div id="action-suggestion" class="hidden items-center gap-2 whitespace-nowrap rounded-xl border border-emerald-500/30 bg-emerald-950/60 px-2.5 py-1.5 text-[10px] text-slate-300 backdrop-blur-md"></div>
+
+              <!-- Fila inferior: All-In, slider y montos rápidos, todo en horizontal. -->
+              <div class="game-bet-row">
+                <button onclick="game.setBetFraction(999)" class="bet-allin rounded-lg bg-amber-950/70 hover:bg-amber-900/70 text-amber-300 border border-amber-700/50 font-mono font-bold">All-In</button>
+                <div class="bet-slider-group">
+                  <span class="text-[11px] font-mono text-slate-400">Subida:</span>
+                  <input id="raise-slider" type="range" min="4" max="200" step="1" value="6" oninput="game.updateRaiseLabel(this.value)" />
+                  <span id="raise-amount-label" class="font-mono font-bold text-emerald-400">6</span>
+                </div>
+                <div id="bet-sizing-presets" class="bet-presets">
+                  <button onclick="game.setBetFraction(0.33)" class="rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-mono">1/3 Pot</button>
+                  <button onclick="game.setBetFraction(0.5)" class="rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-mono">1/2 Pot</button>
+                  <button onclick="game.setBetFraction(0.75)" class="rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-mono">3/4 Pot</button>
+                  <button onclick="game.setBetFraction(1.0)" class="rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-mono">Pot</button>
                 </div>
               </div>
             </div>
 
-            <!-- Sugerencia del ojito: GTO en preflop, EV estimado después. -->
-            <div id="action-suggestion" class="hidden items-center gap-2 whitespace-nowrap rounded-xl border border-emerald-500/30 bg-emerald-950/60 px-2.5 py-1.5 text-[10px] text-slate-300 backdrop-blur-md"></div>
-
-            <!-- Quick Bet Sizing Buttons -->
-            <div id="bet-sizing-presets" class="flex flex-wrap items-center gap-1.5">
-              <button onclick="game.setBetFraction(0.33)" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-mono text-slate-300 border border-slate-700">1/3 Pot</button>
-              <button onclick="game.setBetFraction(0.5)" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-mono text-slate-300 border border-slate-700">1/2 Pot</button>
-              <button onclick="game.setBetFraction(0.75)" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-mono text-slate-300 border border-slate-700">3/4 Pot</button>
-              <button onclick="game.setBetFraction(1.0)" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] font-mono text-slate-300 border border-slate-700">Pot</button>
-              <button onclick="game.setBetFraction(999)" class="px-2.5 py-1.5 rounded-lg bg-amber-950/70 hover:bg-amber-900/70 text-[11px] font-mono text-amber-300 border border-amber-700/50">All-In</button>
-            </div>
-
-            <!-- Raise Slider -->
-            <div class="flex items-center gap-3 pt-1">
-              <span class="text-xs font-mono text-slate-400">Subida:</span>
-              <input id="raise-slider" type="range" min="4" max="200" step="1" value="6" oninput="game.updateRaiseLabel(this.value)" class="flex-1 cursor-pointer" />
-              <span id="raise-amount-label" class="text-sm font-mono font-bold text-emerald-400 w-20 text-right">6</span>
+            <!-- Columna derecha: ojito anclado abajo; el panel crece hacia arriba. -->
+            <div id="game-controls-right">
+              <div id="eyeball-anchor">
+                <div id="eyeball-panel" class="eyeball-panel hidden">
+                  <div id="eyeball-cards" class="eyeball-cards"></div>
+                </div>
+                <button id="btn-eyeball" onclick="eyeballHUD.toggle()" aria-label="Mostrar ayuda táctica" aria-expanded="false" class="eyeball-btn">👁️</button>
+              </div>
             </div>
           </div>
         </div>

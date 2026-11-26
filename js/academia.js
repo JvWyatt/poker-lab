@@ -16,7 +16,7 @@ const MODULES = [
   { id: 4, name: 'Estrategia', subtitle: 'Cierre, GTO y explotación', tone: 'purple' }
 ];
 
-const E = (title, table, lines, revealCount, showdown = null) => ({ kind: 'exhibit', title, table, lines, revealCount, showdown });
+const E = (title, table, lines, revealCount, showdown = null, extra = {}) => ({ kind: 'exhibit', title, table, lines, revealCount, showdown, ...extra });
 const D = (title, board, hands, winner, why) => ({ kind: 'duel', title, board, hands, winner, why });
 const O = (key, label, correct, feedback) => ({ key, label, correct, feedback });
 const K = (prompt, table, options) => ({ kind: 'case', prompt, table, options });
@@ -40,75 +40,61 @@ const GUTSHOT_4_OUTS = ['5s', '5h', '5d', '5c'];
 
 const BASE_BOARD = ['Ks', 'Qd', '7s', '2c', '9h'];
 
+/* Ranking oficial de 9 manos: posición 1 = más fuerte, 9 = más débil.
+   Cada fila lleva 5 cartas de ejemplo y una explicación de una línea. */
+const R = (pos, name, cards, desc) => ({ pos, name, cards, desc });
+const RANK_TOP = [
+  R(1, 'Escalera real', ['As', 'Ks', 'Qs', 'Js', 'Ts'], 'A-K-Q-J-T del mismo palo. Es la mano máxima: nadie la supera.'),
+  R(2, 'Póker (cuatro iguales)', ['7s', '7h', '7d', '7c', '2s'], 'Cuatro cartas del mismo valor y un kicker. Supera al full house.'),
+  R(3, 'Full house', ['8s', '8h', '8d', 'Kc', 'Ks'], 'Un trío más una pareja: tres 8s y dos Reyes.')
+];
+const RANK_MID = [
+  R(4, 'Color', ['Ah', 'Jh', '9h', '6h', '3h'], 'Cinco cartas del mismo palo; el orden de los valores no importa.'),
+  R(5, 'Escalera', ['5c', '6d', '7h', '8s', '9c'], 'Cinco valores consecutivos de palos distintos.'),
+  R(6, 'Trío', ['Qs', 'Qh', 'Qd', '4c', '2s'], 'Tres cartas iguales más dos kickers.')
+];
+const RANK_LOW = [
+  R(7, 'Doble pareja', ['As', 'Ah', '9d', '9c', 'Ks'], 'Dos pares distintos y un kicker.'),
+  R(8, 'Pareja', ['Js', 'Jh', 'Ad', '7c', '3s'], 'Un par y tres kickers: se decide por el valor del par.'),
+  R(9, 'Carta alta', ['As', 'Kd', '9c', '6h', '2s'], 'Sin combinaciones: manda la carta más alta y luego los kickers.')
+];
+const RANKING_FULL = [...RANK_TOP, ...RANK_MID, ...RANK_LOW];
+const RANKING_TABLE = { street: 'RANKING', board: [], pot: 0 };
+
 /* ---------------------------------------------------------------------------
-   CURRÍCULUM: 12 clases. Sólo las marcadas con `steps` son jugables en este
-   prototipo. Las demás son tarjetas visuales del mapa ("En preparación").
+   CURRÍCULUM: 12 clases, 5 niveles y 5 pasos por clase. La clase 1 muestra
+   primero la jerarquía visual; las comparaciones llegan en la clase 2.
 --------------------------------------------------------------------------- */
 const LESSONS_DATA = [
   {
     id: 'ranking', number: 1, module: 0, format: 'exhibit',
-    title: 'Jerarquía de manos', subtitle: 'Orden de fuerza, de carta alta a escalera real',
+    title: 'Jerarquía de manos', subtitle: 'Ranking oficial de más fuerte a más débil, con 5 cartas por mano',
     steps: [
-      E('Carta alta contra pareja',
-        { street: 'SHOWDOWN', board: ['Ks', '6d', '9c', '2h', '4s'], pot: 100, hero: ['As', '5c'], villain: ['7s', '7h'], note: 'Carta alta A vs par de 7s' },
-        [
-          'Si no tienes ninguna combinación, tu mano es “carta alta”: se decide por la carta más alta y luego por los kickers.',
-          'Una sola pareja ya supera a cualquier carta alta, aunque tu carta suelta sea un As.',
-          'Aquí el rival tiene un par de 7s y gana; tus A♠ 5♣ no forman pareja ni proyecto completado.'
-        ], 5, {
-          board: ['Ks', '6d', '9c', '2h', '4s'],
-          hands: [{ label: 'MANO A', cards: ['As', '5c'] }, { label: 'MANO B', cards: ['7s', '7h'] }],
-          winner: 'B',
-          why: 'Carta alta As contra pareja de 7s. Cualquier pareja supera a carta alta: gana la Mano B.'
-        }),
-      E('Doble pareja contra trío',
-        { street: 'SHOWDOWN', board: ['Kc', 'Kd', '7c', '2h', '9s'], pot: 140, hero: ['As', '7s'], villain: ['Kh', 'Qd'], note: 'Doble pareja vs trío de Reyes' },
-        [
-          'La doble pareja usa dos pares distintos y un kicker: aquí Reyes y Sietes con As de kicker.',
-          'El trío son tres cartas del mismo valor. Tres Reyes superan siempre a dos pares.',
-          'Para comparar dos tríos se mira primero el valor del trío y después los kickers.'
-        ], 5, {
-          board: ['Kc', 'Kd', '7c', '2h', '9s'],
-          hands: [{ label: 'MANO A', cards: ['As', '7s'] }, { label: 'MANO B', cards: ['Kh', 'Qd'] }],
-          winner: 'B',
-          why: 'La Mano A tiene doble pareja (Reyes y Sietes). La Mano B tiene trío de Reyes. El trío gana.'
-        }),
-      E('Escalera contra trío',
-        { street: 'SHOWDOWN', board: ['5c', '6d', '7h', '2s', 'Kc'], pot: 160, hero: ['8s', '9d'], villain: ['5s', '5h'], note: 'Escalera 5-9 vs trío de 5s' },
-        [
-          'La escalera son cinco cartas consecutivas. Aquí 5-6-7-8-9, sin importar los palos.',
-          'El trío de 5s es fuerte, pero una escalera está un escalón por encima en el ranking.',
-          'Cuando dos escaleras empatan, gana la de mayor carta alta.'
-        ], 5, {
-          board: ['5c', '6d', '7h', '2s', 'Kc'],
-          hands: [{ label: 'MANO A', cards: ['8s', '9d'] }, { label: 'MANO B', cards: ['5s', '5h'] }],
-          winner: 'A',
-          why: 'La Mano A completa 5-6-7-8-9. La Mano B tiene trío de 5s. La escalera gana.'
-        }),
-      E('Full house contra póker',
-        { street: 'SHOWDOWN', board: ['As', 'Ad', '7c', '7d', '2h'], pot: 200, hero: ['7s', 'Kc'], villain: ['Ah', 'Ac'], note: 'Full house de 7s vs cuatro Ases' },
-        [
-          'El full house combina trío y pareja: tres 7s y dos Ases en la Mano A.',
-          'El póker (cuatro cartas iguales) es superior al full house: la Mano B tiene cuatro Ases.',
-          'Sólo la escalera real supera al póker en el ranking completo.'
-        ], 5, {
-          board: ['As', 'Ad', '7c', '7d', '2h'],
-          hands: [{ label: 'MANO A', cards: ['7s', 'Kc'] }, { label: 'MANO B', cards: ['Ah', 'Ac'] }],
-          winner: 'B',
-          why: 'La Mano A tiene full house (7s lleno de Ases). La Mano B tiene cuatro Ases: el póker gana.'
-        }),
-      E('La mano máxima: escalera real',
-        { street: 'SHOWDOWN', board: ['Ts', 'Js', 'Qs', '2c', '7d'], pot: 220, hero: ['Ks', 'As'], villain: ['9h', '9d'], note: 'Escalera real de espadas' },
-        [
-          'La escalera real es A-K-Q-J-T del mismo palo. Es la mano más alta y no puede ser superada.',
-          'Orden completo, de menor a mayor: carta alta, pareja, doble pareja, trío, escalera, color, full house, póker, escalera real.',
-          'Reconocer este orden es todo lo que necesitas antes de comparar manos en un duelo.'
-        ], 5, {
-          board: ['Ts', 'Js', 'Qs', '2c', '7d'],
-          hands: [{ label: 'MANO A', cards: ['Ks', 'As'] }, { label: 'MANO B', cards: ['9h', '9d'] }],
-          winner: 'A',
-          why: 'La Mano A tiene escalera real de espadas. Es la mano máxima: gana a cualquier otra, incluida una pareja de 9s.'
-        })
+      E('El ranking oficial: 9 manos de fuerte a débil', RANKING_TABLE, [
+        'Lee la lista de arriba abajo: la fila 1 gana a todas las que tiene debajo; la fila 9 es la más débil.',
+        'Cada fila muestra 5 cartas de ejemplo del tipo de mano exacto y una explicación de una línea.',
+        'Con ver este orden ya sabes qué le gana a qué. La comparación mano contra mano llega en la clase 2.'
+      ], 5, null, { ranking: RANKING_FULL, rankingCompact: true }),
+      E('Las tres manos máximas', RANKING_TABLE, [
+        'Escalera real: A-K-Q-J-T del mismo palo. Es imbatible y ocupa el primer lugar.',
+        'Póker: cuatro cartas iguales más un kicker. Sólo la escalera real lo supera.',
+        'Full house: trío más pareja. Se decide por el trío y queda por debajo del póker.'
+      ], 5, null, { ranking: RANK_TOP }),
+      E('Color, escalera y trío', RANKING_TABLE, [
+        'Color: cinco cartas del mismo palo; gana a la escalera aunque los valores sean más bajos.',
+        'Escalera: cinco valores seguidos, sin importar el palo. Supera al trío.',
+        'Trío: tres cartas iguales. Es el escalón inmediatamente por encima de la doble pareja.'
+      ], 5, null, { ranking: RANK_MID }),
+      E('Doble pareja, pareja y carta alta', RANKING_TABLE, [
+        'Doble pareja: dos pares distintos y un kicker. Gana a una sola pareja.',
+        'Pareja: un par y tres kickers. Cualquier pareja supera a la carta alta.',
+        'Carta alta: sin combinaciones; se decide por la carta más alta y luego por los kickers.'
+      ], 5, null, { ranking: RANK_LOW }),
+      E('Cómo usar el ranking en un showdown', RANKING_TABLE, [
+        'Primero mira la fila: una escalera (fila 5) siempre gana a un trío (fila 6), sin mirar los kickers.',
+        'Sólo cuando dos manos caen en la misma fila se comparan valores y kickers.',
+        'Este orden es la base de todas las clases siguientes; aquí todavía no enfrentamos dos manos.'
+      ], 5, null, { ranking: RANKING_FULL, rankingCompact: true })
     ]
   },
   {
@@ -516,6 +502,7 @@ const academia = {
       setTimeout(syncLessonViewport, 150);
     }, { passive: true });
     window.visualViewport?.addEventListener('resize', syncLessonViewport, { passive: true });
+    academiaFullscreen.registerListeners();
   },
 
   persist() {
@@ -581,6 +568,7 @@ const academia = {
     document.getElementById('academia-map-header')?.classList.toggle('hidden', inLesson);
     if (inLesson) this.renderLesson();
     else this.renderMap();
+    academiaFullscreen.updateInfo();
   },
 
   renderMap() {
@@ -767,7 +755,10 @@ const academia = {
 
     const head = `
       <div class="acad-shell-head">
-        <button onclick="academia.closeLesson()" class="acad-back">← Ruta</button>
+        <div class="flex items-center gap-1">
+          <button onclick="academia.closeLesson()" class="acad-back">← Ruta</button>
+          <button class="acad-fs-btn js-acad-fullscreen-btn" data-compact="true" onclick="academiaFullscreen.toggle()" title="Entrar en pantalla completa" aria-label="Entrar en pantalla completa">⛶</button>
+        </div>
         <div class="min-w-0 flex-1 text-center">
           <div class="text-[10px] font-mono uppercase tracking-widest text-emerald-400">Nivel 0${mod.id} · ${mod.name}</div>
           <div class="text-sm sm:text-base font-extrabold text-white truncate">Clase ${lesson.number} · ${lesson.title}</div>
@@ -811,16 +802,38 @@ const academia = {
         </div>
       </div>
     `;
+    academiaFullscreen.updateInfo();
   },
 
   renderExhibit(step, solved) {
-    const cards = step.showdown
-      ? this.renderDuel(step.showdown, solved, true)
-      : this.renderFelt(step.table, { revealCount: step.revealCount, showVillain: !step.table.villainHidden });
+    const cards = step.ranking
+      ? this.renderRanking(step.ranking, !!step.rankingCompact)
+      : step.showdown
+        ? this.renderDuel(step.showdown, solved, true)
+        : this.renderFelt(step.table, { revealCount: step.revealCount, showVillain: !step.table.villainHidden });
     return `
       ${cards}
       <div class="acad-lines ${step.showdown ? 'acad-lines--compact' : ''}">
         ${step.lines.map((line, i) => `<p class="acad-line"><span>${i + 1}</span>${line}</p>`).join('')}
+      </div>
+    `;
+  },
+
+  renderRanking(rows, compact) {
+    const tier = row => row.pos <= 3 ? 'top' : row.pos <= 6 ? 'mid' : 'low';
+    return `
+      <div class="acad-ranking ${compact ? 'is-compact' : ''}">
+        <p class="acad-ranking-hint"><strong>Jerarquía oficial · Texas Hold'em.</strong> Se lee de arriba abajo: cada fila gana a todas las inferiores.</p>
+        ${rows.map(row => `
+          <div class="acad-rank-row" data-tier="${tier(row)}">
+            <span class="acad-rank-num">${String(row.pos).padStart(2, '0')}</span>
+            <div class="acad-rank-info">
+              <strong>${row.name}</strong>
+              <span>${row.desc}</span>
+            </div>
+            <div class="acad-rank-cards">${row.cards.map(c => this.cardHTML(c)).join('')}</div>
+          </div>
+        `).join('')}
       </div>
     `;
   },
@@ -948,5 +961,112 @@ const academia = {
         </div>
       </div>
     `;
+  }
+};
+
+/* ============================================================================
+   ACADEMIA A PANTALLA COMPLETA (NATIVE FULLSCREEN + FALLBACK CSS)
+   Igual patrón que Arena, pero sobre #view-academia: sirve en el mapa y en
+   la clase. El pie con «Siguiente» queda siempre por encima de las capas.
+============================================================================ */
+const academiaFullscreen = {
+  nativeActive: false,
+  savedOverflow: '',
+
+  element() {
+    return document.getElementById('view-academia');
+  },
+
+  get isActive() {
+    const el = this.element();
+    return !!el && el.classList.contains('is-acad-full');
+  },
+
+  registerListeners() {
+    document.addEventListener?.('fullscreenchange', () => academiaFullscreen.onFullscreenChange());
+    document.addEventListener?.('fullscreenerror', () => academiaFullscreen.onFullscreenChange());
+    document.addEventListener?.('keydown', event => {
+      if (event.key === 'Escape' && academiaFullscreen.isActive && !document.fullscreenElement) {
+        academiaFullscreen.exit();
+      }
+    });
+  },
+
+  enter() {
+    const el = this.element();
+    if (!el) return;
+
+    this.savedOverflow = document.body.style.overflow;
+    el.classList.add('is-acad-full');
+    document.body.style.overflow = 'hidden';
+
+    if (el.requestFullscreen && document.fullscreenElement !== el) {
+      try {
+        const request = el.requestFullscreen();
+        if (request && typeof request.catch === 'function') request.catch(() => {});
+      } catch (e) {
+        /* fallback: la clase is-acad-full mantiene la academia a pantalla completa */
+      }
+    }
+
+    SoundFX.playClick();
+    this.updateInfo();
+  },
+
+  exit() {
+    const el = this.element();
+    if (!el) return;
+
+    if (document.fullscreenElement === el) {
+      try {
+        const request = document.exitFullscreen();
+        if (request && typeof request.catch === 'function') request.catch(() => {});
+      } catch (e) {
+        /* nothing else to do */
+      }
+    }
+
+    this.nativeActive = false;
+    el.classList.remove('is-acad-full');
+    document.body.style.overflow = this.savedOverflow || '';
+    SoundFX.playToggle(false);
+    this.updateInfo();
+  },
+
+  toggle() {
+    if (this.isActive) this.exit();
+    else this.enter();
+  },
+
+  updateInfo() {
+    const active = this.isActive;
+    document.querySelectorAll('.js-acad-fullscreen-btn').forEach(btn => {
+      const compact = btn.dataset.compact === 'true';
+      btn.textContent = active
+        ? (compact ? '✕' : '✕ Salir de pantalla completa')
+        : (compact ? '⛶' : '⛶ Pantalla Completa');
+      const title = active ? 'Salir de pantalla completa' : 'Entrar en pantalla completa';
+      btn.title = title;
+      btn.setAttribute('aria-label', title);
+    });
+    if (document.body?.classList) document.body.classList.toggle('is-acad-full-open', active);
+  },
+
+  onFullscreenChange() {
+    const el = this.element();
+    if (!el) return;
+
+    if (document.fullscreenElement === el) {
+      this.nativeActive = true;
+      el.classList.add('is-acad-full');
+      document.body.style.overflow = 'hidden';
+      this.updateInfo();
+    } else if (this.nativeActive) {
+      // El usuario pulsó Esc: sincronizamos el estado con el navegador.
+      this.nativeActive = false;
+      el.classList.remove('is-acad-full');
+      document.body.style.overflow = this.savedOverflow || '';
+      this.updateInfo();
+    }
   }
 };

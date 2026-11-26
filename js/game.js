@@ -471,7 +471,7 @@ const game = {
   updateRaiseLabel(val) {
     document.getElementById('raise-amount-label').textContent = val;
     const btnRaise = document.getElementById('btn-raise');
-    btnRaise.textContent = this.currentBet === 0 ? `Apostar ${val}` : `Subir a ${val}`;
+    btnRaise.textContent = this.currentBet === 0 ? `Apostar ${val} (Raise)` : `Subir a ${val} (Raise)`;
   },
 
   setBetFraction(frac) {

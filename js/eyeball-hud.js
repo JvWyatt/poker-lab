@@ -1,7 +1,7 @@
 /* ============================================================================
-   14. HUD FLOTANTE "OJITO" (DERECHA DEL HUB INFERIOR)
-   Panel compacto y horizontal: nunca aumenta la altura de la barra de acciones.
-   La sugerencia vive debajo de los botones: GTO en preflop, EV estimado después.
+   14. HUD FLOTANTE "OJITO" (ESQUINA INFERIOR DERECHA DEL HUB)
+   El ojito queda anclado abajo y su panel se apila en vertical hacia arriba.
+   La sugerencia vive bajo las acciones: GTO en preflop, EV estimado después.
 ============================================================================ */
 const eyeballHUD = {
   visible: false,
@@ -23,11 +23,7 @@ const eyeballHUD = {
     if (btn) {
       btn.textContent = this.visible ? '🙈' : '👁️';
       btn.setAttribute('aria-expanded', String(this.visible));
-      btn.className = `pointer-events-auto w-11 h-11 shrink-0 rounded-full flex items-center justify-center text-lg shadow-xl border backdrop-blur-md transition hover:scale-105 ${
-        this.visible
-          ? 'bg-slate-950/90 border-emerald-400/60 text-emerald-300'
-          : 'bg-slate-950/85 border-slate-600/70 text-slate-200'
-      }`;
+      btn.className = `eyeball-btn${this.visible ? ' is-open' : ''}`;
     }
 
     SoundFX.playToggle(this.visible);
@@ -198,14 +194,12 @@ const eyeballHUD = {
   },
 
   paint(container, items) {
-    // Tarjetas horizontales dentro de la barra de acciones: nunca sobre el tapete.
-    const cardsClass = 'flex items-center gap-1.5 h-full';
-    container.className = cardsClass;
+    // Cada dato se apila debajo del anterior: el panel crece hacia arriba.
+    container.className = 'eyeball-cards';
     container.innerHTML = items.map((item, i) => `
-      <div class="hud-card h-9 min-w-[58px] px-1.5 rounded-lg border bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center ${item.tone}"
-           style="animation-delay: ${i * 45}ms">
-        <span class="text-[7px] font-bold uppercase tracking-wide text-slate-400 whitespace-nowrap">${item.key}</span>
-        <span class="text-[9px] font-extrabold font-mono leading-none tracking-tight whitespace-nowrap">${item.value}</span>
+      <div class="hud-card border ${item.tone}" style="animation-delay: ${i * 45}ms">
+        <span>${item.key}</span>
+        <span>${item.value}</span>
       </div>
     `).join('');
   }
