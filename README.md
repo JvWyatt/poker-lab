@@ -49,6 +49,11 @@ Tailwind se carga desde CDN, por lo que hace falta conexión a internet.
   rojo (mala).
 - Se implementó `startHeroTimer()`, que era llamado pero no existía: ahora el reloj
   de 60 s funciona y un tiempo agotado se penaliza en la calificación.
+- **Fichas limitadas:** ya no hay recompra automática. Si un rival se queda en
+  0, otro perfil aleatorio ocupa su asiento en la siguiente mano (con la pila
+  configurada). Si quien se queda en 0 es el Héroe, se cancela la cuenta atrás
+  y aparece **🔎 Buscar otra mesa**, que reparte una mesa nueva con fichas
+  iniciales y rivales aleatorios. Los eliminados se marcan con `💀 OUT`.
 
 ## Mejoras de interfaz y análisis
 

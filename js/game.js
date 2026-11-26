@@ -135,6 +135,10 @@ const game = {
   },
 
   rotateOpponents(notify = false) {
+    if (this.players[0] && this.players[0].stack <= 0 && !this.handInProgress) {
+      this.showHeroBust('Rotar rivales no te devuelve a la mesa.');
+      return;
+    }
     this.stopAllTimers();
     const startChips = this.parseBlindsAndStack();
     const shuffledProfiles = PokerEngine.shuffle([...BOT_PROFILES]);
@@ -271,6 +275,75 @@ const game = {
     }, 1000);
   },
 
+  // Cierre de mano con fichas limitadas: el héroe no se recompra solo.
+  closeHand(message) {
+    if (this.players[0].stack <= 0) this.showHeroBust(message);
+    else this.scheduleNextHand(message);
+  },
+
+  showHeroBust(message) {
+    this.handInProgress = false;
+    this.disableHumanControls();
+    if (this.nextHandInterval) {
+      clearInterval(this.nextHandInterval);
+      this.nextHandInterval = null;
+    }
+    const banner = document.getElementById('game-status-banner');
+    const nextBtn = document.getElementById('btn-next-hand');
+    const findBtn = document.getElementById('btn-find-table');
+    if (nextBtn) nextBtn.classList.add('hidden');
+    if (findBtn) findBtn.classList.remove('hidden');
+    if (banner) {
+      banner.textContent = `💀 Sin fichas. ${message} Busca otra mesa para seguir jugando.`;
+    }
+    if (typeof eyeballHUD !== 'undefined') eyeballHUD.render();
+  },
+
+  // Nueva mesa: se repone la pila del héroe y se sientan rivales aleatorios.
+  findNewTable() {
+    SoundFX.playClick();
+    this.stopAllTimers();
+    const findBtn = document.getElementById('btn-find-table');
+    if (findBtn) findBtn.classList.add('hidden');
+    const banner = document.getElementById('game-status-banner');
+    if (banner) banner.textContent = '🔎 Nueva mesa encontrada. Repartiendo...';
+    this.setupPlayers();
+    showToast('Nueva mesa: fichas repuestas y rivales aleatorios', 'success');
+    this.startNewHand(false);
+  },
+
+  // Un rival que se queda en 0 no vuelve a entrar: otro aleatorio ocupa su sitio.
+  replaceBustedRivals(startChips) {
+    const seated = new Set(
+      this.players
+        .filter(p => !p.isHuman && p.profile)
+        .map(p => p.profile.id)
+    );
+    const pool = BOT_PROFILES.filter(p => !seated.has(p.id));
+    const candidates = pool.length ? [...pool] : [...BOT_PROFILES];
+    const arrivals = [];
+
+    this.players.forEach(p => {
+      if (p.isHuman || p.stack > 0) return;
+      const pick = Math.floor(Math.random() * candidates.length);
+      const prof = candidates.splice(pick, 1)[0] || BOT_PROFILES[pick % BOT_PROFILES.length];
+      const previous = p.name;
+      p.profile = prof;
+      p.name = prof.name;
+      p.stack = startChips;
+      p.cards = [];
+      p.bet = 0;
+      p.folded = false;
+      p.allIn = false;
+      p.acted = false;
+      p.lastAction = '';
+      p.evalResult = null;
+      arrivals.push(`${previous} → ${prof.name}`);
+    });
+
+    if (arrivals.length) showToast(`Entran nuevos rivales: ${arrivals.join(', ')}`, 'info');
+  },
+
   updateHeroTimerUI() {
     const bar = document.getElementById('hero-timer-bar');
     const label = document.getElementById('hero-timer-text');
@@ -325,8 +398,14 @@ const game = {
     this.stopAllTimers();
     const startChips = this.parseBlindsAndStack();
 
+    if (this.players[0].stack <= 0) {
+      this.showHeroBust('No puedes comprar fichas en esta mesa.');
+      return;
+    }
+
+    this.replaceBustedRivals(startChips);
+
     this.players.forEach(p => {
-      if (p.stack < this.bb * 2) p.stack = startChips;
       p.cards = [];
       p.bet = 0;
       p.folded = false;
@@ -352,6 +431,8 @@ const game = {
     this.winnerIdx = null;
     const nextBtn = document.getElementById('btn-next-hand');
     if (nextBtn) nextBtn.classList.add('hidden');
+    const findBtn = document.getElementById('btn-find-table');
+    if (findBtn) findBtn.classList.add('hidden');
 
     for (let r = 0; r < 2; r++) {
       for (let i = 0; i < this.tableSize; i++) {
@@ -1245,7 +1326,7 @@ const game = {
     this.disableHumanControls();
     this.recordHandOutcome();
     this.revealRivalCards();
-    this.scheduleNextHand(`🏆 ${winner.name} gana ${wonAmount} fichas`);
+    this.closeHand(`🏆 ${winner.name} gana ${wonAmount} fichas`);
   },
 
   resolveShowdown() {
@@ -1284,7 +1365,7 @@ const game = {
     this.pot = 0;
     this.recordHandOutcome();
     this.revealRivalCards();
-    this.scheduleNextHand(`🏆 ${winNames} gana ${wonAmount} fichas`);
+    this.closeHand(`🏆 ${winNames} gana ${wonAmount} fichas`);
   },
 
   recordHandOutcome() {
@@ -1386,6 +1467,9 @@ const game = {
       const winnerTag = isWinner
         ? '<span class="absolute -top-1 right-1 rounded-full bg-amber-400/95 text-slate-950 text-[9px] font-extrabold px-1.5 py-0.5 shadow whitespace-nowrap">🏆 GANADOR</span>'
         : '';
+      const bustedTag = !this.handInProgress && p.stack === 0
+        ? '<span class="busted-badge">💀 OUT</span>'
+        : '';
       const posLabel = this.getSeatPositionLabel(p.seat);
 
       // El botón de dealer va hacia el centro del tapete; las fichas viven dentro
@@ -1424,6 +1508,7 @@ const game = {
                     ${winnerTag}
                     <span class="text-xs sm:text-sm font-extrabold text-white truncate">${p.name}</span>
                     ${p.folded ? '<span class="folded-badge">FOLD</span>' : ''}
+                    ${bustedTag}
                   </div>
                   <div class="text-sm font-mono font-extrabold text-emerald-400">${p.stack}</div>
                   <div class="text-[10px] font-mono text-slate-300 leading-tight break-words">${heroEval}</div>
@@ -1463,7 +1548,7 @@ const game = {
                 ${p.lastAction ? `<span class="last-action text-amber-300 font-bold truncate max-w-[65px]">${p.lastAction}</span>` : '<span class="last-action text-slate-500">--</span>'}
               </div>
               <div class="text-[11px] font-bold text-white leading-tight line-clamp-1 rival-name" title="${p.name}">${p.name} ${winnerTag}</div>
-              ${p.folded ? '<div class="mt-0.5"><span class="folded-badge">FOLD</span></div>' : ''}
+              ${p.folded || bustedTag ? `<div class="mt-0.5 flex justify-center gap-1">${p.folded ? '<span class="folded-badge">FOLD</span>' : ''}${bustedTag}</div>` : ''}
               ${showProfileTag ? `<div class="profile-tag mt-0.5"><span class="inline-block text-[9px] font-mono px-1.5 py-0.2 rounded border ${p.profile.badge}">${p.profile.style}</span></div>` : ''}
               <div class="text-[11px] font-mono text-emerald-400 font-bold mt-0.5">${p.stack}</div>
               <div class="flex justify-center mt-1">${cardsHTML}</div>

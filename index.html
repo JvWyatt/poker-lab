@@ -424,6 +424,10 @@
                 <button id="btn-next-hand" onclick="game.startNewHand(true)" class="hidden mt-2 pointer-events-auto px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-[11px] font-extrabold shadow-lg border border-amber-300/60 transition">
                   🃏 Nueva Mano
                 </button>
+                <!-- Aparece sólo cuando el héroe se queda sin fichas. -->
+                <button id="btn-find-table" onclick="game.findNewTable()" class="hidden mt-2 pointer-events-auto px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[11px] font-extrabold shadow-lg border border-emerald-300/60 transition">
+                  🔎 Buscar otra mesa
+                </button>
               </div>
 
               <!-- Inner Table Bet Chips & Dealer Buttons Layer -->

@@ -490,6 +490,19 @@
       line-height: 1.4;
       letter-spacing: 0.08em;
     }
+    .busted-badge {
+      display: inline-block;
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      border-radius: 9999px;
+      padding: 0 0.35rem;
+      background: rgba(15, 23, 42, 0.95);
+      color: #fda4af;
+      font-size: 8px;
+      font-weight: 800;
+      line-height: 1.4;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
     .rival-panel.is-folded {
       opacity: 0.5;
       filter: grayscale(0.75);
