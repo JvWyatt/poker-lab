@@ -320,8 +320,7 @@
     }
     .grade-pop { animation: gradePopIn 0.3s cubic-bezier(0.2, 0.9, 0.25, 1.2) both; }
     .grade-pop.is-leaving { animation: gradePopOut 0.3s ease-in forwards; }
-    .grade-pop-label,
-    .grade-pop-pct { color: inherit; }
+    .grade-pop-label { color: inherit; }
 
     /* Eyeball HUD cards unfold upwards */
     @keyframes hudCardIn {

@@ -23,15 +23,14 @@ const gradePopup = {
     const layer = document.getElementById('grade-popup-layer');
     if (!layer) return;
 
-    const pct = Math.max(0, Math.min(100, Math.round(Number(accuracyPct) || 0)));
-    const grade = this.resolve(pct);
+    const score = Math.max(0, Math.min(100, Math.round(Number(accuracyPct) || 0)));
+    const grade = this.resolve(score);
     const sign = symbol === grade.sign ? symbol : grade.sign;
 
     clearTimeout(this.hideTimer);
     layer.innerHTML = `
-      <div class="grade-pop inline-flex items-center gap-2 rounded-full border px-4 py-2 backdrop-blur-md shadow-xl ${grade.tone}">
+      <div class="grade-pop inline-flex items-center justify-center rounded-full border px-4 py-2 backdrop-blur-md shadow-xl ${grade.tone}">
         <span class="grade-pop-label text-sm sm:text-base font-extrabold tracking-wide whitespace-nowrap">${sign} ${grade.word}</span>
-        <span class="grade-pop-pct text-sm sm:text-base font-mono font-extrabold tabular-nums whitespace-nowrap">${pct}%</span>
       </div>
     `;
 

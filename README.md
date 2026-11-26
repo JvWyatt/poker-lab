@@ -131,9 +131,9 @@ Tailwind se carga desde CDN, por lo que hace falta conexión a internet.
   mano para que nunca tapen el resultado.
 - **Pop-up de calificación:** etiqueta corta monocromática y unificada en la
   parte superior central (`!! BRILLANTE`, `! EXCELENTE`, `✓ ÓPTIMA`,
-  `?! IMPRECISA`, `? ERROR`, `?? PÉSIMA`) con el porcentaje de acierto.
-  Desaparece a los 3.5 s. La explicación EV detallada y la comparativa por
-  acción siguen únicamente en el panel del Coach.
+  `?! IMPRECISA`, `? ERROR`, `?? PÉSIMA`), sin porcentajes: sólo el símbolo y
+  la palabra. Desaparece a los 3.5 s. Los números, la explicación EV detallada
+  y la comparativa por acción siguen únicamente en el panel del Coach.
 
 ## Academia (ruta de 12 clases en 5 niveles)
 
