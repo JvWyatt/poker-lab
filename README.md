@@ -58,9 +58,9 @@ Tailwind se carga desde CDN, por lo que hace falta conexión a internet.
   Usa la Fullscreen API nativa con fallback CSS (`is-arena`); `Esc` también sale.
 - **HUD unificado sin scroll:** `#game-controls-panel` sigue siendo una sola
   pieza. Arriba quedan `Fold → Call → Raise`; debajo, en su flujo natural,
-  `All-In + slider + 1/4, 1/3, 1/2, 3/4 y Pot`. El ojito permanece anclado abajo
-  a la derecha, separado sólo por una línea sutil. Al abrirlo el HUD crece un
-  poco y muestra la fila extra sin barras de desplazamiento internas.
+  `All-In + slider + 1/4, 1/3, 1/2, 3/4, Pot` y el ojito 👁️ en su propio hueco
+  al final de la fila. Al abrirlo el HUD crece un poco y muestra la fila extra
+  sin barras de desplazamiento internas.
 - **HUD «ojito» 👁️ / 🙈:** al abrirlo, la información se despliega **hacia arriba**
   dentro del mismo panel: viñetas sobre cada botón de acción y métricas en
   horizontal debajo de la zona de apuestas.
@@ -77,6 +77,13 @@ Tailwind se carga desde CDN, por lo que hace falta conexión a internet.
     El detalle EV completo sigue en el Coach.
   - Las viñetas y métricas se ocultan con el ojito, fuera del turno del Héroe o
     si no hay mano en curso.
+- **Jugada resaltada en mesa:** las cartas del Héroe que forman su mejor jugada
+  actual llevan un contorno ámbar; al avanzar la mano el contorno se recalcula
+  (carta alta, par, dobles parejas, escalera...). Las cartas del rival nunca se
+  contornean.
+- **Cierre de mano legible:** quien foldea queda grisáceo, tachado y con
+  etiqueta `FOLD`. Al terminar la mano se muestran las cartas de los rivales
+  durante unos segundos, sin realces, para entender quién ganó y con qué.
 - **GTO de frecuencias mixtas (estilo Preflop Vision):** `GTOEngine` es la
   única fuente de verdad de la matriz 13×13, el ojito y `gradeHeroMove`.
   Solo `AA-TT`, `AK`, `AQs` y la basura absoluta son puros (100 %); el resto

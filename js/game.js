@@ -86,6 +86,8 @@ const game = {
   heroStartingStack: 200,
   currentDecisionAnalysis: null,
   isComputingAnalysis: false,
+  revealOpponentCards: false,
+  revealTimer: null,
 
   init() {
     this.initialized = true;
@@ -233,6 +235,10 @@ const game = {
       clearInterval(this.nextHandInterval);
       this.nextHandInterval = null;
     }
+    if (this.revealTimer) {
+      clearTimeout(this.revealTimer);
+      this.revealTimer = null;
+    }
   },
 
   scheduleNextHand(baseMessage) {
@@ -327,6 +333,7 @@ const game = {
       p.allIn = false;
       p.acted = false;
       p.lastAction = '';
+      p.evalResult = null;
     });
 
     this.heroStartingStack = this.players[0].stack;
@@ -341,6 +348,7 @@ const game = {
     this.street = 'preflop';
     this.handInProgress = true;
     this.currentDecisionAnalysis = null;
+    this.revealOpponentCards = false;
     this.winnerIdx = null;
     const nextBtn = document.getElementById('btn-next-hand');
     if (nextBtn) nextBtn.classList.add('hidden');
@@ -1209,6 +1217,20 @@ const game = {
     this.processTurn();
   },
 
+  // Muestra las cartas de los rivales unos segundos al cerrar la mano.
+  // No añade contornos ni marcas a esas cartas: sólo permite aprender qué pasó.
+  revealRivalCards(ms = 6000) {
+    if (this.revealTimer) clearTimeout(this.revealTimer);
+    this.revealOpponentCards = true;
+    this.renderTable();
+
+    this.revealTimer = setTimeout(() => {
+      this.revealTimer = null;
+      this.revealOpponentCards = false;
+      if (!this.handInProgress) this.renderTable();
+    }, ms);
+  },
+
   finishHandByFold(winner) {
     this.stopAllTimers();
     this.handInProgress = false;
@@ -1222,7 +1244,7 @@ const game = {
     this.pot = 0;
     this.disableHumanControls();
     this.recordHandOutcome();
-    this.renderTable();
+    this.revealRivalCards();
     this.scheduleNextHand(`🏆 ${winner.name} gana ${wonAmount} fichas`);
   },
 
@@ -1261,7 +1283,7 @@ const game = {
     this.log(`🏆 SHOWDOWN: ${winNames} gana ${wonAmount} fichas.`);
     this.pot = 0;
     this.recordHandOutcome();
-    this.renderTable();
+    this.revealRivalCards();
     this.scheduleNextHand(`🏆 ${winNames} gana ${wonAmount} fichas`);
   },
 
@@ -1383,20 +1405,25 @@ const game = {
       if (p.isHuman) {
         // Héroe abajo centro + Barra de Tiempo de 60s
         const heroEval = p.cards.length === 2 ? PokerEngine.evaluateHand([...p.cards, ...this.board]).name : '';
+        const handCards = p.cards.length === 2
+          ? new Set(PokerEngine.madeHandCards([...p.cards, ...this.board], p.cards))
+          : new Set();
+        const heroCardHTML = card => renderCardHTML(card, compactCards, false, handCards.has(card) ? 'is-in-hand' : '');
         const showTimer = this.handInProgress && this.turnIdx === 0;
 
         seatsHTML += `
           <div style="${seatStyle}" class="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
-            <div class="bg-slate-950/95 border-2 ${isWinner ? 'border-amber-400 ring-4 ring-amber-500/30' : isTurn ? 'border-emerald-400 ring-4 ring-emerald-500/25' : 'border-slate-700'} relative rounded-2xl px-3.5 py-2.5 shadow-2xl min-w-[200px] sm:min-w-[265px] max-w-[265px] hero-panel">
+            <div class="bg-slate-950/95 border-2 ${isWinner ? 'border-amber-400 ring-4 ring-amber-500/30' : isTurn ? 'border-emerald-400 ring-4 ring-emerald-500/25' : 'border-slate-700'} ${p.folded ? 'is-folded' : ''} relative rounded-2xl px-3.5 py-2.5 shadow-2xl min-w-[200px] sm:min-w-[265px] max-w-[265px] hero-panel">
               <div class="flex items-center gap-3">
                 <div class="flex gap-1">
-                  ${p.cards.length === 2 ? renderCardHTML(p.cards[0], compactCards) + renderCardHTML(p.cards[1], compactCards) : ''}
+                  ${p.cards.length === 2 ? heroCardHTML(p.cards[0]) + heroCardHTML(p.cards[1]) : ''}
                 </div>
                 <div class="text-left flex-1 min-w-0">
                   <div class="flex items-center gap-1.5">
                     <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">${posLabel}</span>
                     ${winnerTag}
                     <span class="text-xs sm:text-sm font-extrabold text-white truncate">${p.name}</span>
+                    ${p.folded ? '<span class="folded-badge">FOLD</span>' : ''}
                   </div>
                   <div class="text-sm font-mono font-extrabold text-emerald-400">${p.stack}</div>
                   <div class="text-[10px] font-mono text-slate-300 leading-tight break-words">${heroEval}</div>
@@ -1418,23 +1445,25 @@ const game = {
         `;
       } else {
         // Asiento Rival alrededor del óvalo
-        const showCards = this.street === 'showdown' && !p.folded;
+        const showCards = this.revealOpponentCards === true;
         const cardsHTML = p.cards.length === 2
-          ? (p.folded
-            ? `<div class="opacity-25 flex gap-0.5">${renderCardHTML(null, 'xs', true)}${renderCardHTML(null, 'xs', true)}</div>`
-            : `<div class="flex gap-0.5">${renderCardHTML(p.cards[0], 'xs', !showCards)}${renderCardHTML(p.cards[1], 'xs', !showCards)}</div>`)
+          ? `<div class="flex gap-0.5 ${p.folded && !showCards ? 'opacity-25' : ''}">
+              ${renderCardHTML(p.cards[0], 'xs', !showCards)}
+              ${renderCardHTML(p.cards[1], 'xs', !showCards)}
+            </div>`
           : '';
 
         const showProfileTag = appState.config.showProfiles && p.profile;
 
         seatsHTML += `
           <div style="${seatStyle}" class="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
-            <div class="bg-slate-950/95 border ${isWinner ? 'border-amber-400 ring-2 ring-amber-400/60' : isTurn ? 'border-amber-400 ring-2 ring-amber-400/50' : 'border-slate-700/90'} ${p.folded ? 'opacity-45' : ''} relative rounded-xl p-2 w-[114px] sm:w-[132px] text-center shadow-xl transition rival-panel">
+            <div class="bg-slate-950/95 border ${isWinner ? 'border-amber-400 ring-2 ring-amber-400/60' : isTurn ? 'border-amber-400 ring-2 ring-amber-400/50' : 'border-slate-700/90'} ${p.folded ? 'is-folded' : ''} relative rounded-xl p-2 w-[114px] sm:w-[132px] text-center shadow-xl transition rival-panel">
               <div class="flex items-center justify-between text-[9px] font-mono mb-0.5">
                 <span class="px-1.5 py-0.2 rounded bg-slate-800 text-slate-200 font-bold">${posLabel}</span>
                 ${p.lastAction ? `<span class="last-action text-amber-300 font-bold truncate max-w-[65px]">${p.lastAction}</span>` : '<span class="last-action text-slate-500">--</span>'}
               </div>
-              <div class="text-[11px] font-bold text-white leading-tight line-clamp-1" title="${p.name}">${p.name} ${winnerTag}</div>
+              <div class="text-[11px] font-bold text-white leading-tight line-clamp-1 rival-name" title="${p.name}">${p.name} ${winnerTag}</div>
+              ${p.folded ? '<div class="mt-0.5"><span class="folded-badge">FOLD</span></div>' : ''}
               ${showProfileTag ? `<div class="profile-tag mt-0.5"><span class="inline-block text-[9px] font-mono px-1.5 py-0.2 rounded border ${p.profile.badge}">${p.profile.style}</span></div>` : ''}
               <div class="text-[11px] font-mono text-emerald-400 font-bold mt-0.5">${p.stack}</div>
               <div class="flex justify-center mt-1">${cardsHTML}</div>

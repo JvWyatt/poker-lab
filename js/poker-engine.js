@@ -223,6 +223,86 @@ class PokerEngine {
     };
   }
 
+  /**
+   * Devuelve las cartas que forman la mejor jugada de 5 (o la carta/rango
+   * dominante antes del flop). No altera evaluateHand: sólo reutiliza su score.
+   * preferCards desempata a favor de las cartas del héroe cuando el tapete
+   * permite varias combinaciones equivalentes.
+   */
+  static bestFiveCards(cards, preferCards = []) {
+    const list = cards || [];
+    if (!list.length) return [];
+    if (list.length < 5) {
+      const topRank = Math.max(...list.map(c => c >> 2));
+      return list.filter(c => (c >> 2) === topRank);
+    }
+    if (list.length === 5) return [...list];
+
+    const prefer = new Set(preferCards || []);
+    let best = null;
+
+    for (let a = 0; a < list.length - 4; a++) {
+      for (let b = a + 1; b < list.length - 3; b++) {
+        for (let c = b + 1; c < list.length - 2; c++) {
+          for (let d = c + 1; d < list.length - 1; d++) {
+            for (let e = d + 1; e < list.length; e++) {
+              const five = [list[a], list[b], list[c], list[d], list[e]];
+              const ev = this.evaluateHand(five);
+              const preferred = five.filter(card => prefer.has(card)).length;
+              if (!best || ev.score > best.ev.score
+                || (ev.score === best.ev.score && preferred > best.preferred)) {
+                best = { five, ev, preferred };
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return best ? best.five : [...list];
+  }
+
+  /**
+   * Cartas que DEFINEN la jugada actual (sin kickers), para resaltarlas en la
+   * mesa. Carta alta -> 1, par -> 2, dobles parejas -> 4, trío -> 3,
+   * escalera/color/escalera de color -> las 5, full -> 5, póker -> 4.
+   */
+  static madeHandCards(cards, preferCards = []) {
+    const list = cards || [];
+    if (!list.length) return [];
+    const five = this.bestFiveCards(list, preferCards);
+    if (!five.length) return [];
+    const category = this.evaluateHand(list).category;
+
+    if (category === 0) {
+      return [five.reduce((top, c) => ((c >> 2) > (top >> 2) ? c : top), five[0])];
+    }
+    if (category === 4 || category === 5 || category === 8 || category === 9) {
+      return five;
+    }
+
+    const counts = new Map();
+    for (const c of five) {
+      const r = c >> 2;
+      counts.set(r, (counts.get(r) || 0) + 1);
+    }
+    const ranksWith = n => [...counts.entries()]
+      .filter(([, count]) => count === n)
+      .map(([r]) => r)
+      .sort((a, b) => b - a);
+
+    let definingRanks;
+    if (category === 1) definingRanks = ranksWith(2).slice(0, 1);
+    else if (category === 2) definingRanks = ranksWith(2);
+    else if (category === 3) definingRanks = ranksWith(3).slice(0, 1);
+    else if (category === 6) definingRanks = [...ranksWith(3).slice(0, 1), ...ranksWith(2).slice(0, 1)];
+    else if (category === 7) definingRanks = ranksWith(4).slice(0, 1);
+    else definingRanks = [];
+
+    const wanted = new Set(definingRanks);
+    return five.filter(c => wanted.has(c >> 2));
+  }
+
   static findStraightHigh(sortedUniqueRanksDesc) {
     if (sortedUniqueRanksDesc.length < 5) return -1;
     let streak = 1;

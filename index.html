@@ -470,18 +470,15 @@
                   <button onclick="game.setBetFraction(0.75)" data-fraction="0.75" class="rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-mono">3/4 Pot</button>
                   <button onclick="game.setBetFraction(1.0)" data-fraction="1" class="rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-mono">Pot</button>
                 </div>
+                <!-- Espacio propio del ojito, integrado en la fila de apuestas. -->
+                <div id="eyeball-anchor" class="eyeball-slot">
+                  <button id="btn-eyeball" onclick="eyeballHUD.toggle()" aria-label="Mostrar ayuda táctica" aria-expanded="false" class="eyeball-btn">👁️</button>
+                </div>
               </div>
 
               <!-- Métricas del ojito: se despliegan desde abajo, sin panel flotante ni scroll. -->
               <div id="game-hud-extra" class="hidden">
                 <div id="eyeball-cards" class="hud-metrics"></div>
-              </div>
-            </div>
-
-            <!-- El ojito sigue anclado abajo a la derecha dentro del mismo HUD. -->
-            <div id="game-controls-right">
-              <div id="eyeball-anchor">
-                <button id="btn-eyeball" onclick="eyeballHUD.toggle()" aria-label="Mostrar ayuda táctica" aria-expanded="false" class="eyeball-btn">👁️</button>
               </div>
             </div>
           </div>

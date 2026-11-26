@@ -1,7 +1,7 @@
 /* ============================================================================
    2. RENDERIZADO VISUAL DE CARTAS
 ============================================================================ */
-function renderCardHTML(cardInt, size = 'md', isHidden = false) {
+function renderCardHTML(cardInt, size = 'md', isHidden = false, extraClass = '') {
   const dims = {
     xs: 'w-8 h-11 text-xs',
     sm: 'w-10 h-14 text-sm',
@@ -23,9 +23,10 @@ function renderCardHTML(cardInt, size = 'md', isHidden = false) {
   if (card.suit === 'h') colorClass = 'text-rose-600';
   else if (card.suit === 'd') colorClass = fourColor ? 'text-blue-600' : 'text-rose-600';
   else if (card.suit === 'c') colorClass = fourColor ? 'text-emerald-700' : 'text-slate-900';
+  const extra = extraClass ? ` ${extraClass}` : '';
 
   return `
-    <div class="${dims} playing-card ${colorClass} flex flex-col justify-between p-1.5 font-mono font-bold leading-none">
+    <div class="${dims} playing-card ${colorClass}${extra} flex flex-col justify-between p-1.5 font-mono font-bold leading-none">
       <div class="text-left">
         <div>${card.rank}</div>
         <div class="text-[0.8em]">${SUIT_SYMBOLS[card.suit]}</div>
