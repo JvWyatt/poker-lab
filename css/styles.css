@@ -477,6 +477,9 @@
       transform-origin: center;
     }
 
+    /* El baje de los asientos inferiores laterales se aplica en JS, después
+       del clamp: un margen fijo en CSS sería cancelado al recolocarlos. */
+
     /* Fold: el asiento se apaga y lleva una etiqueta explícita. */
     .folded-badge {
       display: inline-block;

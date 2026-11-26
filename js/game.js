@@ -1470,6 +1470,10 @@ const game = {
       const bustedTag = !this.handInProgress && p.stack === 0
         ? '<span class="busted-badge">💀 OUT</span>'
         : '';
+      // Marca los dos asientos inferiores laterales: nudgeLowerSeats() los
+      // bajará un poco para dejar aire al aviso de turno/apuesta.
+      const lowerSideSeat = (this.tableSize === 6 && (p.seat === 1 || p.seat === 5))
+        || (this.tableSize === 9 && (p.seat === 1 || p.seat === 8));
       const posLabel = this.getSeatPositionLabel(p.seat);
 
       // El botón de dealer va hacia el centro del tapete; las fichas viven dentro
@@ -1496,7 +1500,7 @@ const game = {
         const showTimer = this.handInProgress && this.turnIdx === 0;
 
         seatsHTML += `
-          <div style="${seatStyle}" class="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
+          <div style="${seatStyle}" class="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto ${lowerSideSeat ? 'seat-lower-side' : ''}">
             <div class="bg-slate-950/95 border-2 ${isWinner ? 'border-amber-400 ring-4 ring-amber-500/30' : isTurn ? 'border-emerald-400 ring-4 ring-emerald-500/25' : 'border-slate-700'} ${p.folded ? 'is-folded' : ''} relative rounded-2xl px-3.5 py-2.5 shadow-2xl min-w-[200px] sm:min-w-[265px] max-w-[265px] hero-panel">
               <div class="flex items-center gap-3">
                 <div class="flex gap-1">
@@ -1541,7 +1545,7 @@ const game = {
         const showProfileTag = appState.config.showProfiles && p.profile;
 
         seatsHTML += `
-          <div style="${seatStyle}" class="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
+          <div style="${seatStyle}" class="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-auto ${lowerSideSeat ? 'seat-lower-side' : ''}">
             <div class="bg-slate-950/95 border ${isWinner ? 'border-amber-400 ring-2 ring-amber-400/60' : isTurn ? 'border-amber-400 ring-2 ring-amber-400/50' : 'border-slate-700/90'} ${p.folded ? 'is-folded' : ''} relative rounded-xl p-2 w-[114px] sm:w-[132px] text-center shadow-xl transition rival-panel">
               <div class="flex items-center justify-between text-[9px] font-mono mb-0.5">
                 <span class="px-1.5 py-0.2 rounded bg-slate-800 text-slate-200 font-bold">${posLabel}</span>
@@ -1562,7 +1566,20 @@ const game = {
     seatsLayer.innerHTML = seatsHTML;
     betsLayer.innerHTML = betsHTML;
     this.clampSeatsToWrap();
+    this.nudgeLowerSeats();
     this.refreshTableOverlays();
+  },
+
+  // Desplazamiento visual posterior al clamp: los dos asientos inferiores
+  // laterales bajan 8 px para dejar aire al aviso de turno/apuesta. Se aplica
+  // aquí porque un margen en CSS sería cancelado al recolocar los paneles.
+  nudgeLowerSeats() {
+    const layer = document.getElementById('table-seats-layer');
+    if (!layer) return;
+
+    [...layer.children]
+      .filter(child => child.classList.contains('seat-lower-side'))
+      .forEach(child => { child.style.marginTop = '8px'; });
   },
 
   // Ajusta los paneles (con fichas incluidas) para que no se salgan del tapete

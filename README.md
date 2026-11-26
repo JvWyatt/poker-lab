@@ -89,6 +89,10 @@ Tailwind se carga desde CDN, por lo que hace falta conexión a internet.
 - **Cierre de mano legible:** quien foldea queda grisáceo, tachado y con
   etiqueta `FOLD`. Al terminar la mano se muestran las cartas de los rivales
   durante unos segundos, sin realces, para entender quién ganó y con qué.
+- **Aviso de turno sin tapones:** el mensaje de turno/apuesta conserva su
+  posición (no sube hacia las comunitarias) y se dibuja por encima de los
+  asientos. Los dos perfiles inferiores laterales bajan 8 px después del clamp
+  de la mesa para dejarle espacio.
 - **GTO de frecuencias mixtas (estilo Preflop Vision):** `GTOEngine` es la
   única fuente de verdad de la matriz 13×13, el ojito y `gradeHeroMove`.
   Solo `AA-TT`, `AK`, `AQs` y la basura absoluta son puros (100 %); el resto
