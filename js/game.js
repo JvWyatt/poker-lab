@@ -1480,7 +1480,7 @@ const game = {
       // del panel de cada jugador para que se sepa de quién son y no tapes texto.
       if (isDealer) {
         betsHTML += `
-          <div style="${coords.chip}" class="absolute -translate-x-1/2 -translate-y-1/2">
+          <div style="${coords.chip}" class="dealer-button absolute -translate-x-1/2 -translate-y-1/2">
             <span class="w-5 h-5 rounded-full bg-amber-400 text-slate-950 font-extrabold text-[10px] flex items-center justify-center shadow-md border border-amber-200">D</span>
           </div>
         `;
@@ -1568,6 +1568,9 @@ const game = {
     this.clampSeatsToWrap();
     this.nudgeLowerSeats();
     this.refreshTableOverlays();
+    // Se coloca al final: updateInfo() puede cambiar el texto del aviso y su
+    // altura, y la ficha debe medir ese estado final para no taparlo.
+    this.placeDealerButton();
   },
 
   // Desplazamiento visual posterior al clamp: los dos asientos inferiores
@@ -1580,6 +1583,73 @@ const game = {
     [...layer.children]
       .filter(child => child.classList.contains('seat-lower-side'))
       .forEach(child => { child.style.marginTop = '8px'; });
+  },
+
+  // El botón D parte de la coordenada del asiento, pero ésta puede caer sobre
+  // el aviso, el board o un panel. Busca el punto libre más cercano dentro del
+  // tapete, sin alejarse demasiado del jugador al que pertenece.
+  placeDealerButton() {
+    const bets = document.getElementById('table-bets-layer');
+    const btn = bets && bets.querySelector('.dealer-button');
+    const banner = document.getElementById('game-status-banner');
+    const board = document.getElementById('game-board-cards');
+    const seats = document.getElementById('table-seats-layer');
+    if (!bets || !btn || !banner || !board || !seats) return;
+
+    const margin = 4;
+    // La capa de apuestas mide el área interior del tapete; usar .poker-felt
+    // añadiría su borde de 12 px y desplazaría la ficha fuera de sitio.
+    const areaRect = bets.getBoundingClientRect();
+    const r = btn.getBoundingClientRect();
+    const halfW = r.width / 2;
+    const halfH = r.height / 2;
+    const baseX = r.left + halfW;
+    const baseY = r.top + halfH;
+    const obstacles = [banner, board, ...[...seats.children].map(c => c.firstElementChild)]
+      .filter(Boolean)
+      .map(el => el.getBoundingClientRect());
+
+    const evaluate = (x, y) => {
+      const left = x - halfW;
+      const right = x + halfW;
+      const top = y - halfH;
+      const bottom = y + halfH;
+      if (left < areaRect.left + margin || right > areaRect.right - margin
+        || top < areaRect.top + margin || bottom > areaRect.bottom - margin) {
+        return { blocked: true, overlap: Infinity };
+      }
+      let overlap = 0;
+      obstacles.forEach(o => {
+        const ox = Math.min(right, o.right) - Math.max(left, o.left);
+        const oy = Math.min(bottom, o.bottom) - Math.max(top, o.top);
+        if (ox > -margin && oy > -margin) overlap += (ox + margin) * (oy + margin);
+      });
+      return { blocked: false, overlap };
+    };
+
+    if (evaluate(baseX, baseY).overlap === 0) return;
+
+    const offsets = [[0, 0]];
+    // Paso fino: en mesas compactas el hueco libre puede estar a sólo 4 px, y
+    // en 9-Max móvil puede hacer falta alejarse bastante del asiento.
+    for (let step = 4; step <= 120; step += 4) {
+      [[0, -step], [0, step], [-step, 0], [step, 0],
+       [-step, -step], [-step, step], [step, -step], [step, step]]
+        .forEach(([dx, dy]) => offsets.push([dx, dy]));
+    }
+
+    let best = null;
+    for (const [dx, dy] of offsets) {
+      const { blocked, overlap } = evaluate(baseX + dx, baseY + dy);
+      if (blocked) continue;
+      const score = overlap * 100 + Math.abs(dx) + Math.abs(dy);
+      if (!best || score < best.score) best = { dx, dy, score };
+      if (overlap === 0) break;
+    }
+    if (!best) return;
+
+    btn.style.left = `${baseX + best.dx - areaRect.left}px`;
+    btn.style.top = `${baseY + best.dy - areaRect.top}px`;
   },
 
   // Ajusta los paneles (con fichas incluidas) para que no se salgan del tapete

@@ -93,6 +93,9 @@ Tailwind se carga desde CDN, por lo que hace falta conexión a internet.
   posición (no sube hacia las comunitarias) y se dibuja por encima de los
   asientos. Los dos perfiles inferiores laterales bajan 8 px después del clamp
   de la mesa para dejarle espacio.
+- **Botón de dealer sin tapones:** la ficha `D` busca el punto libre más cercano
+  dentro del tapete y evita el aviso, las comunitarias y los paneles, incluso al
+  rotar de dealer o en mesas compactas.
 - **GTO de frecuencias mixtas (estilo Preflop Vision):** `GTOEngine` es la
   única fuente de verdad de la matriz 13×13, el ojito y `gradeHeroMove`.
   Solo `AA-TT`, `AK`, `AQs` y la basura absoluta son puros (100 %); el resto
