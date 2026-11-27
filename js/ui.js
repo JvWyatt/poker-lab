@@ -80,9 +80,13 @@ function updateGlobalBadges() {
    4. CONTROLADOR DE NAVEGACIÓN PRINCIPAL (APP)
 ============================================================================ */
 const app = {
-  currentTab: 'dashboard',
+  currentTab: 'partidas',
 
   navigate(tabId) {
+    if (tabId === 'configuracion') {
+      config.openModal();
+      return;
+    }
     if (tabId !== 'partidas' && typeof arena !== 'undefined' && arena.isActive) arena.exit();
     if (this.currentTab !== tabId) SoundFX.playNavigate();
     this.currentTab = tabId;
@@ -91,11 +95,29 @@ const app = {
     const target = document.getElementById(`view-${tabId}`);
     if (target) target.classList.remove('hidden');
 
+    // Desktop nav buttons
     document.querySelectorAll('.nav-btn').forEach(btn => {
-      if (btn.dataset.tab === tabId) {
-        btn.className = 'nav-btn px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 whitespace-nowrap bg-emerald-600 text-white shadow';
+      const active = btn.dataset.tab === tabId;
+      if (active) {
+        btn.className = 'nav-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 whitespace-nowrap bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-sm';
       } else {
-        btn.className = 'nav-btn px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 whitespace-nowrap text-slate-300 hover:bg-slate-800';
+        btn.className = 'nav-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition flex items-center gap-1.5 whitespace-nowrap text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 border border-transparent';
+      }
+    });
+
+    // Mobile bottom nav buttons
+    document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+      const active = btn.dataset.tab === tabId;
+      if (active) {
+        btn.classList.add('text-emerald-400');
+        btn.classList.remove('text-slate-400');
+        const indicator = btn.querySelector('.mobile-nav-indicator');
+        if (indicator) indicator.classList.remove('opacity-0');
+      } else {
+        btn.classList.remove('text-emerald-400');
+        btn.classList.add('text-slate-400');
+        const indicator = btn.querySelector('.mobile-nav-indicator');
+        if (indicator) indicator.classList.add('opacity-0');
       }
     });
 

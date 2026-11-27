@@ -2,6 +2,25 @@
    10. MÓDULO: CONFIGURACIÓN
 ============================================================================ */
 const config = {
+  openModal() {
+    SoundFX.playClick();
+    this.loadToUI();
+    const modal = document.getElementById('settings-modal');
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+  },
+
+  closeModal() {
+    SoundFX.playClick();
+    const modal = document.getElementById('settings-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+  },
+
   loadToUI() {
     document.getElementById('cfg-table-size').value = String(appState.config.tableSize);
     document.getElementById('cfg-stack-bb').value = String(appState.config.stackBB);

@@ -127,10 +127,43 @@ const game = {
     this.renderTable();
   },
 
+  toggleMobileSidebar(tab) {
+    SoundFX.playClick();
+    const coach = document.getElementById('live-coach-panel');
+    const log = document.getElementById('game-log-panel');
+    const btnCoach = document.getElementById('tab-btn-coach');
+    const btnLog = document.getElementById('tab-btn-log');
+    if (tab === 'coach') {
+      if (coach) coach.classList.remove('hidden');
+      if (log) {
+        log.classList.add('hidden');
+        log.classList.remove('flex');
+      }
+      if (btnCoach) {
+        btnCoach.className = 'flex-1 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-emerald-400 border border-slate-700 transition';
+      }
+      if (btnLog) {
+        btnLog.className = 'flex-1 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white border border-transparent transition';
+      }
+    } else {
+      if (coach) coach.classList.add('hidden');
+      if (log) {
+        log.classList.remove('hidden');
+        log.classList.add('flex');
+      }
+      if (btnCoach) {
+        btnCoach.className = 'flex-1 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white border border-transparent transition';
+      }
+      if (btnLog) {
+        btnLog.className = 'flex-1 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-emerald-400 border border-slate-700 transition';
+      }
+    }
+  },
+
   updateProfileButtonLabel() {
     const btn = document.getElementById('btn-toggle-profiles');
     if (btn) {
-      btn.textContent = appState.config.showProfiles ? 'Etiquetas IA: Visibles' : 'Etiquetas IA: Ocultas';
+      btn.textContent = appState.config.showProfiles ? 'Arquetipos: On' : 'Arquetipos: Off';
     }
   },
 
@@ -528,11 +561,11 @@ const game = {
     btnCall.disabled = false;
 
     if (toCall === 0) {
-      btnCall.textContent = 'Pasar (Check)';
+      btnCall.textContent = 'Check';
     } else if (toCall >= hero.stack) {
-      btnCall.textContent = `Pagar All-In (${hero.stack})`;
+      btnCall.textContent = `Call All-In (${hero.stack})`;
     } else {
-      btnCall.textContent = `Pagar ${toCall} (Call)`;
+      btnCall.textContent = `Call ${toCall}`;
     }
 
     const maxTotalBet = hero.bet + hero.stack;
@@ -548,8 +581,8 @@ const game = {
     }
 
     document.getElementById('game-status-banner').textContent = toCall > 0
-      ? `Tu turno — Enfrentas apuesta de ${toCall} fichas`
-      : 'Tu turno — Puedes pasar o apostar';
+      ? `Tu turno · Enfrentas apuesta de ${toCall} fichas`
+      : 'Tu turno · Puedes hacer Check o Apostar';
   },
 
   disableHumanControls() {
@@ -561,7 +594,7 @@ const game = {
   updateRaiseLabel(val) {
     document.getElementById('raise-amount-label').textContent = val;
     const btnRaise = document.getElementById('btn-raise');
-    btnRaise.textContent = this.currentBet === 0 ? `Apostar ${val} (Raise)` : `Subir a ${val} (Raise)`;
+    btnRaise.textContent = this.currentBet === 0 ? `Bet ${val}` : `Raise ${val}`;
 
     if (typeof eyeballHUD !== 'undefined' && typeof eyeballHUD.onBetValueChanged === 'function') {
       eyeballHUD.onBetValueChanged(val);

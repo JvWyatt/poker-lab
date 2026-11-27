@@ -19,5 +19,5 @@ window.addEventListener('DOMContentLoaded', () => {
   academia.render();
   lab.init();
   gtoView.render();
-  app.navigate('dashboard');
+  app.navigate('partidas');
 });

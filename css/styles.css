@@ -517,30 +517,58 @@
     }
     .hero-panel.is-folded { filter: grayscale(0.55); }
 
-    /* Responsive: fichas más pequeñas para no invadir texto en móvil */
+    /* Responsive: fichas y mesa compactas para no invadir texto en móvil */
     @media (max-width: 640px) {
-      .chip-stacks { --chip-u: 18px; --chip-v: 20px; --chip-step: 4.5px; gap: 1px; }
+      #arena-table-wrap {
+        height: 410px !important;
+        padding: 4px !important;
+      }
+      .poker-felt {
+        width: 96% !important;
+        height: 86% !important;
+        border-radius: 65px !important;
+        border-width: 6px !important;
+      }
+      #table-seats-layer { --seat-scale: 0.64; }
+      .chip-stacks { --chip-u: 16px; --chip-v: 18px; --chip-step: 4px; gap: 1px; }
       .chip-amount { font-size: 7px; }
-      .chip-card, .chip-card--allin { width: 31px; height: 25px; }
+      .chip-card, .chip-card--allin { width: 28px; height: 23px; }
       .chip-card { padding: 1px 1px; }
       .chip-card--allin { padding-bottom: 2px; }
-      .chip-card-value { font-size: 8px; }
+      .chip-card-value { font-size: 7.5px; }
       .chip-card-unit { font-size: 5px; }
-      /* Compact panels keep chips clear of text on narrow screens.
-         Counter-scale cards so all-in and big-pot cards render legible at 31×25. */
-      #table-seats-layer .hero-panel { width: 152px; min-width: 152px; }
+      /* Compact panels keep chips clear of text on narrow screens */
+      #table-seats-layer .hero-panel { width: 148px; min-width: 148px; }
       #table-seats-layer .chip-card,
       #table-seats-layer .chip-card--allin {
-        width: calc(31px / var(--seat-scale));
-        height: calc(25px / var(--seat-scale));
+        width: calc(28px / var(--seat-scale));
+        height: calc(23px / var(--seat-scale));
       }
       .profile-tag, .last-action { display: none; }
+    }
+
+    /* Mobile Bottom Navigation & Modal transitions */
+    .mobile-nav-btn {
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .mobile-nav-btn:active {
+      transform: scale(0.93);
+    }
+    #settings-modal .animate-fade-in {
+      animation: modalFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.96) translateY(8px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
     }
 
     @media (prefers-reduced-motion: reduce) {
       .grade-pop,
       .grade-pop.is-leaving,
-      .hud-card { animation: none; }
+      .hud-card,
+      #settings-modal .animate-fade-in { animation: none; }
     }
 
     /* ======================================================================

@@ -9,11 +9,11 @@ const SUIT_SYMBOL = { s: '♠', h: '♥', d: '♦', c: '♣' };
 const RED_SUITS = new Set(['h', 'd']);
 
 const MODULES = [
-  { id: 0, name: 'Fundamentos', subtitle: 'Las Manos, Board y Showdown', tone: 'sky' },
-  { id: 1, name: 'Mesa', subtitle: 'Acciones, posiciones y ciegas', tone: 'emerald' },
-  { id: 2, name: 'Números', subtitle: 'Probabilidades y equity', tone: 'amber' },
-  { id: 3, name: 'Táctica', subtitle: 'Posición, boards y tamaños', tone: 'orange' },
-  { id: 4, name: 'Estrategia', subtitle: 'Faroles, GTO y cierre avanzado', tone: 'purple' }
+  { id: 0, name: 'Nivel 1 · Fundamentos & Showdown', subtitle: 'Jerarquía oficial, dinámica del board y regla de 5 de 7', tone: 'sky' },
+  { id: 1, name: 'Nivel 2 · Posición & Dinámica Preflop', subtitle: 'Posiciones de UTG a BB, ciegas y líneas de acción', tone: 'emerald' },
+  { id: 2, name: 'Nivel 3 · Matemáticas del Bote', subtitle: 'Pot Odds, Outs y la Regla del 4 y del 2', tone: 'amber' },
+  { id: 3, name: 'Nivel 4 · Juego Postflop & Textura', subtitle: 'Juego IP vs OOP, C-Bet en boards secos/mojados y SPR', tone: 'orange' },
+  { id: 4, name: 'Nivel 5 · Estrategia GTO & Explotación Pro', subtitle: 'Semi-faroles con bloqueadores, equilibrio GTO y polarización', tone: 'purple' }
 ];
 
 const E = (title, table, lines, revealCount, showdown = null, extra = {}) => ({ kind: 'exhibit', title, table, lines, revealCount, showdown, ...extra });
@@ -73,20 +73,19 @@ const HANDS = [
 ];
 
 /* ---------------------------------------------------------------------------
-   CURRÍCULUM: 12 clases, 5 niveles. Clase 1 = 10 jugadas oficiales de menor
-   a mayor; clase 2 = Hole Cards y Board; clase 3 = Showdown; después casos
-   fijos de acciones, pot odds, outs, equity y GTO.
+   CURRÍCULUM: 12 clases, 5 niveles formativos. Jerga profesional de póker.
 --------------------------------------------------------------------------- */
 const LESSONS_DATA = [
   {
     id: 'ranking', number: 1, module: 0, format: 'hand',
-    title: 'Las Manos', subtitle: 'Las 10 jugadas oficiales, una por pantalla, de menor a mayor fuerza',
+    title: '01 · Jerarquía Oficial de Manos',
+    subtitle: 'Hand Rankings: Las 10 jugadas oficiales de menor a mayor fuerza',
     steps: HANDS
   },
   {
     id: 'fundamentos', number: 2, module: 0, format: 'exhibit',
-    title: 'Cómo se juega una mano',
-    subtitle: 'Hole Cards, Board (Flop / Turn / River) y mejor jugada de 5 entre 7',
+    title: '02 · Fases de la Mano & Dinámica del Board',
+    subtitle: 'Hole Cards, Rondas Preflop/Flop/Turn/River y Regla de 5 de 7 cartas',
     steps: [
       E('Hole Cards: 2 cartas privadas',
         { street: 'PREFLOP', board: [], pot: 3, hero: ['As', '7d'], villain: null, villainHidden: true, heroPos: 'BTN', villainPos: 'BB', villainAction: 'Small Blind 1 / Big Blind 2', note: 'Sólo tú ves A♠ 7♦' },
@@ -127,8 +126,8 @@ const LESSONS_DATA = [
   },
   {
     id: 'duelos', number: 3, module: 0, format: 'duel',
-    title: 'Showdown: lectura de mesa y comparación',
-    subtitle: 'Hero vs Villain · mejor jugada de 5 entre 7 con el mismo Board',
+    title: '03 · Lectura de Showdown & Kickers',
+    subtitle: 'Hero vs Villain · Mejor combinación de 5 entre 7 y resolución de desempates',
     steps: [
       D('Par de Ases contra par de Reyes', ['Qc', 'Jd', '7s', '2c', '9h'],
         [{ label: 'HERO · BTN', cards: ['As', 'Ad'] }, { label: 'VILLAIN · BB', cards: ['Ks', 'Kd'] }], 'A',
@@ -149,7 +148,8 @@ const LESSONS_DATA = [
   },
   {
     id: 'acciones', number: 4, module: 1, format: 'case',
-    title: 'Acciones y posiciones', subtitle: 'Fold, Check, Call, Bet, Raise, All-in · UTG, MP, CO, BTN, SB, BB',
+    title: '04 · Posiciones en Mesa & Líneas de Acción',
+    subtitle: 'De UTG a BB: Cuándo Foldear, Pasar, Pagar, Apostar, Subir o ir All-in',
     steps: [
       K('Fold: par mínimo ante una apuesta grande', flopTable({ board: ['Ks', 'Qd', '7c'], pot: 100, bet: 80, hero: ['3s', '3c'], villain: ['Ah', 'Kd'], heroPos: 'UTG', villainPos: 'BB', villainAction: 'Bet 80', note: 'UTG · Par de 3s · 2 outs · precio 31%' }), [
         O('fold', 'Fold (retirarse)', true, 'Correcto. Desde UTG pagas 80 para un bote final de 260 (31%). Un par de 3s con 2 outs no alcanza ese equity: fold es la acción correcta.'),
@@ -180,7 +180,8 @@ const LESSONS_DATA = [
   },
   {
     id: 'pot_odds', number: 5, module: 2, format: 'case',
-    title: 'Pot odds y precio de decisión', subtitle: 'Cuándo pagar según el bote',
+    title: '05 · Pot Odds & Precio de Entrada',
+    subtitle: 'Rentabilidad matemática y cálculo de ratio de bote para pagar un Call',
     steps: [
       K('Bote 100, apuesta 50 y 9 outs de color', flopTable({ board: ['9h', '8h', '2c'], pot: 100, bet: 50, hero: ['Ah', '5h'], villain: ['Kd', 'Qd'], villainProfile: 'TAG', villainAction: 'Apuesta 50', outCards: HEART_OUTS, note: '9 outs · necesitas 25%, tienes ~35%' }), [
         O('call', 'Pagar 50', true, 'Correcto. 50 / (100 + 50 + 50) = 25%. Tu color liga ~35%, así que el call gana fichas a largo plazo.'),
@@ -211,7 +212,8 @@ const LESSONS_DATA = [
   },
   {
     id: 'outs', number: 6, module: 2, format: 'case',
-    title: 'Outs y equity estimada', subtitle: 'Reglas del 4 y del 2',
+    title: '06 · Outs & Equity: Regla del 4 y del 2',
+    subtitle: 'Conteo de cartas de mejora y cálculo mental de equity en Flop y Turn',
     steps: [
       K('Color en flop, apuesta pequeña', flopTable({ board: ['9h', '8h', '2c'], pot: 100, bet: 25, hero: ['Ah', '5h'], villain: ['Kd', 'Qd'], villainAction: 'Apuesta 25', outCards: HEART_OUTS, note: '9 outs × 4 ≈ 36% · necesitas 16,7%' }), [
         O('call', 'Pasar / Pagar', true, 'Correcto. En flop, 9 outs × 4 ≈ 36%. Pagas 25 para 150 (16,7%): hay mucha margen.'),
@@ -242,7 +244,8 @@ const LESSONS_DATA = [
   },
   {
     id: 'posicion', number: 7, module: 3, format: 'case',
-    title: 'Ventaja posicional', subtitle: 'Jugar dentro y fuera de posición',
+    title: '07 · Ventaja Posicional: IP vs OOP',
+    subtitle: 'Control del bote In Position y defensa Out of Position',
     steps: [
       K('BTN con top pair, rival pasa', flopTable({ board: ['Ks', '7d', '2c'], pot: 80, bet: 0, hero: ['Kd', 'Qd'], villain: ['9h', '8h'], heroPos: 'BTN', villainPos: 'BB', villainAction: 'Pasa (Check)', note: 'IP · par de Reyes · bote 80' }), [
         O('bet', 'Apostar / Subir', true, 'Correcto. En posición puedes apostar por valor y, si el rival sube, ver su acción antes de decidir. El BTN controla la ronda.'),
@@ -273,7 +276,8 @@ const LESSONS_DATA = [
   },
   {
     id: 'cbet', number: 8, module: 3, format: 'case',
-    title: 'Apuesta de continuación', subtitle: 'Cuándo seguir apostando tras el flop',
+    title: '08 · Continuation Bet (C-Bet) & Textura del Board',
+    subtitle: 'Apuesta de continuación: boards secos, boards coordinados y ventaja de rango',
     steps: [
       K('Board seco y alto: A-7-2', flopTable({ board: ['As', '7d', '2c'], pot: 100, bet: 0, hero: ['Ah', 'Kd'], villain: ['9h', '8h'], villainAction: 'Pasa (Check)', note: 'Fuiste el agresor preflop · top pair' }), [
         O('bet', 'Apostar / Subir pequeño', true, 'Correcto. En A-7-2 sin draws claros, tu rango de preflop tiene mucha ventaja. Una C-Bet pequeña cobra valor y gana al instante.'),
@@ -304,7 +308,8 @@ const LESSONS_DATA = [
   },
   {
     id: 'spr', number: 9, module: 3, format: 'case',
-    title: 'SPR y compromiso de pila', subtitle: 'Cuánto vale una mano según la pila',
+    title: '09 · SPR (Stack-to-Pot Ratio) & Compromiso de Caja',
+    subtitle: 'Relación entre stack efectivo y bote: rangos de compromiso con la pila',
     steps: [
       K('SPR 0,5: ya estás comprometido', riverTable({ board: ['Ks', '7d', '2c', '4h', '9s'], pot: 200, bet: 40, hero: ['Kh', 'Qd'], villain: ['Qh', 'Jd'], villainAction: 'Apuesta 40', note: 'SPR 0,5 · top pair · pagas 40 para 280' }), [
         O('call', 'Pasar / Pagar', true, 'Correcto. Con SPR 0,5 tu pila es corta respecto al bote: 40 / 280 ≈ 14%. Tu top pair gana muy a menudo y foldear sería terrible.'),
@@ -335,7 +340,8 @@ const LESSONS_DATA = [
   },
   {
     id: 'semibluff', number: 10, module: 4, format: 'case',
-    title: 'Semi-bluff con bloqueadores', subtitle: 'Equity real, Fold equity y bloqueos',
+    title: '10 · Semi-Faroles & Bloqueadores (Card Removal)',
+    subtitle: 'Equity mixta, Fold Equity y selección de faroles con bloqueadores',
     steps: [
       K('Color projectado: dos formas de ganar', flopTable({ board: ['9h', '8h', '2c'], pot: 100, bet: 0, hero: ['Ah', '5h'], villain: ['7s', '6s'], villainAction: 'Pasa (Check)', outCards: HEART_OUTS, note: '9 outs + fold equity · bote 100' }), [
         O('bet', 'Apostar / Subir', true, 'Correcto. Es un Semi-bluff: puedes ganar ahora si el rival hace Fold, o completar tu color en el Turn. Con 9 outs tienes equity real aunque te paguen.'),
@@ -366,7 +372,8 @@ const LESSONS_DATA = [
   },
   {
     id: 'gto', number: 11, module: 4, format: 'case',
-    title: 'Equilibrio GTO y explotación', subtitle: 'Frecuencias, rangos y perfiles',
+    title: '11 · Estrategia GTO vs Ajustes Explotativos',
+    subtitle: 'Equilibrio de frecuencias mixtas y explotación de arquetipos (Nits, Stations, Maníacos)',
     steps: [
       K('Frecuencia mixta aproximada en BTN', flopTable({ board: ['Ks', '7d', '2c'], pot: 100, bet: 30, hero: ['Ah', 'Jh'], villain: ['Qd', '9d'], heroPos: 'BTN', villainPos: 'BB', villainProfile: 'TAG', villainAction: 'Apuesta 30', note: 'Aproximación GTO · sobrecartas + cola de color' }), [
         O('call', 'Pasar / Pagar', true, 'Correcto según nuestra aproximación GTO determinista: con dos sobrecartas y cola de color, pagar entra en la frecuencia mixta. 30 para 160 es 18,75%.'),
@@ -397,8 +404,8 @@ const LESSONS_DATA = [
   },
   {
     id: 'cierre', number: 12, module: 4, format: 'case',
-    title: 'Value Bet, Bluff y equilibrio GTO',
-    subtitle: 'Cierre avanzado: equity, apuestas por valor, faroles y rangos equilibrados',
+    title: '12 · Masterclass: Value Betting Fino, Bluffing & Polarización',
+    subtitle: 'Cierre avanzado: polarización de rangos, tamaño por valor y bluffing en el River',
     steps: [
       K('Value Bet fina en el River', riverTable({ board: ['Ks', '7d', '2c', '4h', '9s'], pot: 100, bet: 0, hero: ['Kh', '9d'], villain: ['Qd', 'Qc'], villainProfile: 'Calling Station', villainAction: 'Check', note: 'Doble par K-9 · Station paga con pares menores' }), [
         O('bet', 'Bet (apostar por valor)', true, 'Correcto. Es un Value Bet: tu doble par gana de Reinas y de otros pares menores. Apuesta un tamaño que esas manos puedan pagar.'),
@@ -426,7 +433,7 @@ const LESSONS_DATA = [
         O('allin', 'All-in (toda la pila)', false, 'Mover toda la pila con un color sin completar y pocas cartas muertas no aporta fold equity suficiente.')
       ])
     ]
-  },
+  }
 ];
 
 /* ---------------------------------------------------------------------------

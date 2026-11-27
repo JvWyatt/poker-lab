@@ -16,52 +16,50 @@
 
   <!-- TOP HEADER & NAVIGATION -->
   <header class="sticky top-0 z-40 bg-slate-925/95 backdrop-blur-md border-b border-slate-800/80">
-    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-3 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 flex items-center justify-between gap-3">
       <!-- Brand -->
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3 cursor-pointer" onclick="app.navigate('dashboard')">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center shadow-lg shadow-emerald-950/50 border border-emerald-400/30">
-            <span class="text-xl font-extrabold text-white tracking-tighter">♠</span>
-          </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <h1 class="text-lg sm:text-xl font-extrabold tracking-tight uppercase text-white">Poker Lab</h1>
-              <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold">v1.0 PRO</span>
-            </div>
-            <p class="text-[11px] font-mono tracking-widest text-slate-400 uppercase">Texas Hold'em Training Environment</p>
-          </div>
+      <div class="flex items-center gap-3 cursor-pointer" onclick="app.navigate('partidas')">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center shadow-lg shadow-emerald-950/50 border border-emerald-400/30">
+          <span class="text-lg font-extrabold text-white tracking-tighter">♠</span>
         </div>
-
-        <!-- Quick Stats Pill on Mobile/Tablet -->
-        <div class="flex items-center gap-2 lg:hidden">
-          <span id="mobile-ev-badge" class="text-xs font-mono px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-emerald-400">EV: +0.0 BB</span>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-extrabold tracking-tight uppercase text-white">Poker Lab</h1>
+            <span class="text-[9px] font-mono uppercase px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold">PRO</span>
+          </div>
+          <p class="text-[10px] font-mono tracking-wider text-slate-400 uppercase hidden sm:block">Texas Hold'em Training & Solver</p>
         </div>
       </div>
 
-      <!-- Navigation Bar -->
-      <nav id="main-nav" class="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 no-scrollbar">
-        <button data-tab="dashboard" onclick="app.navigate('dashboard')" class="nav-btn px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 whitespace-nowrap">
-          <span>Inicio</span>
+      <!-- Desktop Navigation Bar (5 Core Pillars) -->
+      <nav id="main-nav" class="hidden md:flex items-center gap-1 bg-slate-950/80 p-1 rounded-2xl border border-slate-800/80">
+        <button data-tab="partidas" onclick="app.navigate('partidas')" class="nav-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 whitespace-nowrap bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-sm">
+          <span>♠ Mesa</span>
         </button>
-        <button data-tab="academia" onclick="app.navigate('academia')" class="nav-btn px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 whitespace-nowrap">
-          <span>Academia</span>
+        <button data-tab="academia" onclick="app.navigate('academia')" class="nav-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition flex items-center gap-1.5 whitespace-nowrap text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 border border-transparent">
+          <span>🎓 Academia</span>
         </button>
-        <button data-tab="laboratorio" onclick="app.navigate('laboratorio')" class="nav-btn px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 whitespace-nowrap">
-          <span>Laboratorio</span>
+        <button data-tab="gto" onclick="app.navigate('gto')" class="nav-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition flex items-center gap-1.5 whitespace-nowrap text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 border border-transparent">
+          <span>📊 Rangos GTO</span>
         </button>
-        <button data-tab="partidas" onclick="app.navigate('partidas')" class="nav-btn px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 whitespace-nowrap">
-          <span>Partidas</span>
+        <button data-tab="laboratorio" onclick="app.navigate('laboratorio')" class="nav-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition flex items-center gap-1.5 whitespace-nowrap text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 border border-transparent">
+          <span>🧪 Lab EV</span>
         </button>
-        <button data-tab="gto" onclick="app.navigate('gto')" class="nav-btn px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 whitespace-nowrap">
-          <span>GTO</span>
-        </button>
-        <button data-tab="estadisticas" onclick="app.navigate('estadisticas')" class="nav-btn px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 whitespace-nowrap">
-          <span>Estadísticas</span>
-        </button>
-        <button data-tab="configuracion" onclick="app.navigate('configuracion')" class="nav-btn px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center gap-1.5 whitespace-nowrap">
-          <span>Configuración</span>
+        <button data-tab="estadisticas" onclick="app.navigate('estadisticas')" class="nav-btn px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition flex items-center gap-1.5 whitespace-nowrap text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 border border-transparent">
+          <span>📈 Tracker</span>
         </button>
       </nav>
+
+      <!-- Quick Actions (Mobile & Desktop) -->
+      <div class="flex items-center gap-2">
+        <span id="mobile-ev-badge" class="text-xs font-mono px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-emerald-400 font-bold">EV: +0.0 BB</span>
+        <button id="header-sound-btn" onclick="SoundFX.toggle()" title="Activar/Silenciar sonido" aria-label="Sonido" class="w-8 h-8 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 flex items-center justify-center text-xs transition text-emerald-400">
+          🔊
+        </button>
+        <button id="header-settings-btn" onclick="config.openModal()" title="Configuración del entorno" aria-label="Configuración" class="w-8 h-8 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 flex items-center justify-center text-xs transition text-slate-300 hover:text-white">
+          ⚙️
+        </button>
+      </div>
     </div>
   </header>
 
@@ -69,7 +67,7 @@
   <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
   <!-- MAIN WORKSPACE -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-5">
+  <main class="flex-1 max-w-7xl w-full mx-auto px-2 sm:px-6 py-3 sm:py-5 pb-24 md:pb-6">
 
     <!-- ===================================================================
          VIEW 0: DASHBOARD / MENÚ PRINCIPAL CONCEPTUAL
@@ -84,10 +82,10 @@
           </p>
           <div class="flex flex-wrap gap-3">
             <button onclick="app.navigate('partidas')" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm shadow-lg shadow-emerald-950/60 transition">
-              Jugar Mesa de Entrenamiento
+              Entrar a la Mesa
             </button>
             <button onclick="app.navigate('laboratorio')" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 font-semibold text-sm border border-slate-700 transition">
-              Abrir Simulador Monte Carlo
+              Abrir Lab Monte Carlo
             </button>
           </div>
         </div>
@@ -101,7 +99,7 @@
             <span id="dash-academia-badge" class="text-xs font-mono text-slate-400">0/12 Desafíos</span>
           </div>
           <h3 class="text-lg font-bold text-white group-hover:text-emerald-400 transition">Academia</h3>
-          <p class="text-xs text-slate-400 mt-1">Ruta estructurada: jerarquía de manos, decisiones con números y estrategia aplicada en cada paso.</p>
+          <p class="text-xs text-slate-400 mt-1">12 clases maestras: jerarquía, showdown, pot odds, outs, SPR y teoría GTO aplicada.</p>
         </div>
 
         <div onclick="app.navigate('laboratorio')" class="group cursor-pointer bg-slate-900/90 hover:bg-slate-850 border border-slate-800 hover:border-emerald-500/50 rounded-2xl p-5 transition shadow-lg">
@@ -109,17 +107,17 @@
             <span class="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold text-lg">🧪</span>
             <span class="text-xs font-mono text-emerald-400">Monte Carlo 5K</span>
           </div>
-          <h3 class="text-lg font-bold text-white group-hover:text-emerald-400 transition">Laboratorio</h3>
-          <p class="text-xs text-slate-400 mt-1">Calcula Equity exacta, Outs reales, Pot Odds, SPR y Valor Esperado (EV) en cualquier escenario personalizado.</p>
+          <h3 class="text-lg font-bold text-white group-hover:text-emerald-400 transition">Lab EV</h3>
+          <p class="text-xs text-slate-400 mt-1">Calcula Equity exacta, Outs reales, Pot Odds, SPR y Valor Esperado (EV) en cualquier escenario.</p>
         </div>
 
         <div onclick="app.navigate('partidas')" class="group cursor-pointer bg-slate-900/90 hover:bg-slate-850 border border-slate-800 hover:border-emerald-500/50 rounded-2xl p-5 transition shadow-lg">
           <div class="flex items-center justify-between mb-3">
-            <span class="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold text-lg">🃏</span>
+            <span class="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold text-lg">♠</span>
             <span id="dash-table-badge" class="text-xs font-mono text-amber-400">6-Max Activo</span>
           </div>
-          <h3 class="text-lg font-bold text-white group-hover:text-emerald-400 transition">Partidas</h3>
-          <p class="text-xs text-slate-400 mt-1">Mesas de 2, 6 y 9 jugadores contra bots GTO, Nit, LAG, Calling Station y Aleatorio con Coach EV en vivo.</p>
+          <h3 class="text-lg font-bold text-white group-hover:text-emerald-400 transition">Mesa de Juego</h3>
+          <p class="text-xs text-slate-400 mt-1">Mesas de 2, 6 y 9 jugadores contra bots GTO, Nit, LAG, Calling Station con Coach EV en vivo.</p>
         </div>
 
         <div onclick="app.navigate('gto')" class="group cursor-pointer bg-slate-900/90 hover:bg-slate-850 border border-slate-800 hover:border-emerald-500/50 rounded-2xl p-5 transition shadow-lg">
@@ -127,8 +125,8 @@
             <span class="w-10 h-10 rounded-xl bg-purple-500/15 text-purple-400 border border-purple-500/30 flex items-center justify-center font-bold text-lg">📊</span>
             <span class="text-xs font-mono text-purple-400">Matriz 13x13</span>
           </div>
-          <h3 class="text-lg font-bold text-white group-hover:text-emerald-400 transition">GTO</h3>
-          <p class="text-xs text-slate-400 mt-1">Rangos posicionales de referencia (UTG a BB), frecuencias mixtas de Raise/Call/3-Bet y análisis por combo.</p>
+          <h3 class="text-lg font-bold text-white group-hover:text-emerald-400 transition">Rangos GTO</h3>
+          <p class="text-xs text-slate-400 mt-1">Rangos posicionales de referencia (UTG a BB), frecuencias mixtas de Raise/Call/3-Bet y análisis de combos.</p>
         </div>
 
         <div onclick="app.navigate('estadisticas')" class="group cursor-pointer bg-slate-900/90 hover:bg-slate-850 border border-slate-800 hover:border-emerald-500/50 rounded-2xl p-5 transition shadow-lg">
@@ -136,17 +134,17 @@
             <span class="w-10 h-10 rounded-xl bg-rose-500/15 text-rose-400 border border-rose-500/30 flex items-center justify-center font-bold text-lg">📈</span>
             <span id="dash-accuracy-badge" class="text-xs font-mono text-slate-400">Precisión: --%</span>
           </div>
-          <h3 class="text-lg font-bold text-white group-hover:text-emerald-400 transition">Estadísticas</h3>
-          <p class="text-xs text-slate-400 mt-1">Métricas de rendimiento persistentes, aciertos, errores -EV, EV acumulado y registro de manos jugadas.</p>
+          <h3 class="text-lg font-bold text-white group-hover:text-emerald-400 transition">Tracker & Fugas</h3>
+          <p class="text-xs text-slate-400 mt-1">Métricas de rendimiento persistentes, aciertos, fugas -EV, balance de bankroll y registro de manos.</p>
         </div>
 
-        <div onclick="app.navigate('configuracion')" class="group cursor-pointer bg-slate-900/90 hover:bg-slate-850 border border-slate-800 hover:border-emerald-500/50 rounded-2xl p-5 transition shadow-lg">
+        <div onclick="config.openModal()" class="group cursor-pointer bg-slate-900/90 hover:bg-slate-850 border border-slate-800 hover:border-emerald-500/50 rounded-2xl p-5 transition shadow-lg">
           <div class="flex items-center justify-between mb-3">
             <span class="w-10 h-10 rounded-xl bg-slate-700/40 text-slate-300 border border-slate-600/40 flex items-center justify-center font-bold text-lg">⚙️</span>
-            <span class="text-xs font-mono text-slate-400">LocalStorage</span>
+            <span class="text-xs font-mono text-slate-400">Preferencias</span>
           </div>
-          <h3 class="text-lg font-bold text-white group-hover:text-emerald-400 transition">Configuración</h3>
-          <p class="text-xs text-slate-400 mt-1">Ajusta número de jugadores (2, 6, 9), ciegas, stack inicial en BB, baraja de 4 colores y respaldo de datos.</p>
+          <h3 class="text-lg font-bold text-white group-hover:text-emerald-400 transition">Ajustes de Mesa</h3>
+          <p class="text-xs text-slate-400 mt-1">Configura formato (2J, 6J, 9J), ciegas, stack inicial en BB, baraja de 4 colores y sonidos.</p>
         </div>
       </div>
     </section>
@@ -157,8 +155,8 @@
     <section id="view-academia" class="view-section hidden">
       <div id="academia-map-header" class="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/85 backdrop-blur border border-slate-800 rounded-2xl p-5">
         <div>
-          <h2 class="text-xl font-bold text-white">Academia · ruta de entrenamiento</h2>
-          <p class="text-xs sm:text-sm text-slate-400">12 clases en 5 niveles: de Las Manos (10 jugadas oficiales) a Showdown, Pot Odds y GTO. Avanza pantalla por pantalla, con scroll corto cuando lo necesites.</p>
+          <h2 class="text-xl font-bold text-white">Academia · Escuela de Póker & Estrategia</h2>
+          <p class="text-xs sm:text-sm text-slate-400">12 clases maestras en 5 niveles: Jerarquía oficial, Showdown & Kickers, Pot Odds, Outs, SPR y Teoría GTO.</p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
           <button id="acad-resume" onclick="academia.resume()" class="hidden rounded-xl bg-emerald-600 hover:bg-emerald-500 px-4 py-2.5 text-xs font-bold text-white transition">Continuar →</button>
@@ -176,8 +174,8 @@
     <section id="view-laboratorio" class="view-section hidden space-y-6">
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 class="text-xl font-bold text-white">Laboratorio de Probabilidades y EV</h2>
-          <p class="text-xs sm:text-sm text-slate-400">Selecciona cartas o carga un escenario rápido para ejecutar simulaciones Monte Carlo reales.</p>
+          <h2 class="text-xl font-bold text-white">Lab EV & Simulador Monte Carlo</h2>
+          <p class="text-xs sm:text-sm text-slate-400">Selecciona cartas o carga un escenario predefinido para simular 5.000 iteraciones y calcular Equity, Outs y Pot Odds exactas.</p>
         </div>
         <div class="flex flex-wrap gap-2">
           <button onclick="lab.loadPreset('flushDraw')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700">Preset: Proyecto Color + Overcards</button>
@@ -346,42 +344,39 @@
     </section>
 
     <!-- ===================================================================
-         VIEW 3: PARTIDAS (MESA DE TEXAS HOLD'EM 2, 6 Y 9 JUGADORES)
+         VIEW 3: MESA DE ENTRENAMIENTO (HEADS-UP, 6-MAX, FULL RING)
     =================================================================== -->
-    <section id="view-partidas" class="view-section hidden space-y-4">
+    <section id="view-partidas" class="view-section hidden space-y-3 sm:space-y-4">
       <!-- Top Control Strip -->
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 flex flex-wrap items-center justify-between gap-3">
-        <div class="flex flex-wrap items-center gap-2">
-          <span class="text-xs font-bold uppercase tracking-wider text-slate-400 mr-1">Formato:</span>
-          <button onclick="game.changeTableSize(2)" data-size="2" class="table-size-btn px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300">Heads-Up (2J)</button>
-          <button onclick="game.changeTableSize(6)" data-size="6" class="table-size-btn px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-600 text-white">6-Max (6J)</button>
-          <button onclick="game.changeTableSize(9)" data-size="9" class="table-size-btn px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300">Full Ring (9J)</button>
+      <div class="bg-slate-900/90 backdrop-blur-sm border border-slate-800 rounded-2xl p-2.5 sm:p-3.5 flex flex-wrap items-center justify-between gap-2.5">
+        <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          <span class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-400 mr-0.5">Mesa:</span>
+          <button onclick="game.changeTableSize(2)" data-size="2" class="table-size-btn px-2.5 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300">HU (2J)</button>
+          <button onclick="game.changeTableSize(6)" data-size="6" class="table-size-btn px-2.5 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-600 text-white">6-Max (6J)</button>
+          <button onclick="game.changeTableSize(9)" data-size="9" class="table-size-btn px-2.5 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300">Full Ring (9J)</button>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2">
-          <button id="btn-arena" onclick="arena.toggle()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-cyan-300 border border-cyan-700/50 transition">
+        <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          <button id="btn-arena" onclick="arena.toggle()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-cyan-300 border border-cyan-700/50 transition">
             ⛶ Pantalla Completa
           </button>
-          <button id="btn-toggle-sound" onclick="SoundFX.toggle()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-emerald-400 border border-slate-700 transition">
-            🔊 Sonido: ON
+          <button id="btn-toggle-profiles" onclick="game.toggleProfileVisibility()" class="hidden sm:inline-block px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 border border-slate-700 transition">
+            Arquetipos IA
           </button>
-          <button id="btn-toggle-profiles" onclick="game.toggleProfileVisibility()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 border border-slate-700 transition">
-            Etiquetas IA: Visibles
-          </button>
-          <button onclick="game.rotateOpponents(true)" class="px-3 py-1.5 rounded-lg bg-purple-950/70 hover:bg-purple-900/80 text-xs font-semibold text-purple-300 border border-purple-700/50 transition">
+          <button onclick="game.rotateOpponents(true)" class="px-2.5 py-1.5 rounded-lg bg-purple-950/70 hover:bg-purple-900/80 text-xs font-semibold text-purple-300 border border-purple-700/50 transition">
             Rotar Rivales
           </button>
-          <span id="game-blinds-info" class="text-xs font-mono text-slate-300 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800">Ciegas: 1 / 2</span>
-          <button onclick="game.startNewHand(true)" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white shadow transition">
-            Nueva Mano
+          <span id="game-blinds-info" class="text-xs font-mono text-slate-300 bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800 font-bold">Ciegas: 1 / 2</span>
+          <button onclick="game.startNewHand(true)" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white shadow-md shadow-emerald-950/50 transition flex items-center gap-1">
+            <span>🃏 Repartir</span>
           </button>
         </div>
       </div>
 
       <!-- Main Table + Live Coach Layout -->
-      <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-3 sm:gap-4">
         <!-- Poker Table Container (Fullscreen Arena target) -->
-        <div id="game-arena" class="xl:col-span-8 flex flex-col gap-3">
+        <div id="game-arena" class="xl:col-span-8 flex flex-col gap-2.5 sm:gap-3">
           <!-- Minimal Arena Top Bar (only visible in fullscreen) -->
           <div id="arena-topbar" class="arena-topbar hidden items-center justify-between gap-3 rounded-xl border border-slate-700/60 bg-slate-950/80 backdrop-blur-md px-3.5 py-2">
             <div class="flex items-center gap-2">
@@ -395,34 +390,34 @@
           </div>
 
           <!-- Oval Table Wrapper with Geometric Coordinates -->
-          <div id="arena-table-wrap" class="arena-table-wrap relative w-full h-[600px] sm:h-[640px] flex items-center justify-center p-2 sm:p-4 select-none">
+          <div id="arena-table-wrap" class="arena-table-wrap relative w-full h-[410px] sm:h-[530px] lg:h-[620px] flex items-center justify-center p-1 sm:p-4 select-none">
             <!-- Felt Surface -->
-            <div class="poker-felt relative w-[92%] h-[82%] rounded-[110px] sm:rounded-[160px] flex flex-col items-center justify-center">
+            <div class="poker-felt relative w-[95%] sm:w-[92%] h-[85%] sm:h-[82%] rounded-[90px] sm:rounded-[160px] flex flex-col items-center justify-center">
               <!-- Subtle Inner Ring -->
-              <div class="absolute inset-4 sm:inset-6 rounded-[95px] sm:rounded-[140px] border border-emerald-400/15 pointer-events-none"></div>
+              <div class="absolute inset-3 sm:inset-6 rounded-[75px] sm:rounded-[140px] border border-emerald-400/15 pointer-events-none"></div>
 
               <!-- Center Pot & Street -->
               <div class="z-30 flex w-full flex-col items-center justify-center px-3 pointer-events-none">
-                <div class="bg-slate-950/90 backdrop-blur-sm border border-emerald-500/30 px-4 py-1 rounded-full mb-1.5 shadow-xl flex items-center gap-2.5">
-                  <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Bote</span>
-                  <span id="game-pot-display" class="text-base sm:text-lg font-extrabold font-mono text-amber-400">0</span>
-                  <span id="game-street-badge" class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">PREFLOP</span>
+                <div class="bg-slate-950/90 backdrop-blur-sm border border-emerald-500/30 px-3.5 sm:px-4 py-1 rounded-full mb-1 sm:mb-1.5 shadow-xl flex items-center gap-2 sm:gap-2.5">
+                  <span class="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-400">Bote</span>
+                  <span id="game-pot-display" class="text-sm sm:text-lg font-extrabold font-mono text-amber-400">0</span>
+                  <span id="game-street-badge" class="text-[9px] sm:text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">PREFLOP</span>
                 </div>
 
                 <!-- Visible chip pile for the pot -->
-                <div id="pot-chip-stack" class="mb-2" aria-hidden="true"></div>
+                <div id="pot-chip-stack" class="mb-1.5 sm:mb-2" aria-hidden="true"></div>
 
                 <!-- Community Cards -->
-                <div id="game-board-cards" class="flex items-center justify-center gap-1.5 sm:gap-2 min-h-[68px] sm:min-h-[82px]"></div>
+                <div id="game-board-cards" class="flex items-center justify-center gap-1 sm:gap-2 min-h-[58px] sm:min-h-[82px]"></div>
 
                 <!-- Action Status Banner -->
-                <div id="game-status-banner" class="mt-2.5 w-full max-w-sm sm:max-w-md text-center text-[11px] sm:text-xs font-medium leading-snug text-emerald-100 bg-black/60 px-3.5 py-1.5 rounded-xl border border-white/10 whitespace-normal break-words">
-                  Pulsa "Nueva Mano" para comenzar.
+                <div id="game-status-banner" class="mt-2 sm:mt-2.5 w-full max-w-xs sm:max-w-md text-center text-[10px] sm:text-xs font-medium leading-snug text-emerald-100 bg-black/60 px-3 py-1.5 rounded-xl border border-white/10 whitespace-normal break-words">
+                  Pulsa "Repartir" para comenzar.
                 </div>
 
                 <!-- Skip the 10s wait and deal immediately (visible in Arena too) -->
                 <button id="btn-next-hand" onclick="game.startNewHand(true)" class="hidden mt-2 pointer-events-auto px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-[11px] font-extrabold shadow-lg border border-amber-300/60 transition">
-                  🃏 Nueva Mano
+                  🃏 Siguiente Mano
                 </button>
                 <!-- Aparece sólo cuando el héroe se queda sin fichas. -->
                 <button id="btn-find-table" onclick="game.findNewTable()" class="hidden mt-2 pointer-events-auto px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[11px] font-extrabold shadow-lg border border-emerald-300/60 transition">
@@ -442,37 +437,37 @@
           </div>
 
           <!-- HUD unificado: acciones, apuestas, métricas y ojito en una sola pieza sin scroll. -->
-          <div id="game-controls-panel" class="bg-slate-900 border border-slate-800 rounded-2xl p-3 sm:p-4">
+          <div id="game-controls-panel" class="bg-slate-900 border border-slate-800 rounded-2xl p-2.5 sm:p-4 shadow-xl">
             <div id="game-controls-left">
               <div class="game-action-row">
                 <div class="action-cell" data-action="fold">
                   <span id="hint-fold" class="action-hint"></span>
-                  <button id="btn-fold" onclick="game.humanAction('fold')" disabled class="rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-40 disabled:pointer-events-none text-white font-bold transition">Retirarse (Fold)</button>
+                  <button id="btn-fold" onclick="game.humanAction('fold')" disabled class="rounded-xl bg-rose-600 hover:bg-rose-500 disabled:opacity-40 disabled:pointer-events-none text-white font-bold transition shadow">Fold</button>
                 </div>
                 <div class="action-cell" data-action="call">
                   <span id="hint-call" class="action-hint"></span>
-                  <button id="btn-call" onclick="game.humanAction('call')" disabled class="rounded-xl bg-slate-700 hover:bg-slate-600 disabled:opacity-40 disabled:pointer-events-none text-white font-bold transition">Pasar (Check)</button>
+                  <button id="btn-call" onclick="game.humanAction('call')" disabled class="rounded-xl bg-slate-700 hover:bg-slate-600 disabled:opacity-40 disabled:pointer-events-none text-white font-bold transition shadow">Check / Call</button>
                 </div>
                 <div class="action-cell" data-action="raise">
                   <span id="hint-raise" class="action-hint"></span>
-                  <button id="btn-raise" onclick="game.humanAction('raise')" disabled class="rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:pointer-events-none text-white font-bold transition">Apostar / Subir (Raise)</button>
+                  <button id="btn-raise" onclick="game.humanAction('raise')" disabled class="rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:pointer-events-none text-white font-bold transition shadow">Bet / Raise</button>
                 </div>
               </div>
 
               <!-- Fila natural de apuestas: All-In, slider y atajos de tamaño. -->
-              <div class="game-bet-row">
+              <div class="game-bet-row mt-1.5 sm:mt-2">
                 <button onclick="game.setBetFraction(999)" data-fraction="999" class="bet-allin rounded-lg bg-amber-950/70 hover:bg-amber-900/70 text-amber-300 border border-amber-700/50 font-mono font-bold">All-In</button>
                 <div id="bet-slider-group" class="bet-slider-group">
-                  <span class="text-[11px] font-mono text-slate-400">Subida:</span>
+                  <span class="text-[10px] sm:text-[11px] font-mono text-slate-400">Subida:</span>
                   <input id="raise-slider" type="range" min="4" max="200" step="1" value="6" oninput="game.updateRaiseLabel(this.value)" />
                   <span id="raise-amount-label" class="font-mono font-bold text-emerald-400">6</span>
                 </div>
                 <div id="bet-sizing-presets" class="bet-presets">
-                  <button onclick="game.setBetFraction(0.25)" data-fraction="0.25" class="rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-mono">1/4 Pot</button>
-                  <button onclick="game.setBetFraction(0.33)" data-fraction="0.33" class="rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-mono">1/3 Pot</button>
-                  <button onclick="game.setBetFraction(0.5)" data-fraction="0.5" class="rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-mono">1/2 Pot</button>
-                  <button onclick="game.setBetFraction(0.75)" data-fraction="0.75" class="rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-mono">3/4 Pot</button>
-                  <button onclick="game.setBetFraction(1.0)" data-fraction="1" class="rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-mono">Pot</button>
+                  <button onclick="game.setBetFraction(0.25)" data-fraction="0.25" class="rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-mono">1/4 Bote</button>
+                  <button onclick="game.setBetFraction(0.33)" data-fraction="0.33" class="rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-mono">1/3 Bote</button>
+                  <button onclick="game.setBetFraction(0.5)" data-fraction="0.5" class="rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-mono">1/2 Bote</button>
+                  <button onclick="game.setBetFraction(0.75)" data-fraction="0.75" class="rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-mono">3/4 Bote</button>
+                  <button onclick="game.setBetFraction(1.0)" data-fraction="1" class="rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-mono">Bote</button>
                 </div>
                 <!-- Espacio propio del ojito, integrado en la fila de apuestas. -->
                 <div id="eyeball-anchor" class="eyeball-slot">
@@ -489,13 +484,19 @@
         </div>
 
         <!-- Right Side: Chess.com-style EV Evaluator & Action Log -->
-        <div class="xl:col-span-4 flex flex-col gap-4">
+        <div class="xl:col-span-4 flex flex-col gap-3 sm:gap-4">
+          <!-- Mobile switcher between Coach EV and Log to save space -->
+          <div class="flex xl:hidden bg-slate-900 border border-slate-800 rounded-xl p-1 gap-1">
+            <button id="tab-btn-coach" onclick="game.toggleMobileSidebar('coach')" class="flex-1 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-emerald-400 border border-slate-700 transition">HUD Coach EV</button>
+            <button id="tab-btn-log" onclick="game.toggleMobileSidebar('log')" class="flex-1 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white border border-transparent transition">Historial de Mano</button>
+          </div>
+
           <!-- Chess-Style Move Evaluation & Live Coach Panel -->
-          <div id="live-coach-panel" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+          <div id="live-coach-panel" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3 shadow-lg">
             <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
               <div class="flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                <h3 class="text-xs font-bold uppercase tracking-wider text-white">Evaluador EV & Coach</h3>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-white">HUD Analítico & GTO Coach</h3>
               </div>
               <span id="coach-position-badge" class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">Pos: --</span>
             </div>
@@ -503,15 +504,15 @@
             <!-- Live Situational Metrics -->
             <div class="grid grid-cols-3 gap-2 text-center">
               <div class="bg-slate-950 border border-slate-800 rounded-xl p-2">
-                <span class="text-[10px] text-slate-400 block">Equity Real</span>
+                <span class="text-[10px] text-slate-400 block font-semibold uppercase">Equity Real</span>
                 <span id="coach-equity" class="text-sm font-extrabold font-mono text-emerald-400">--%</span>
               </div>
               <div class="bg-slate-950 border border-slate-800 rounded-xl p-2">
-                <span class="text-[10px] text-slate-400 block">Pot Odds</span>
+                <span class="text-[10px] text-slate-400 block font-semibold uppercase">Pot Odds</span>
                 <span id="coach-pot-odds" class="text-sm font-extrabold font-mono text-amber-400">--%</span>
               </div>
               <div class="bg-slate-950 border border-slate-800 rounded-xl p-2">
-                <span class="text-[10px] text-slate-400 block">SPR</span>
+                <span class="text-[10px] text-slate-400 block font-semibold uppercase">SPR</span>
                 <span id="coach-spr" class="text-sm font-extrabold font-mono text-slate-200">--</span>
               </div>
             </div>
@@ -519,11 +520,11 @@
             <!-- Current Hand & Pre-Action Hint -->
             <div class="bg-slate-950/90 border border-slate-800 rounded-xl p-3 space-y-1">
               <div class="flex items-center justify-between">
-                <span class="text-[11px] font-semibold text-slate-400">Jugada / Proyecto:</span>
+                <span class="text-[11px] font-semibold text-slate-400">Fuerza Actual:</span>
                 <span id="coach-hand-strength" class="text-xs font-mono font-bold text-white">--</span>
               </div>
               <p id="coach-advice-text" class="text-xs text-slate-300 leading-relaxed">
-                Esperando tu turno para simular escenarios EV...
+                Esperando tu turno para calcular frecuencias y EV óptimo...
               </p>
             </div>
 
@@ -553,8 +554,8 @@
           </div>
 
           <!-- Hand History Log -->
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex-1 flex flex-col min-h-[210px]">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Registro de la Mano</h3>
+          <div id="game-log-panel" class="hidden xl:flex bg-slate-900 border border-slate-800 rounded-2xl p-4 flex-col min-h-[210px] shadow-lg">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Historial de la Mano</h3>
             <div id="game-log-box" class="flex-1 overflow-y-auto space-y-1.5 text-xs font-mono text-slate-300 bg-slate-950/80 border border-slate-800 rounded-xl p-3 max-h-[230px]">
               <div class="text-slate-500">Historial listo...</div>
             </div>
@@ -569,8 +570,8 @@
     <section id="view-gto" class="view-section hidden space-y-6">
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <h2 class="text-xl font-bold text-white">Matriz GTO estilo Preflop Vision (6-Max)</h2>
-          <p class="text-xs sm:text-sm text-slate-400">Frecuencias mixtas por posición, secuencia, tamaño de apertura y stack. Aproximación determinista inspirada en las tablas de Zeros; no son sus tablas propietarias. Haz clic en cualquier mano.</p>
+          <h2 class="text-xl font-bold text-white">Matriz de Rangos GTO Preflop (6-Max)</h2>
+          <p class="text-xs sm:text-sm text-slate-400">Frecuencias mixtas por posición (UTG a BB), acción previa (RFI, vs Open, vs 3-Bet) y profundidad de stack en BB. Haz clic en cualquier mano de la matriz.</p>
         </div>
 
         <div class="flex flex-col gap-2">
@@ -692,8 +693,8 @@
     <section id="view-estadisticas" class="view-section hidden space-y-6">
       <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 class="text-xl font-bold text-white">Estadísticas de Rendimiento y Análisis de Errores</h2>
-          <p class="text-xs sm:text-sm text-slate-400">Seguimiento persistente en tu navegador de decisiones +EV, errores cometidos y evolución.</p>
+          <h2 class="text-xl font-bold text-white">Tracker de Rendimiento & Detector de Fugas EV</h2>
+          <p class="text-xs sm:text-sm text-slate-400">Seguimiento de manos, precisión de líneas de juego, pérdidas por errores de EV y análisis de bankroll.</p>
         </div>
         <button onclick="stats.resetStats()" class="px-4 py-2 rounded-xl bg-rose-950/70 hover:bg-rose-900/80 text-xs font-semibold text-rose-300 border border-rose-800/50 transition">
           Reiniciar Estadísticas
@@ -730,97 +731,131 @@
       </div>
     </section>
 
-    <!-- ===================================================================
-         VIEW 6: CONFIGURACIÓN (REGLAS Y PARÁMETROS)
-    =================================================================== -->
-    <section id="view-configuracion" class="view-section hidden space-y-6">
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-3xl mx-auto space-y-6">
-        <div>
-          <h2 class="text-xl font-bold text-white">Configuración del Entorno</h2>
-          <p class="text-xs sm:text-sm text-slate-400">Personaliza las reglas de la mesa, stacks iniciales, ayudas visuales y almacenamiento local.</p>
-        </div>
+    <!-- Legacy container for configuracion if invoked -->
+    <div id="view-configuracion" class="view-section hidden"></div>
+  </main>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
-            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Jugadores por Mesa por Defecto</label>
-            <select id="cfg-table-size" onchange="config.saveFromUI()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white">
-              <option value="2">2 Jugadores (Heads-Up)</option>
-              <option value="6">6 Jugadores (6-Max)</option>
-              <option value="9">9 Jugadores (Full Ring)</option>
-            </select>
-          </div>
+  <!-- MOBILE BOTTOM APP NAVIGATION (NATIVE FEEL) -->
+  <nav id="mobile-bottom-nav" class="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-md border-t border-slate-800/80 px-1 py-1 flex items-center justify-around md:hidden pb-[calc(0.35rem+env(safe-area-inset-bottom,0px))]">
+    <button data-tab="partidas" onclick="app.navigate('partidas')" class="mobile-nav-btn flex flex-col items-center justify-center flex-1 py-1.5 px-0.5 text-emerald-400 font-semibold transition-all relative">
+      <span class="mobile-nav-indicator absolute top-0 w-8 h-0.5 rounded-full bg-emerald-400 transition-opacity"></span>
+      <span class="text-lg leading-none mb-1">♠</span>
+      <span class="text-[10px] tracking-tight">Mesa</span>
+    </button>
+    <button data-tab="academia" onclick="app.navigate('academia')" class="mobile-nav-btn flex flex-col items-center justify-center flex-1 py-1.5 px-0.5 text-slate-400 hover:text-slate-200 transition-all relative">
+      <span class="mobile-nav-indicator absolute top-0 w-8 h-0.5 rounded-full bg-emerald-400 opacity-0 transition-opacity"></span>
+      <span class="text-lg leading-none mb-1">🎓</span>
+      <span class="text-[10px] tracking-tight">Academia</span>
+    </button>
+    <button data-tab="gto" onclick="app.navigate('gto')" class="mobile-nav-btn flex flex-col items-center justify-center flex-1 py-1.5 px-0.5 text-slate-400 hover:text-slate-200 transition-all relative">
+      <span class="mobile-nav-indicator absolute top-0 w-8 h-0.5 rounded-full bg-emerald-400 opacity-0 transition-opacity"></span>
+      <span class="text-lg leading-none mb-1">📊</span>
+      <span class="text-[10px] tracking-tight">Rangos</span>
+    </button>
+    <button data-tab="laboratorio" onclick="app.navigate('laboratorio')" class="mobile-nav-btn flex flex-col items-center justify-center flex-1 py-1.5 px-0.5 text-slate-400 hover:text-slate-200 transition-all relative">
+      <span class="mobile-nav-indicator absolute top-0 w-8 h-0.5 rounded-full bg-emerald-400 opacity-0 transition-opacity"></span>
+      <span class="text-lg leading-none mb-1">🧪</span>
+      <span class="text-[10px] tracking-tight">Lab EV</span>
+    </button>
+    <button data-tab="estadisticas" onclick="app.navigate('estadisticas')" class="mobile-nav-btn flex flex-col items-center justify-center flex-1 py-1.5 px-0.5 text-slate-400 hover:text-slate-200 transition-all relative">
+      <span class="mobile-nav-indicator absolute top-0 w-8 h-0.5 rounded-full bg-emerald-400 opacity-0 transition-opacity"></span>
+      <span class="text-lg leading-none mb-1">📈</span>
+      <span class="text-[10px] tracking-tight">Tracker</span>
+    </button>
+  </nav>
 
-          <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
-            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Stack Inicial (Ciegas Grandes)</label>
-            <select id="cfg-stack-bb" onchange="config.saveFromUI()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white">
-              <option value="50">50 BB (Short / Torneo)</option>
-              <option value="100">100 BB (Estándar Cash)</option>
-              <option value="200">200 BB (Deep Stack)</option>
-            </select>
-          </div>
-
-          <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
-            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Nivel de Ciegas (SB / BB)</label>
-            <select id="cfg-blinds" onchange="config.saveFromUI()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white">
-              <option value="1-2">1 / 2</option>
-              <option value="5-10">5 / 10</option>
-              <option value="25-50">25 / 50</option>
-            </select>
-          </div>
-
-          <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
-            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Baraja de 4 Colores</label>
-            <select id="cfg-four-color" onchange="config.saveFromUI()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white">
-              <option value="true">Activada (♠ Negro, ♥ Rojo, ♦ Azul, ♣ Verde)</option>
-              <option value="false">Clásica (♠♣ Negro, ♥♦ Rojo)</option>
-            </select>
-          </div>
-
-          <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
-            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Velocidad de Respuesta de Bots</label>
-            <select id="cfg-bot-speed" onchange="config.saveFromUI()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white">
-              <option value="180">Ultra Rápida (0.18s - Recomendado)</option>
-              <option value="350">Rápida (0.35s)</option>
-              <option value="700">Moderada (0.70s)</option>
-            </select>
-          </div>
-
-          <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
-            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Coach Analítico en Partidas</label>
-            <select id="cfg-show-coach" onchange="config.saveFromUI()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white">
-              <option value="true">Activado (Mostrar Equity y Calificación Chess-EV)</option>
-              <option value="false">Modo Examen (Ocultar pistas previas, calificar al actuar)</option>
-            </select>
-          </div>
-
-          <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
-            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Mostrar Etiquetas de Perfil de Rivales</label>
-            <select id="cfg-show-profiles" onchange="config.saveFromUI()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white">
-              <option value="true">Sí (Mostrar arquetipo bajo cada rival)</option>
-              <option value="false">No (Ocultar para deducir por sus apuestas)</option>
-            </select>
-          </div>
-
-          <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
-            <label class="block text-xs font-bold uppercase text-slate-400 mb-2">Efectos de Sonido (Web Audio)</label>
-            <select id="cfg-sound-enabled" onchange="config.saveFromUI()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white">
-              <option value="true">Activados (Cartas, fichas y alertas)</option>
-              <option value="false">Silenciados</option>
-            </select>
+  <!-- SETTINGS MODAL -->
+  <div id="settings-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-md items-center justify-center p-3 sm:p-4 overflow-y-auto" onclick="if(event.target === this) config.closeModal()">
+    <div class="bg-slate-900 border border-slate-700/80 rounded-2xl max-w-2xl w-full p-5 sm:p-6 space-y-5 shadow-2xl my-auto animate-fade-in relative">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <span class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold text-sm">⚙️</span>
+          <div>
+            <h3 class="text-base font-bold text-white">Configuración del Entorno</h3>
+            <p class="text-[11px] text-slate-400">Reglas de mesa, stacks, arquetipos y visualización</p>
           </div>
         </div>
+        <button onclick="config.closeModal()" aria-label="Cerrar ajustes" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition">✕</button>
+      </div>
 
-        <div class="border-t border-slate-800 pt-5 flex flex-wrap items-center justify-between gap-3">
-          <div class="text-xs text-slate-400">
-            Todos los cambios y estadísticas se guardan automáticamente en <code class="text-emerald-400">localStorage</code>.
-          </div>
-          <button onclick="config.resetAllData()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs transition">
-            Restablecer Todo de Fábrica
-          </button>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 max-h-[70vh] overflow-y-auto pr-1">
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3.5">
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Jugadores por Mesa por Defecto</label>
+          <select id="cfg-table-size" onchange="config.saveFromUI()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500">
+            <option value="2">2 Jugadores (Heads-Up)</option>
+            <option value="6">6 Jugadores (6-Max)</option>
+            <option value="9">9 Jugadores (Full Ring)</option>
+          </select>
+        </div>
+
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3.5">
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Stack Inicial (Ciegas Grandes)</label>
+          <select id="cfg-stack-bb" onchange="config.saveFromUI()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500">
+            <option value="50">50 BB (Short / Torneo)</option>
+            <option value="100">100 BB (Estándar Cash)</option>
+            <option value="200">200 BB (Deep Stack)</option>
+          </select>
+        </div>
+
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3.5">
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Nivel de Ciegas (SB / BB)</label>
+          <select id="cfg-blinds" onchange="config.saveFromUI()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500">
+            <option value="1-2">1 / 2</option>
+            <option value="5-10">5 / 10</option>
+            <option value="25-50">25 / 50</option>
+          </select>
+        </div>
+
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3.5">
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Baraja de 4 Colores</label>
+          <select id="cfg-four-color" onchange="config.saveFromUI()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500">
+            <option value="true">Activada (♠ Negro, ♥ Rojo, ♦ Azul, ♣ Verde)</option>
+            <option value="false">Clásica (♠♣ Negro, ♥♦ Rojo)</option>
+          </select>
+        </div>
+
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3.5">
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Velocidad de Bots</label>
+          <select id="cfg-bot-speed" onchange="config.saveFromUI()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500">
+            <option value="180">Ultra Rápida (0.18s)</option>
+            <option value="350">Rápida (0.35s)</option>
+            <option value="700">Moderada (0.70s)</option>
+          </select>
+        </div>
+
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3.5">
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Coach Analítico en Mesa</label>
+          <select id="cfg-show-coach" onchange="config.saveFromUI()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500">
+            <option value="true">Activado (Equity en vivo & Coach EV)</option>
+            <option value="false">Modo Examen (Ocultar pistas)</option>
+          </select>
+        </div>
+
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3.5">
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Arquetipos de Rivales</label>
+          <select id="cfg-show-profiles" onchange="config.saveFromUI()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500">
+            <option value="true">Visibles (TAG, LAG, Nit, Station, etc.)</option>
+            <option value="false">Ocultos (Deducir por apuestas)</option>
+          </select>
+        </div>
+
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3.5">
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Efectos de Sonido</label>
+          <select id="cfg-sound-enabled" onchange="config.saveFromUI()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-emerald-500">
+            <option value="true">Activados (Fichas, cartas y alertas)</option>
+            <option value="false">Silenciados</option>
+          </select>
         </div>
       </div>
-    </section>
-  </main>
+
+      <div class="border-t border-slate-800 pt-3.5 flex flex-wrap items-center justify-between gap-3">
+        <span class="text-[11px] text-slate-400">Guardado automático en <code class="text-emerald-400 font-mono">localStorage</code></span>
+        <button onclick="config.resetAllData()" class="px-3.5 py-1.5 rounded-xl bg-rose-950/70 hover:bg-rose-900/80 text-rose-300 border border-rose-800/60 font-semibold text-xs transition">
+          Restablecer Todo de Fábrica
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- CARD PICKER MODAL (FOR LABORATORIO) -->
   <div id="card-picker-modal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
